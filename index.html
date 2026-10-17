@@ -10150,7 +10150,7 @@ document.head.insertAdjacentHTML('beforeend', `<style>
                  or hurt, properties taken, buildings destroyed, powers fired, new enemy
                  units in sight. Each line jumps the camera there.
      what's new  a changelog screen, shown once per version and from the title menu */
-const GAME_VERSION = '0.6.1';
+const GAME_VERSION = '0.6.2';
 const WHATS_NEW = {
   '0.3': ['Mission 1-6 "Dead Air" rebalanced: the Overmind no longer starts beside two of the three Uplink Towers, and you get a second anti-air team.',
     'The attack-range tiles now show line of sight: grey tiles are in range but a building blocks the shot.',
@@ -13553,6 +13553,9 @@ function mk3ImportUI(back) {
 /* ============================== v0.4 FOLLOW-UPS ========================== */
 /* Fixes found after the builders' modules were integrated. */
 const V04B = {holdDays:10};
+WHATS_NEW['0.6.2'] = [
+  'Fix: moves no longer start and then jump to the end. A slow frame used to make units skip ahead about 2.5 tiles.'
+];
 WHATS_NEW['0.6.1'] = [
   'Base zone: build inside a circle around your Construction Yard or HQ; a second base means driving a second Rig. Walls join up, Gates open for your side, and switched-off buildings blink a red bolt.',
   'Harvesters work at the start of your turn by themselves. Raiding an enemy harvester pays its load plus a bounty, and Lumenite near your Refinery is your claim: +25% for you, -25% for them.',
@@ -18728,7 +18731,7 @@ SND.FEET_OF = {r_inf:'squad', r_mech:'mech', r_snipe:'sniper', r_eng:'eng', r_sc
 /* tanks and heavies: a revving start and a louder track clatter on top of the arsenal's engine */
 SND.rev = (u, t, dur, D) => { const heavy = ['HEAVY', 'BOSS'].includes(u.d.cls), f = heavy ? 38 : 50, o = arsOsc('sawtooth', f, t, t + .7), lp = arsFilt('lowpass', 260, 2), g = arsHold(t, .7, heavy ? .3 : .24, .05, .3);
   o.frequency.linearRampToValueAtTime(f * 2.2, t + .25); o.frequency.linearRampToValueAtTime(f * 1.4, t + .7); o.connect(lp); lp.connect(g); g.connect(D); noise(t, .25, .06, 'lowpass', 400, D);
-  const n = Math.max(4, dur * 10); for (let i = 0; i < n; i++) { const s = t + .15 + i * dur / n; noise(s, .025, .06, 'bandpass', 2400 + Math.random() * 1200, D, null, 5); metalRing(s, 260, .05, .008, D); } };
+  const n = Math.max(4, Math.round(dur * 7)); for (let i = 0; i < n; i++) { const s = t + .15 + i * dur / n; noise(s, .025, .07, 'bandpass', 2400 + Math.random() * 1200, D, null, 5); } };   // link clatter (kept light: a big move must not stall the first frame)
 /* ---------------- deaths ---------------- */
 SND.DIE = {
   bodyfall(t, P, D) { thump(t + .35, 110, 50, .15, .6, P); noise(t + .35, .12, .15, 'lowpass', 600, D); for (let i = 0; i < 3; i++) metalRing(t + .42 + i * .07, 1500 + Math.random() * 900, .1, .02, D); },   // and their rifle clatters down
@@ -19712,7 +19715,7 @@ showTitle();
 requestAnimationFrame(frame);
 /* Background tabs pause requestAnimationFrame; keep game logic (moves, AI
    turns) advancing at a low rate so nothing stalls mid-animation.          */
-setInterval(() => { const now = performance.now(); if (G && now - lastT > 250) { update(Math.min(.25, (now - lastT) / 1000)); lastT = now; } }, 120);
+setInterval(() => { const now = performance.now(); if (G && document.hidden && now - lastT > 250) { update(Math.min(.25, (now - lastT) / 1000)); lastT = now; } }, 120);   // only while hidden: in a visible tab a slow frame must not make units teleport
 </script>
 <script>if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});</script></body>
 </html>

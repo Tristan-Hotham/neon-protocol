@@ -1,5 +1,11 @@
 # Neon Protocol: Uprising: changelog
 
+## v0.6.2 (2026-10-17)
+- **Fix: moves no longer "start, then jump".**
+  - A safety timer meant for background tabs also ran in a visible tab. Whenever one frame took longer than 0.25 s, it advanced the game by a quarter-second in one step: 2.5 tiles of movement at once.
+  - It now runs only when the tab is really hidden. Tested by freezing the page for 0.4 s mid-move: the unit now carries on smoothly.
+  - The tank start-up sound was also lightened (fewer sound generators at once), so the first frame of a tank move stays light on slower devices.
+
 ## v0.6.1 (2026-10-17)
 From the first full game:
 - **Base zone:** you build inside a circle around your Construction Yard (the deployed Rig) or HQ: 6 tiles, or 9 for docks so a coastal base reaches the water. Before, anything within 3 tiles of any of your buildings counted, so a base could creep across the map one wall at a time and the Rig stopped mattering. A second base now means driving a second Rig there.
