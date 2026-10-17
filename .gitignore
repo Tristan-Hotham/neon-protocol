@@ -1,0 +1,15 @@
+# Original-format and working files
+*.wav
+*.flac
+*.mp3
+*.aiff
+orig-vorbis/
+screenshots/
+*.png
+trailer.mp4
+trailer*.vtt
+dist/
+build/
+node_modules/
+.DS_Store
+Thumbs.db
