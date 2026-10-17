@@ -544,7 +544,7 @@ NP.COMMANDERS = [
    face:{kind:'ai', screen:'#0d2a1a', glyph:'#7dff4a', frame:'#8d97ab', bg:'#0d1f16'},
    passive:'Units heal +10 HP extra on properties/Repair Bays. +1 vision, +10% defence.',
    power:{n:'RESTORE CYCLE',stars:3,fx:'All units heal 30 HP, +20% defence.'},
-   sup:{n:'REWRITE',stars:7,fx:'Up to 3 of the most valuable non-boss enemy units you can see join you for this turn (ready to act); all your units heal 20 HP.'},
+   sup:{n:'REWRITE',stars:7,fx:'Choose up to 3 non-boss enemy units you can see: they join you for two turns (ready to act now); all your units heal 20 HP.'},
    lines:{select:'Probability of victory: 62.4%. I would like to raise it with you.', power:'Initiating restore cycle. Please hold still.', super:'I am sorry, little machines. You are ours for now.', win:'We did well. I am... pleased? Yes. Pleased.', lose:'Error. No: a lesson. I will remember it.'}}
 ];
 NP.UNLOCK_NOTE = 'Campaign: commanders unlock progressively (Kova from the start, the rest at the level shown). Skirmish: all five available from the start. A few story missions lock the commander.';
@@ -2083,8 +2083,8 @@ async function runPowerEffect(team, co, lv) {
     case 'oracle:power': for (const u of mine()) healUnit(u, 30); break;
     case 'oracle:super': {
       for (const u of mine()) healUnit(u, 20);
-      const picks = foes().filter(e => !hasTag(e,'boss') && visibleTo(e, team)).sort((a, b) => b.d.cost * b.hp - a.d.cost * a.hp).slice(0, 3);
-      for (const e of picks) { e.rw = e.team; e.team = team; e.done = false; e.stun = false; e.face = faceOf(team);
+      const picks = await rewritePicks(team, foes().filter(e => !hasTag(e,'boss') && visibleTo(e, team)));   // the player chooses (p70); the AI takes the nearest useful ones
+      for (const e of picks) { e.rw = e.team; e.rwT = 2; e.team = team; e.done = false; e.stun = false; e.face = faceOf(team);
         floatText(e.x, e.y, 'REWRITTEN', '#7dff4a'); fxRing(e.x, e.y, '#7dff4a'); }
       break; }
     case 'warden:power': await structFire(team); break;
@@ -2637,7 +2637,8 @@ async function endTurn() {
     if (G.over) return;
   }
   for (const u of G.units) {
-    if (u.rw !== undefined && u.team === G.turn) { u.team = u.rw; delete u.rw; u.face = faceOf(u.team); fxRing(u.x, u.y, TEAMS[u.team].ui); }  // REWRITE wears off
+    if (u.rw !== undefined && u.team === G.turn && u.rwT > 1) { u.rwT--; u.stun = false; u.done = false; floatText(u.x, u.y, 'REWRITTEN: 1 MORE TURN', '#7dff4a'); }   // REWRITE lasts two of your turns
+    else if (u.rw !== undefined && u.team === G.turn) { u.team = u.rw; delete u.rw; delete u.rwT; u.face = faceOf(u.team); fxRing(u.x, u.y, TEAMS[u.team].ui); }  // REWRITE wears off
     else if (u.team === G.turn) { u.stun = false; u.done = false; }
   }
   G.teams[G.turn].veiled = false;
@@ -4646,7 +4647,7 @@ function showBriefingCard() {
   const obj = G.flip ? `Win: ${ovObjText(G.lose)}.<br>Lose if ${ovObjText(G.win, true)}.` : `Win: ${objectiveText(G.win)}.<br>Lose if ${objectiveText(G.lose, true)}.`;
   showModal(`<div class="dim" style="letter-spacing:2px">${head}</div><h2>${esc(L.name.toUpperCase())}</h2>
     <h3>OBJECTIVE</h3><p>${obj}</p>${G.flip ? '<p class="dim" style="font-size:12px">The Resistance is dug in: extra troops and money (Uprising).</p>' : ''}
-    <p class="dim">${G.flip ? 'Your general' : 'Your commander'}: <b style="color:${me.pal[0]}">${esc(me.n)}</b> · ${G.flip ? 'Resistance commander' : 'Enemy general'}: <b style="color:${foe.pal[0]}">${esc(foe.n)}</b> · Fog of war: ${G.fog ? 'ON' : 'off'}${L.build ? ' · base building' : ''}</p>
+    <p class="dim">${G.flip ? 'Your general' : 'Your commander'}: <b style="color:${me.pal[0]}">${esc(me.n)}</b> · ${G.flip ? 'Resistance commander' : 'Enemy general'}: <b style="color:${foe.pal[0]}">${esc(foe.n)}</b> · Fog of war: ${G.fog ? 'ON' : G.tod === 'night' ? 'night (shorter sight; lit enemies show)' : 'off'}${L.build ? ' · base building' : ''}</p>
     <p class="dim">Par ${L.par} days · difficulty ${G.diff.n}${G.campaign && campDone()[L.id] ? ' · best rank ' + campDone()[L.id].rank : ''}</p>${condLine() ? `<p style="color:#9af6ff;font-size:12px">${esc(condLine())}</p>` : ''}
     <div class="mbtns"><button class="np end" data-act="go">Deploy ▶</button><button class="np" data-act="replay">Replay briefing</button><button class="np" data-act="help">Controls</button></div>`,
     {closable:false, on:a => { hideModal(); if (a === 'help') showHelp(showBriefingCard); else if (a === 'replay') showBriefing(); else startTurn(1); }});
@@ -9979,60 +9980,85 @@ function tidyGen(L, o) {
 /* end:p39_splash.js */
 /* ============================== SHIN-PACIFICA TITLE ========================= */
 /* The menu backdrop is the game's world rather than a generic synthwave sun:
-   Shin-Pacifica at night from across the Sector 9 harbour. The Overmind's core
-   spire dominates the skyline, its red eye pulsing and its "Heaven's Net" (天網)
-   threaded across the sky, a searchlight sweeping the districts. Megatowers and
-   pagoda-roofed towers carry kanji neon; "recycled" sectors burn on the horizon;
-   dock cranes stand over the water, which mirrors it all. Red-eyed drones patrol,
-   a Resistance gunship slips past low, and it rains. Static layers are painted
-   once per screen size and scrolled; only the lights move each frame. */
+   Shin-Pacifica at night from a Sector 9 rooftop across the harbour. The Overmind's
+   core spire dominates the skyline, its red eye pulsing and its "Heaven's Net" (天網)
+   threaded across the sky, a searchlight sweeping the districts. Three skyline depths
+   with haze between them; megatowers and pagoda towers carry kanji neon and hologram
+   billboards; "recycled" sectors burn on the horizon; air traffic streams between the
+   towers; dock cranes stand over the water, which mirrors it all. On the rooftop in front,
+   three Resistance silhouettes watch the spire. It rains, and lightning walks the far coast.
+   v0.6.1: painted at the screen's real pixel density (crisp on phones and retina screens);
+   static layers are painted once per screen size and scrolled, only the lights move. */
 const TITLE_W = {key:'', layers:null};
-function titleWorldBuild(W, H) {
+function titleWorldBuild(W, H, S) {
   const R = mulberry(hashSeed('shin-pacifica')), hz = Math.round(H * .64);
-  const mk = (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; return [c, c.getContext('2d')]; };
+  const mk = (w, h) => { const c = document.createElement('canvas'); c.width = Math.ceil(w * S); c.height = Math.ceil(h * S); const g = c.getContext('2d'); g.scale(S, S); return [c, g]; };
   const NEON = ['#ff3fb4', '#2ef2ff', '#ffb02e', '#a35bff', '#7dff9a'];
-  // a skyline strip twice the screen wide so it can scroll and wrap
+  // a skyline strip twice the screen wide so it can scroll and wrap; depth 0 far, 1 mid, 2 near
   function skyline(depth) {
-    const w = W * 2, [c, g] = mk(w, hz + 2), base = hz + 1, far = depth === 0, signs = [];
-    const body = far ? '#120a1e' : '#07060d', winA = far ? .35 : .7;
+    const w = W * 2, [c, g] = mk(w, hz + 2), base = hz + 1, signs = [], holos = [];
+    const body = ['#140b22', '#0c0816', '#06050c'][depth], winA = [.32, .5, .72][depth], ws = [3, 4, 6][depth], wsz = [1.4, 2, 2.6][depth];
     for (let x = 0; x < w;) {
-      const bw = Math.round((far ? 26 : 38) + R() * (far ? 40 : 70)), bh = Math.round(H * (far ? .14 + R() * .3 : .1 + R() * .26)), top = base - bh, kind = R();
-      g.fillStyle = body; g.fillRect(x, top, bw, bh);
+      const bw = Math.round([22, 30, 38][depth] + R() * [36, 50, 70][depth]), bh = Math.round(H * ([.16, .12, .1][depth] + R() * [.3, .28, .26][depth])), top = base - bh, kind = R();
+      const gr = g.createLinearGradient(x, 0, x + bw, 0); gr.addColorStop(0, mixHex(body, '#3a2a5a', .18)); gr.addColorStop(.3, body); gr.addColorStop(1, mixHex(body, '#000000', .35));   // lit left edge
+      g.fillStyle = gr; g.fillRect(x, top, bw, bh); g.fillStyle = body;
       if (kind < .22) {                                                       // pagoda tower: stacked curved eaves
         const tiers = 2 + ((R() * 3) | 0); for (let i = 0; i < tiers; i++) { const ey = top - 4 - i * 12, ew = bw * (1 - i * .18);
           g.beginPath(); g.moveTo(x + bw / 2 - ew / 2 - 8, ey + 6); g.quadraticCurveTo(x + bw / 2, ey - 6, x + bw / 2 + ew / 2 + 8, ey + 6); g.lineTo(x + bw / 2 + ew / 2 - 4, ey + 9); g.lineTo(x + bw / 2 - ew / 2 + 4, ey + 9); g.fill();
           g.fillRect(x + bw / 2 - ew / 2 + 6, ey + 9, ew - 12, 4); }
         g.fillRect(x + bw / 2 - 1, top - 6 - tiers * 12 - 10, 2, 12); }
-      else if (kind < .55) { g.fillRect(x + bw * .3, top - 18 - R() * 30, bw * .4, 40); g.fillRect(x + bw / 2 - 1, top - 70 - R() * 40, 2, 60); }   // megatower crown and mast
+      else if (kind < .55) { g.fillRect(x + bw * .3, top - 18 - R() * 30, bw * .4, 40); g.fillRect(x + bw / 2 - 1, top - 70 - R() * 40, 2, 60);
+        if (depth) { g.fillStyle = '#ff2a2a'; g.fillRect(x + bw / 2 - 1, top - 72 - R() * 40, 2, 2); g.fillStyle = body; } }   // aircraft warning light
       else if (kind < .7) { g.beginPath(); g.moveTo(x, top); g.lineTo(x + bw / 2, top - 30); g.lineTo(x + bw, top); g.fill(); }
-      for (let wy = top + 6; wy < base - 4; wy += far ? 5 : 7) for (let wx = x + 4; wx < x + bw - 4; wx += far ? 4 : 6) if (R() < (far ? .28 : .35)) {
-        g.globalAlpha = winA * (.4 + R() * .6); g.fillStyle = R() < .7 ? '#ffd9a0' : NEON[(R() * NEON.length) | 0]; g.fillRect(wx, wy, far ? 2 : 3, far ? 2 : 3); }
+      for (let wy = top + 6; wy < base - 4; wy += ws + 1.5) for (let wx = x + 3; wx < x + bw - 3; wx += ws) if (R() < .3) {
+        g.globalAlpha = winA * (.35 + R() * .65); g.fillStyle = R() < .72 ? '#ffd9a0' : NEON[(R() * NEON.length) | 0]; g.fillRect(wx, wy, wsz, wsz); }
       g.globalAlpha = 1;
-      if (!far && R() < .45 && bh > 80) signs.push({x:x + (R() < .5 ? 2 : bw - 14), y:top + 12 + R() * Math.max(10, bh - 120), col:NEON[(R() * NEON.length) | 0], txt:['天網', '抵抗', '新太平洋', '嵐', '夜鷹', '電脳', '港', '未来', '影', '酒'][(R() * 10) | 0], ph:R() * 6});
-      x += bw + Math.round(R() * (far ? 4 : 10));
+      if (depth === 2 && R() < .45 && bh > 80) signs.push({x:x + (R() < .5 ? 2 : bw - 14), y:top + 12 + R() * Math.max(10, bh - 120), col:NEON[(R() * NEON.length) | 0], txt:['天網', '抵抗', '新太平洋', '嵐', '夜鷹', '電脳', '港', '未来', '影', '酒'][(R() * 10) | 0], ph:R() * 6});
+      if (depth >= 1 && R() < .16 && bw > 46 && bh > 110) holos.push({x:x + 6, y:top + 20 + R() * 30, w:bw - 12, h:Math.min(60, bh * .3), col:NEON[(R() * NEON.length) | 0], ph:R() * 9, kind:(R() * 3) | 0});
+      x += bw + Math.round(R() * [3, 6, 10][depth]);
     }
-    return {c, signs, base};
+    return {c, signs, holos, base};
   }
-  const far = skyline(0), near = skyline(1);
-  // fires in the recycled sectors, on the far horizon
+  const far = skyline(0), mid = skyline(1), near = skyline(2);
   const fires = Array.from({length:4}, () => ({x:R(), w:.04 + R() * .06, ph:R() * 6}));
-  // dock cranes in the foreground
+  // air traffic: lanes at three depths, cars with head- and tail-lights
+  const cars = Array.from({length:14}, (_, i) => ({lane:i % 3, y:hz * (.32 + (i % 3) * .14 + R() * .06), sp:(R() < .5 ? 1 : -1) * (40 + R() * 70) * (1 + (i % 3) * .5), ph:R() * 4000, col:R() < .5 ? '#ff3fb4' : '#2ef2ff'}));
+  // dock cranes in the middle distance
   const [cranes, cg] = mk(W, H); cg.strokeStyle = '#05050a'; cg.fillStyle = '#05050a'; cg.lineWidth = 4;
   for (const cx of [.07, .2, .86]) { const x = W * cx, y = hz + 4, h = H * .28; cg.fillRect(x - 3, y - h, 6, h); cg.beginPath(); cg.moveTo(x - 60, y - h + 10); cg.lineTo(x + 110, y - h + 10); cg.stroke();
     cg.lineWidth = 2; cg.beginPath(); cg.moveTo(x, y - h - 16); cg.lineTo(x - 60, y - h + 10); cg.moveTo(x, y - h - 16); cg.lineTo(x + 110, y - h + 10); cg.moveTo(x + 80, y - h + 10); cg.lineTo(x + 80, y - h + 50); cg.stroke(); cg.lineWidth = 4;
     cg.fillRect(x + 72, y - h + 50, 16, 10); }
-  return {hz, far, near, fires, cranes, W, H};
+  // the rooftop in front: ledge, vents, an antenna, and three of the Resistance watching the spire (rim-lit cyan)
+  const [roof, rg] = mk(W, H), ry = H * .9, sc = Math.max(.7, Math.min(1.4, H / 800));
+  rg.fillStyle = '#030306'; rg.fillRect(0, ry, W * .46, H - ry); rg.beginPath(); rg.moveTo(W * .46, ry); rg.lineTo(W * .5, H); rg.lineTo(W * .46, H); rg.fill();
+  rg.fillRect(W * .05, ry - 26 * sc, 40 * sc, 26 * sc); rg.fillRect(W * .05 + 46 * sc, ry - 16 * sc, 24 * sc, 16 * sc);                     // vents
+  rg.fillRect(W * .4, ry - 90 * sc, 2, 90 * sc); rg.fillRect(W * .4 - 10 * sc, ry - 80 * sc, 20 * sc, 2); rg.fillRect(W * .4 - 6 * sc, ry - 64 * sc, 12 * sc, 2);   // antenna
+  rg.strokeStyle = 'rgba(46,242,255,.35)'; rg.lineWidth = 1; rg.beginPath(); rg.moveTo(0, ry + .5); rg.lineTo(W * .46, ry + .5); rg.stroke();
+  const figure = (fx, h, rifle, coat) => {                                // a silhouette standing on the ledge, facing the spire
+    const y0 = ry, hd = h * .13; rg.fillStyle = '#020204';
+    rg.beginPath(); rg.arc(fx, y0 - h + hd, hd, 0, 7); rg.fill();                                   // head
+    rg.beginPath(); rg.moveTo(fx - h * .16, y0 - h + hd * 2.2); rg.lineTo(fx + h * .16, y0 - h + hd * 2.2); rg.lineTo(fx + h * (coat ? .2 : .13), y0 - h * .38); rg.lineTo(fx - h * (coat ? .2 : .13), y0 - h * .38); rg.fill();   // torso / coat
+    rg.fillRect(fx - h * .12, y0 - h * .4, h * .09, h * .4); rg.fillRect(fx + h * .03, y0 - h * .4, h * .09, h * .4);   // legs
+    if (rifle) { rg.save(); rg.translate(fx + h * .1, y0 - h * .62); rg.rotate(-.5); rg.fillRect(0, -1.5, h * .5, 3); rg.restore(); }
+    rg.strokeStyle = 'rgba(46,242,255,.75)'; rg.lineWidth = 1.2; rg.beginPath(); rg.arc(fx, y0 - h + hd, hd, -1.4, .9); rg.stroke();   // rim light from the city
+    rg.beginPath(); rg.moveTo(fx + h * .16, y0 - h + hd * 2.2); rg.lineTo(fx + h * (coat ? .2 : .13), y0 - h * .38); rg.stroke();
+  };
+  figure(W * .17, 92 * sc, true, false); figure(W * .24, 104 * sc, false, true); figure(W * .3, 88 * sc, true, false);
+  return {hz, far, mid, near, fires, cars, cranes, roof, ry, W, H, S};
 }
 drawTitleBG = function (t) {
   cam.x = t * 18; cam.y = 0;
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.imageSmoothingEnabled = false;
-  const W = innerWidth, H = innerHeight, key = W + 'x' + H;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.imageSmoothingEnabled = true;
+  const W = innerWidth, H = innerHeight, S = Math.min(2, dpr || 1), key = W + 'x' + H + '@' + S;
   if (W < 32 || H < 32) return;                                   // the window is still opening: nothing to draw yet
-  if (TITLE_W.key !== key) { TITLE_W.key = key; TITLE_W.layers = titleWorldBuild(W, H); }
+  if (TITLE_W.key !== key) { TITLE_W.key = key; TITLE_W.layers = titleWorldBuild(W, H, S); }
   const L = TITLE_W.layers, hz = L.hz, g = ctx;
-  // sky: night over a smog horizon lit by the burning sectors
+  // sky: night over a smog horizon lit by the burning sectors; lightning walks the far coast now and then
   const sky = g.createLinearGradient(0, 0, 0, hz); sky.addColorStop(0, '#04040a'); sky.addColorStop(.55, '#140820'); sky.addColorStop(.85, '#3a0c2a'); sky.addColorStop(1, '#6a1a2a');
   g.fillStyle = sky; g.fillRect(0, 0, W, hz);
+  const lt = t % 11, flash = lt > 9.6 && lt < 9.75 ? 1 : lt > 9.85 && lt < 9.92 ? .6 : 0;
+  if (flash) { g.fillStyle = `rgba(190,170,255,${.18 * flash})`; g.fillRect(0, 0, W, hz); g.strokeStyle = `rgba(230,220,255,${.8 * flash})`; g.lineWidth = 1.5; g.beginPath();
+    let bx = W * (.1 + ((t / 11 | 0) * .37) % .3), by = 0; g.moveTo(bx, by); while (by < hz * .7) { bx += (Math.sin(by * 13.1 + t) * 14); by += 18; g.lineTo(bx, by); } g.stroke(); }
   // the Overmind's core spire with its eye, net and searchlight
   const sx = W * .66, eyeY = H * .2, pulse = .5 + .5 * Math.sin(t * 1.7);
   g.save(); g.globalAlpha = .35; g.strokeStyle = '#ff2a6a'; g.lineWidth = 1;                          // 天網: Heaven's Net
@@ -10041,32 +10067,50 @@ drawTitleBG = function (t) {
   const beamA = Math.sin(t * .35) * .9 + Math.PI / 2;                                                 // searchlight sweeping the districts
   g.save(); const bg = g.createLinearGradient(sx, eyeY, sx + Math.cos(beamA) * H, eyeY + Math.sin(beamA) * H); bg.addColorStop(0, 'rgba(255,42,80,.35)'); bg.addColorStop(1, 'rgba(255,42,80,0)');
   g.fillStyle = bg; g.beginPath(); g.moveTo(sx, eyeY); g.lineTo(sx + Math.cos(beamA - .09) * H * 1.2, eyeY + Math.sin(beamA - .09) * H * 1.2); g.lineTo(sx + Math.cos(beamA + .09) * H * 1.2, eyeY + Math.sin(beamA + .09) * H * 1.2); g.fill(); g.restore();
-  // far skyline (slow parallax), then fires and smoke over the recycled sectors
-  const scroll = (layer, speed) => { const off = (t * speed) % W; g.drawImage(layer.c, -off, 0); g.drawImage(layer.c, W * 2 - off, 0); };
-  scroll(L.far, 6);
+  const scroll = (layer, speed) => { const off = (t * speed) % W; g.drawImage(layer.c, -off, 0, W * 2, hz + 2); g.drawImage(layer.c, W * 2 - off, 0, W * 2, hz + 2); };
+  const haze = (a) => { const hg = g.createLinearGradient(0, hz * .45, 0, hz); hg.addColorStop(0, 'rgba(58,12,42,0)'); hg.addColorStop(1, `rgba(90,24,52,${a})`); g.fillStyle = hg; g.fillRect(0, hz * .45, W, hz * .55 + 2); };
+  scroll(L.far, 4); haze(.35);
   for (const f of L.fires) { const fx = W * f.x, fw = W * f.w, fl = .6 + .4 * Math.sin(t * 3 + f.ph);
     const fg = g.createRadialGradient(fx, hz, 4, fx, hz, fw * 2); fg.addColorStop(0, `rgba(255,140,40,${.55 * fl})`); fg.addColorStop(1, 'rgba(255,60,20,0)'); g.fillStyle = fg; g.fillRect(fx - fw * 2, hz - fw * 2, fw * 4, fw * 2);
     g.fillStyle = 'rgba(30,20,30,.35)'; for (let i = 0; i < 5; i++) { const sy = hz - 20 - ((t * 12 + i * 30 + f.ph * 20) % 160), r = 10 + (hz - sy) * .12; g.beginPath(); g.arc(fx + Math.sin(t * .5 + i) * 8 + (hz - sy) * .15, sy, r, 0, 7); g.fill(); } }
   // the spire itself
   g.fillStyle = '#030306'; g.beginPath(); g.moveTo(sx - 46, hz); g.lineTo(sx - 16, eyeY + 30); g.lineTo(sx - 6, eyeY - 60); g.lineTo(sx + 6, eyeY - 60); g.lineTo(sx + 16, eyeY + 30); g.lineTo(sx + 46, hz); g.fill();
   g.fillRect(sx - 1, eyeY - 110, 2, 52);
+  g.strokeStyle = 'rgba(255,42,106,.35)'; g.lineWidth = 1; g.beginPath(); g.moveTo(sx - 16, eyeY + 30); g.lineTo(sx - 46, hz); g.stroke();      // red rim on the spire
   const eg = g.createRadialGradient(sx, eyeY, 2, sx, eyeY, 60 + 20 * pulse); eg.addColorStop(0, 'rgba(255,60,90,.9)'); eg.addColorStop(.25, 'rgba(255,42,106,.35)'); eg.addColorStop(1, 'rgba(255,42,106,0)');
   g.fillStyle = eg; g.beginPath(); g.arc(sx, eyeY, 80, 0, 7); g.fill();
   g.fillStyle = '#ff2a6a'; g.beginPath(); g.ellipse(sx, eyeY, 13, 8, 0, 0, 7); g.fill(); g.fillStyle = '#fff0f4'; g.beginPath(); g.arc(sx + Math.sin(t * .35) * 5, eyeY, 3, 0, 7); g.fill();
-  // near skyline with flickering kanji neon
+  // middle skyline, then air traffic weaving between the depths
+  scroll(L.mid, 9); haze(.22);
+  const car = c => { const x = ((c.ph + t * c.sp) % (W + 200) + W + 200) % (W + 200) - 100, y = c.y + Math.sin(t * .7 + c.ph) * 4, d = c.sp > 0 ? 1 : -1, k = .6 + c.lane * .35;
+    const tr = g.createLinearGradient(x, y, x - d * 70 * k, y); tr.addColorStop(0, c.col + 'aa'); tr.addColorStop(1, c.col + '00'); g.strokeStyle = tr; g.lineWidth = 1.4 * k; g.beginPath(); g.moveTo(x, y); g.lineTo(x - d * 70 * k, y + 1); g.stroke();
+    g.fillStyle = '#05050a'; g.fillRect(x - 6 * k, y - 2 * k, 12 * k, 4 * k); g.fillStyle = '#fff4d0'; g.fillRect(x + d * 5 * k, y - .5, 2 * k, 1.5 * k); g.fillStyle = '#ff3030'; g.fillRect(x - d * 6 * k, y - .5, 1.5 * k, 1.5 * k); };
+  for (const c of L.cars) if (c.lane < 2) car(c);
+  // near skyline with flickering kanji neon and hologram billboards
   scroll(L.near, 14);
   const off = (t * 14) % W;
+  for (const hb of L.near.holos) for (const shift of [0, W * 2]) { const x = hb.x - off + shift; if (x < -hb.w || x > W + 10) continue;
+    const on = Math.sin(t * 5 + hb.ph) > -.9 ? 1 : .2; g.save(); g.globalAlpha = .55 * on; g.fillStyle = hb.col + '22'; g.fillRect(x, hb.y, hb.w, hb.h); g.strokeStyle = hb.col; g.lineWidth = 1; g.strokeRect(x + .5, hb.y + .5, hb.w - 1, hb.h - 1);
+      g.fillStyle = hb.col; g.globalAlpha = .7 * on;
+      if (hb.kind === 0) for (let i = 0; i < 6; i++) { const bh = (Math.sin(t * 3 + i + hb.ph) * .5 + .5) * (hb.h - 8); g.fillRect(x + 4 + i * (hb.w - 8) / 6, hb.y + hb.h - 4 - bh, (hb.w - 8) / 6 - 2, bh); }   // a bar graph: the Overmind's numbers
+      else if (hb.kind === 1) { const r = Math.min(hb.w, hb.h) * .35, cx = x + hb.w / 2, cy = hb.y + hb.h / 2; g.beginPath(); g.arc(cx, cy, r, t % 6.28, t % 6.28 + 4.5); g.lineWidth = 2; g.strokeStyle = hb.col; g.stroke(); }   // a rotating ring
+      else for (let i = 0; i < 4; i++) g.fillRect(x + 4, hb.y + 6 + ((i * 12 + t * 20) % (hb.h - 10)), hb.w - 8, 2);                     // scrolling text lines
+      g.globalAlpha = .08 * on; for (let s = hb.y; s < hb.y + hb.h; s += 3) g.fillRect(x, s, hb.w, 1); g.restore(); }
   g.font = 'bold 13px "Noto Sans JP", "Yu Gothic", "Meiryo", sans-serif'; g.textBaseline = 'top';
   for (const s of L.near.signs) for (const shift of [0, W * 2]) { const x = s.x - off + shift; if (x < -20 || x > W + 20) continue;
     const on = Math.sin(t * 7 + s.ph * 9) > -.85 ? 1 : .25; g.save(); g.globalAlpha = on; g.fillStyle = '#05050a'; g.fillRect(x - 2, s.y - 2, 16, s.txt.length * 15 + 4);
     g.shadowColor = s.col; g.shadowBlur = 10; g.fillStyle = s.col; [...s.txt].forEach((ch, i) => g.fillText(ch, x, s.y + i * 15)); g.restore(); }
-  // harbour water: dark, with the city's neon rippling in it
+  for (const c of L.cars) if (c.lane === 2) car(c);                                                 // the closest lane passes in front of the towers
+  // harbour water: dark, with the city's neon rippling in it, and rain rings
   const wg = g.createLinearGradient(0, hz, 0, H); wg.addColorStop(0, '#0a0614'); wg.addColorStop(1, '#020208'); g.fillStyle = wg; g.fillRect(0, hz, W, H - hz);
-  g.save(); g.globalAlpha = .28; for (let y = hz; y < H; y += 3) { const src = hz - (y - hz) * .9; if (src < 0) break; const dx = Math.sin(y * .15 + t * 2) * 4;
-    g.drawImage(L.near.c, (off + dx) % (W * 2), src, W, 3, 0, y, W, 3); }
+  g.save(); g.globalAlpha = .3; for (let y = hz; y < H; y += 2) { const src = hz - (y - hz) * .9; if (src < 0) break; const dx = Math.sin(y * .15 + t * 2) * 4;
+    g.drawImage(L.near.c, ((off + dx) % (W * 2) + W * 2) % (W * 2) * L.S, src * L.S, W * L.S, 2 * L.S, 0, y, W, 2); }
   g.globalAlpha = .5; g.fillStyle = '#ff2a6a'; for (let i = 0; i < 12; i++) { const y = hz + 6 + i * 10; g.fillRect(sx - 6 + Math.sin(t * 2 + i) * 6, y, 12 - i * .6, 2); }    // the eye's reflection
+  g.globalAlpha = .35; g.strokeStyle = '#8fb8ff'; g.lineWidth = .8;
+  for (let i = 0; i < 10; i++) { const k = (t * .8 + i * .37) % 1, rx = ((i * 0.618 + Math.floor(t * .8 + i * .37) * .31) % 1) * W, ry = hz + 8 + ((i * .41) % 1) * (H - hz - 12);
+    g.globalAlpha = .35 * (1 - k); g.beginPath(); g.ellipse(rx, ry, 2 + k * 10, .6 + k * 2.5, 0, 0, 6.283); g.stroke(); }
   g.restore();
-  g.drawImage(L.cranes, 0, 0);
+  g.drawImage(L.cranes, 0, 0, W, H);
   // drones on patrol (red eyes, search cones) and a Resistance gunship slipping past
   for (let i = 0; i < 3; i++) { const dx = ((t * (22 + i * 9) + i * 400) % (W + 200)) - 100, dy = H * (.3 + i * .08) + Math.sin(t * 1.3 + i) * 8;
     g.fillStyle = '#060608'; g.fillRect(dx - 9, dy - 2, 18, 5); g.fillRect(dx - 13, dy - 4, 6, 2); g.fillRect(dx + 7, dy - 4, 6, 2);
@@ -10074,11 +10118,25 @@ drawTitleBG = function (t) {
   const gx = W - ((t * 40) % (W + 300)) + 150, gy = H * .5 + Math.sin(t) * 6;
   g.fillStyle = '#05050a'; g.fillRect(gx - 16, gy - 3, 32, 7); g.fillRect(gx + 12, gy - 6, 12, 3); g.fillRect(gx - 22, gy - 9, 44, 2);
   g.fillStyle = '#2ef2ff'; g.fillRect(gx - 14, gy + 4, 3, 2); g.fillStyle = Math.sin(t * 8) > 0 ? '#ffb02e' : '#05050a'; g.fillRect(gx + 14, gy, 2, 2);
-  // rain
-  g.strokeStyle = '#8fb8ff30'; g.lineWidth = 1; g.beginPath();
+  // the rooftop and the three who watch from it
+  g.drawImage(L.roof, 0, 0, W, H);
+  // rain: a far layer and a near one
+  g.lineWidth = 1; g.strokeStyle = '#8fb8ff28'; g.beginPath();
   for (const r of RAIN) { const x = ((r.x + t * .05 * r.s) % 1) * W, y = ((r.y + t * .9 * r.s) % 1) * H; g.moveTo(x, y); g.lineTo(x - 3, y + 11); }
+  g.stroke(); g.strokeStyle = '#b8d0ff40'; g.lineWidth = 1.4; g.beginPath();
+  for (const r of RAIN.slice(0, 40)) { const x = ((r.y + t * .08 * r.s) % 1) * W, y = ((r.x + t * 1.6 * r.s) % 1) * H; g.moveTo(x, y); g.lineTo(x - 5, y + 22); }
   g.stroke();
+  // vignette
+  const vg = g.createRadialGradient(W / 2, H * .45, Math.min(W, H) * .35, W / 2, H * .5, Math.max(W, H) * .75); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.55)');
+  g.fillStyle = vg; g.fillRect(0, 0, W, H);
 };
+/* the menu: frosted glass over the city, a neon edge that lights on hover */
+document.head.insertAdjacentHTML('beforeend', `<style>
+  #title .tmenu button{background:rgba(10,12,22,.52);backdrop-filter:blur(7px) saturate(1.3);-webkit-backdrop-filter:blur(7px) saturate(1.3);border-color:rgba(120,140,190,.28);transition:box-shadow .15s,border-color .15s,transform .15s}
+  #title .tmenu button:hover,#title .tmenu button:focus-visible{border-color:#2ef2ff;box-shadow:0 0 0 1px #2ef2ff55,0 0 18px #2ef2ff40,inset 0 0 14px #2ef2ff22;transform:translateX(2px)}
+  #title .tmenu button.hot,#title .tmenu button:first-child{border-color:#ffb02e88}
+  #title .l1{filter:drop-shadow(0 0 2px #2ef2ff)}
+</style>`);
 /* end:p40_title.js */
 /* ============================== VERSION 0.2 ================================ */
 /* Clarity and safety for v0.2:
@@ -10092,7 +10150,7 @@ drawTitleBG = function (t) {
                  or hurt, properties taken, buildings destroyed, powers fired, new enemy
                  units in sight. Each line jumps the camera there.
      what's new  a changelog screen, shown once per version and from the title menu */
-const GAME_VERSION = '0.6';
+const GAME_VERSION = '0.6.1';
 const WHATS_NEW = {
   '0.3': ['Mission 1-6 "Dead Air" rebalanced: the Overmind no longer starts beside two of the three Uplink Towers, and you get a second anti-air team.',
     'The attack-range tiles now show line of sight: grey tiles are in range but a building blocks the shot.',
@@ -10195,7 +10253,7 @@ function waitedShow(team) {
 }
 /* ---- what's new ---- */
 function showWhatsNew(back) {
-  const v = GAME_VERSION, vers = Object.keys(WHATS_NEW).sort((a, b) => parseFloat(b) - parseFloat(a));
+  const v = GAME_VERSION, vers = Object.keys(WHATS_NEW).sort((a, b) => { const p = v => v.split('.').map(Number), x = p(a), y = p(b); for (let i = 0; i < 3; i++) if ((y[i] || 0) !== (x[i] || 0)) return (y[i] || 0) - (x[i] || 0); return 0; });
   const sect = (k, i) => `${i ? `<h3 style="margin-top:14px;opacity:.75">Earlier: v${k}</h3>` : ''}<ul style="text-align:left;line-height:1.6;margin:10px 0 0 18px${i ? ';opacity:.75' : ''}">${WHATS_NEW[k].map(x => `<li>${esc(x)}</li>`).join('')}</ul>`;
   showModal(`<h2>WHAT'S NEW IN v${v}</h2>${vers.map(sect).join('')}
     <p class="dim" style="margin-top:10px">Neon Protocol: Uprising is an early build. Found a bug or a mission that feels unfair? Use “Report a problem” in the pause menu.</p>
@@ -13495,6 +13553,14 @@ function mk3ImportUI(back) {
 /* ============================== v0.4 FOLLOW-UPS ========================== */
 /* Fixes found after the builders' modules were integrated. */
 const V04B = {holdDays:10};
+WHATS_NEW['0.6.1'] = [
+  'Base zone: build inside a circle around your Construction Yard or HQ; a second base means driving a second Rig. Walls join up, Gates open for your side, and switched-off buildings blink a red bolt.',
+  'Harvesters work at the start of your turn by themselves. Raiding an enemy harvester pays its load plus a bounty, and Lumenite near your Refinery is your claim: +25% for you, -25% for them.',
+  'Battle scenes at six times the resolution: sharper units, lit and glowing, rolling treads and spinning rotors, a finer city behind them, and dismemberment (blood only with Mature on).',
+  'A new title screen: the city in full detail, air traffic, holograms, and three of the Resistance on a rooftop watching the spire.',
+  'Measured difficulty on every briefing; REWRITE lets you choose its targets and lasts two turns; factories work with a unit parked on them.',
+  'More chatter (captures, repairs, last stands, first sight of a boss), generals speak their power lines, fewer and smaller civilians, a "highlight my units" button (O), and two new skirmish terrains: Flooded Subway and Orbital Elevator.'
+];
 WHATS_NEW['0.6'] = [
   'The sound of war: every unit has its own gun, footsteps or engine, and death. Rail-tank cannons, howitzers with an incoming whistle, quad flak, space-opera blasters for the Overmind. Ricochets off armour, and a battle raging beyond the map edge (Settings, Sound: War ambience).',
   'Real recordings blended in: explosions, ricochets, death cries, boots on gravel and battlefield beds from Freesound (credits in Settings, Sound).',
@@ -14792,11 +14858,12 @@ if (!SET.bcam) SET.bcam = 'mine';
     #bcam.ov canvas{box-shadow:0 0 0 2px #0b0d14,0 0 26px rgba(255,40,60,.3)}
     #bcam small{position:absolute;bottom:max(10px,env(safe-area-inset-bottom));left:0;right:0;text-align:center;color:#8a93a8;font:11px ui-monospace,monospace;letter-spacing:1px}</style>`);
   const root = document.createElement('div'); root.id = 'bcam';
-  const cv = document.createElement('canvas'); cv.width = W; cv.height = H; root.appendChild(cv);
+  const HDK = 6;                                          // drawn at 6x the logical 256x144 (1536x864) so figures, limbs and shading are finer than a pixel of the layout
+  const cv = document.createElement('canvas'); cv.width = W * HDK; cv.height = H * HDK; root.appendChild(cv);
   root.insertAdjacentHTML('beforeend', '<small>TAP / ANY KEY: SKIP · HOLD: SKIP THE TURN</small>');
   document.body.appendChild(root);
   const g = cv.getContext('2d'); g.imageSmoothingEnabled = false;
-  const fit = () => { const s = Math.min(innerWidth * .98 / W, innerHeight * .86 / H, 4); cv.style.width = Math.round(W * s) + 'px'; cv.style.height = Math.round(H * s) + 'px'; };
+  const fit = () => { const s = Math.min(innerWidth * .98 / W, innerHeight * .86 / H, 6); cv.style.width = Math.round(W * s) + 'px'; cv.style.height = Math.round(H * s) + 'px'; };
   addEventListener('resize', fit); fit();
 
   /* ---- 3x5 pixel font ---- */
@@ -14876,46 +14943,49 @@ if (!SET.bcam) SET.bcam = 'mine';
     let x = -4;
     while (x < 128) { const w = 7 + (r() * 12 | 0), h = hMin + r() * (hMax - hMin), top = y0 - h;
       b.fillStyle = col; b.fillRect(x, top, w, h + 60);
+      b.fillStyle = 'rgba(255,255,255,.06)'; b.fillRect(x, top, .5, h + 60); b.fillStyle = 'rgba(0,0,0,.18)'; b.fillRect(x + w - 1.5, top, 1.5, h + 60);   // lit edge, shaded side
       if (r() < .35) b.fillRect(x + (w >> 1) - 1, top - 4 - r() * 6, 1, 10);                        // antenna
       if (r() < .25) { b.fillRect(x + 2, top - 3, w - 4, 3); }                                         // stepped crown
-      for (let wy = top + 3; wy < y0 + 4; wy += 3) for (let wx = x + 2; wx < x + w - 1; wx += 2) if (r() < lit) glow.push([wx, wy, 1, 1, r() < .7 ? '#ffd38a' : r() < .5 ? '#9af6ff' : '#ff8fd0', .55 + r() * .45]);
+      for (let wy = top + 2.5; wy < y0 + 4; wy += 1.5) for (let wx = x + 1.5; wx < x + w - 1; wx += 1.25) if (r() < lit * .8) glow.push([wx, wy, .6, .7, r() < .7 ? '#ffd38a' : r() < .5 ? '#9af6ff' : '#ff8fd0', .5 + r() * .5]);   // a finer window grid at 6x
       if (neon && r() < .3) { const sx = r() < .5 ? x : x + w - 2, sc = r() < .5 ? '#ff3fb4' : '#2ef2ff', sh = 6 + r() * 14 | 0;   // vertical sign with glyph blocks
         glow.push([sx, top + 4, 2, sh, sc, .95]); for (let k = 0; k < sh; k += 3) glow.push([sx - 1, top + 5 + k, 1, 1, '#ffffff', .8]); }
       if (neon && r() < .12) glow.push([x + 1, top + 6 + r() * 10 | 0, w - 2, 4, r() < .5 ? '#a35bff' : '#ffb02e', .7]);   // holo billboard
       x += w + (r() < .3 ? 2 + r() * 4 | 0 : 0); }
   }
+  const BGK = 6;                                          // backdrops painted at 6x, to match the figures
+  function haze(b, y, h, col, a) { const gr = b.createLinearGradient(0, y - h, 0, y + 4); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, col); b.globalAlpha = a; b.fillStyle = gr; b.fillRect(0, y - h, 128, h + 4); b.globalAlpha = 1; }
   function backdrop(kind, side) {
     const tod = todNow(), wx = G.wx || G.L.weather || 'clear', theme = G.L.theme || 'urban', dark = Math.min(.75, G.L.dark ?? ((TOD[tod] && TOD[tod].dark) || .3));
     const key = [kind, side, tod, wx, theme, Math.round(dark * 10)].join('|');
     let c = BCAM.bg.get(key); if (c) return c;
     if (BCAM.bg.size > 40) BCAM.bg.clear();
-    c = document.createElement('canvas'); c.width = 128; c.height = HUD - TOP; const b = c.getContext('2d'), r = rng(hash(key)), glow = [], gy = GY - TOP;
+    c = document.createElement('canvas'); c.width = 128 * BGK; c.height = (HUD - TOP) * BGK; const b = c.getContext('2d'), r = rng(hash(key)), glow = [], gy = GY - TOP, CH = HUD - TOP; b.scale(BGK, BGK);
     const sk = SKY[tod] || SKY.day, gr = b.createLinearGradient(0, 0, 0, gy);
-    gr.addColorStop(0, sk[0]); gr.addColorStop(.6, sk[1]); gr.addColorStop(1, sk[2]); b.fillStyle = gr; b.fillRect(0, 0, 128, c.height);
+    gr.addColorStop(0, sk[0]); gr.addColorStop(.6, sk[1]); gr.addColorStop(1, sk[2]); b.fillStyle = gr; b.fillRect(0, 0, 128, CH);
     if (tod === 'night') for (let i = 0; i < 26; i++) glow.push([r() * 128 | 0, r() * 40 | 0, 1, 1, '#ffffff', .3 + r() * .5]);
     if (tod === 'day' || tod === 'dawn') { b.fillStyle = 'rgba(255,240,210,.25)'; b.beginPath(); b.arc(side ? 30 : 98, 22, 9, 0, 7); b.fill(); }
     else { b.fillStyle = 'rgba(230,236,255,.75)'; b.beginPath(); b.arc(side ? 26 : 100, 16, 4, 0, 7); b.fill(); }
     const urban = theme === 'urban' || theme === 'industrial';
     const far = tod === 'night' ? '#1e2650' : '#3a4a6e', mid = tod === 'night' ? '#151a3a' : '#28304c', near = tod === 'night' ? '#0c0f24' : '#1a1e30';
-    const ground = (top, col, col2) => { b.fillStyle = col; b.fillRect(0, top, 128, c.height - top); if (col2) { b.fillStyle = col2; b.fillRect(0, top, 128, 1); } };
+    const ground = (top, col, col2) => { b.fillStyle = col; b.fillRect(0, top, 128, CH - top); if (col2) { b.fillStyle = col2; b.fillRect(0, top, 128, 1); } };
     if (kind === 'sky') {                                // aircraft: the city far below, clouds racing past
-      skyline(b, r, c.height - 6, 6, 20, far, .25, glow, urban);
+      skyline(b, r, CH - 6, 6, 20, far, .25, glow, urban);
       b.fillStyle = 'rgba(255,255,255,.18)'; for (let i = 0; i < 6; i++) { const cx = r() * 140 - 6, cy = 18 + r() * 50, cw = 14 + r() * 26; b.fillRect(cx, cy, cw, 3); b.fillRect(cx + 4, cy - 2, cw - 10, 2); }
     } else if (kind === 'water' || kind === 'reef' || kind === 'port' || kind === 'beach') {
       const hz = gy - 34;
       skyline(b, r, hz, 4, urban ? 26 : 10, far, .2, glow, urban);
-      const sea = b.createLinearGradient(0, hz, 0, c.height); sea.addColorStop(0, tod === 'night' ? '#0b1a3a' : '#2a5a9a'); sea.addColorStop(1, tod === 'night' ? '#040a1a' : '#123a72');
-      b.fillStyle = sea; b.fillRect(0, hz, 128, c.height - hz);
-      for (let i = 0; i < 40; i++) { b.fillStyle = `rgba(190,225,255,${.12 + r() * .25})`; const y = hz + 2 + r() * (c.height - hz); b.fillRect(r() * 128, y, 3 + (y - hz) / 6, 1); }
+      const sea = b.createLinearGradient(0, hz, 0, CH); sea.addColorStop(0, tod === 'night' ? '#0b1a3a' : '#2a5a9a'); sea.addColorStop(1, tod === 'night' ? '#040a1a' : '#123a72');
+      b.fillStyle = sea; b.fillRect(0, hz, 128, CH - hz);
+      for (let i = 0; i < 40; i++) { b.fillStyle = `rgba(190,225,255,${.12 + r() * .25})`; const y = hz + 2 + r() * (CH - hz); b.fillRect(r() * 128, y, 3 + (y - hz) / 6, 1); }
       for (let i = 0; i < 10; i++) glow.push([r() * 128 | 0, hz + 1 + r() * 8 | 0, 3, 1, r() < .5 ? '#ff3fb4' : '#2ef2ff', .35]);   // the skyline's neon on the water
       if (kind === 'reef') { b.fillStyle = '#2a3440'; for (let i = 0; i < 3; i++) { const x = 10 + i * 42 + r() * 10; b.fillRect(x, gy - 10, 3, 14); b.fillRect(x - 6, gy - 2, 16, 3); } }
       if (kind === 'port') { b.fillStyle = '#3a3e4c'; b.fillRect(0, gy - 6, 128, 4); b.fillStyle = '#22252e'; for (let x = 4; x < 128; x += 16) b.fillRect(x, gy - 2, 2, 8);
         b.fillStyle = mid; b.fillRect(side ? 90 : 20, hz - 26, 3, 26); b.fillRect(side ? 78 : 20, hz - 26, 26, 3); glow.push([side ? 102 : 44, hz - 24, 1, 2, '#ff3b3b', .9]); }
-      if (kind === 'beach') { b.fillStyle = '#c8b47a'; b.beginPath(); b.moveTo(0, gy - 4); b.lineTo(128, gy - 8); b.lineTo(128, c.height); b.lineTo(0, c.height); b.fill(); b.fillStyle = 'rgba(255,255,255,.5)'; b.fillRect(0, gy - 5, 128, 1); }
+      if (kind === 'beach') { b.fillStyle = '#c8b47a'; b.beginPath(); b.moveTo(0, gy - 4); b.lineTo(128, gy - 8); b.lineTo(128, CH); b.lineTo(0, CH); b.fill(); b.fillStyle = 'rgba(255,255,255,.5)'; b.fillRect(0, gy - 5, 128, 1); }
     } else {
       const hz = gy - 2;
       if (kind === 'ridge') {
-        for (const [col, base, amp] of [[far, hz - 14, 40], [mid, hz, 30]]) { b.fillStyle = col; b.beginPath(); b.moveTo(0, base); let x = 0; while (x < 140) { x += 10 + r() * 16; b.lineTo(x, base - amp * (.4 + r() * .6)); x += 8 + r() * 12; b.lineTo(x, base - 6 * r()); } b.lineTo(140, c.height); b.lineTo(0, c.height); b.fill(); }
+        for (const [col, base, amp] of [[far, hz - 14, 40], [mid, hz, 30]]) { b.fillStyle = col; b.beginPath(); b.moveTo(0, base); let x = 0; while (x < 140) { x += 10 + r() * 16; b.lineTo(x, base - amp * (.4 + r() * .6)); x += 8 + r() * 12; b.lineTo(x, base - 6 * r()); } b.lineTo(140, CH); b.lineTo(0, CH); b.fill(); }
         if (wx === 'snow') { b.fillStyle = 'rgba(240,246,255,.6)'; for (let i = 0; i < 14; i++) b.fillRect(r() * 128, hz - 30 - r() * 14, 4, 2); }
         ground(hz, '#4a3e30', '#6a5a44'); b.fillStyle = '#3a3026'; for (let i = 0; i < 18; i++) b.fillRect(r() * 128, hz + 2 + r() * 12, 3, 2);
       } else if (kind === 'jungle') {
@@ -14926,9 +14996,9 @@ if (!SET.bcam) SET.bcam = 'mine';
         ground(hz, '#1e3a22', '#2f6a3a'); b.fillStyle = '#16301a'; for (let i = 0; i < 26; i++) b.fillRect(r() * 128, hz + 2 + r() * 12, 2, 2);
       } else {                                           // the city: Shin-Pacifica towers in three depths
         const ind = theme === 'industrial' && kind !== 'plaza', trop = theme === 'tropical' || theme === 'coast';
-        skyline(b, r, hz - 22, 20, 64, far, .22, glow, true);
+        skyline(b, r, hz - 22, 20, 64, far, .22, glow, true); haze(b, hz - 22, 40, sk[2], .22);
         if (ind) { b.fillStyle = mid; for (let i = 0; i < 4; i++) { const x = 8 + i * 32 + r() * 10; b.fillRect(x, hz - 56, 5, 60); glow.push([x + 1, hz - 56, 3, 1, '#ff7a3b', .9]); } }   // smokestacks
-        skyline(b, r, hz - 8, 10, kind === 'plaza' ? 52 : 34, mid, .3, glow, true);
+        skyline(b, r, hz - 8, 10, kind === 'plaza' ? 52 : 34, mid, .3, glow, true); haze(b, hz - 8, 22, sk[2], .14);
         if (trop) { b.fillStyle = near; for (let i = 0; i < 3; i++) { const x = 14 + i * 44 + r() * 8; b.fillRect(x, hz - 26, 2, 26); b.fillRect(x - 6, hz - 28, 14, 2); b.fillRect(x - 4, hz - 30, 3, 2); b.fillRect(x + 3, hz - 30, 3, 2); } }
         if (kind === 'ruins') { b.fillStyle = near; for (let i = 0; i < 4; i++) { const x = r() * 120, w = 10 + r() * 16, h = 10 + r() * 22; b.beginPath(); b.moveTo(x, hz); b.lineTo(x, hz - h); b.lineTo(x + w * .4, hz - h + 5); b.lineTo(x + w * .7, hz - h * .6); b.lineTo(x + w, hz - h * .8); b.lineTo(x + w, hz); b.fill(); } }
         if (kind === 'road') { ground(hz, '#262934', '#3a3e4c'); b.fillStyle = '#d8c060'; for (let x = 2; x < 128; x += 12) b.fillRect(x, hz + 9, 6, 1);
@@ -14940,17 +15010,18 @@ if (!SET.bcam) SET.bcam = 'mine';
         else { ground(hz, '#4a4636', '#6f6a52'); b.fillStyle = '#3a3628'; for (let i = 0; i < 22; i++) b.fillRect(r() * 128, hz + 2 + r() * 12, 2, 1); }
       }
     }
-    if (wx === 'smog') { b.fillStyle = 'rgba(150,128,84,.28)'; b.fillRect(0, 0, 128, c.height); }
-    if (wx === 'rain' || wx === 'storm') { b.fillStyle = 'rgba(60,80,110,.18)'; b.fillRect(0, 0, 128, c.height); }
+    if (wx === 'smog') { b.fillStyle = 'rgba(150,128,84,.28)'; b.fillRect(0, 0, 128, CH); }
+    if (wx === 'rain' || wx === 'storm') { b.fillStyle = 'rgba(60,80,110,.18)'; b.fillRect(0, 0, 128, CH); }
     if (wx === 'snow' && kind !== 'sky' && kind !== 'water') { b.fillStyle = 'rgba(235,242,255,.55)'; b.fillRect(0, gy - 2, 128, 2); for (let i = 0; i < 30; i++) b.fillRect(r() * 128, gy + r() * 14, 2, 1); }
-    b.fillStyle = `rgba(6,8,26,${dark * .45})`; b.fillRect(0, 0, 128, c.height);           // the mission's own darkness, on top of the time-of-day sky
-    for (const [x, y, w, h, col, a] of glow) { b.globalAlpha = a * (.45 + dark); b.fillStyle = col; b.fillRect(x, y, w, h); }
+    b.fillStyle = `rgba(6,8,26,${dark * .45})`; b.fillRect(0, 0, 128, CH);           // the mission's own darkness, on top of the time-of-day sky
+    for (const [x, y, w, h, col, a] of glow) { b.globalAlpha = a * (.45 + dark); b.fillStyle = col; const sign = w * h >= 2;   // neon signs bloom; windows stay sharp
+      if (sign) { b.shadowColor = col; b.shadowBlur = 14; } b.fillRect(x, y, w, h); if (sign) b.shadowBlur = 0; }
     b.globalAlpha = 1; BCAM.bg.set(key, c); return c;
   }
 
   /* ---- scene state ---- */
-  const P = []; const MAXP = 260;                       // particle pool
-  function part(o) { if (P.length >= MAXP) P.shift(); P.push(Object.assign({vx:0, vy:0, gr:0, life:.5, t:0, sz:1, col:'#fff', k:'p'}, o)); }
+  const P = []; const MAXP = 700;                       // particle pool
+  function part(o) { if (P.length >= MAXP) { const i = P.findIndex(q => q.k !== 'limb' && q.k !== 'chunk' && q.k !== 'pool'); P.splice(i < 0 ? 0 : i, 1); } P.push(Object.assign({vx:0, vy:0, gr:0, life:.5, t:0, sz:1, col:'#fff', k:'p'}, o)); }
   function burst(x, y, n, cols, sp = 40, life = .4, gr = 60) { for (let i = 0; i < n; i++) { const a = Math.random() * 6.28, v = sp * (.3 + Math.random() * .7); part({x, y, vx:Math.cos(a) * v, vy:Math.sin(a) * v - sp * .3, gr, life:life * (.6 + Math.random() * .6), col:cols[i % cols.length], sz:Math.random() < .3 ? 2 : 1}); } }
   function fireball(x, y, s = 1) { part({x, y, k:'flash', life:.14, sz:10 * s}); for (let i = 0; i < 7 * s; i++) part({x:x + (Math.random() - .5) * 12 * s, y:y + (Math.random() - .5) * 9 * s, k:'fire', life:.35 + Math.random() * .35, sz:4 + Math.random() * 4 * s, vy:-10 - Math.random() * 16});
     for (let i = 0; i < 5 * s; i++) part({x:x + (Math.random() - .5) * 12, y:y - 4, k:'smoke', life:.8 + Math.random() * .6, sz:4 + Math.random() * 4, vy:-14, vx:(Math.random() - .5) * 10}); burst(x, y, 10 * s, ['#ffd34a', '#ffffff', '#ff7a3b'], 70, .5, 120); }
@@ -15002,15 +15073,41 @@ if (!SET.bcam) SET.bcam = 'mine';
     const n = count(s.kind, s.show);
     for (let k = s.figs.length - 1; k >= n; k--) { const f = s.figs[k]; if (f.die) continue; f.die = S.t; s.alive = n;
       const [cx, cy] = [f.x + 16 * s.sc, f.y - 14 * s.sc];
-      if (s.kind === 'inf') { if (hasTag(s.u, 'bio')) { if (SET.gore) burst(cx, cy - 4, 6, ['#8a1020', '#c02030', '#5a0c14'], 30, .5, 90); else burst(cx, cy - 4, 6, ['#ffffff', '#ffd34a', '#7fd0ff'], 30, .3, 40); sound(() => sfx(SET.gore ? 'grunt' : 'spark')); }
+      if (s.kind === 'inf' && dismember(S, s, f, cx, cy)) { /* blown apart: limbs, blood or sparks */ }
+      else if (s.kind === 'inf') { if (hasTag(s.u, 'bio')) { if (SET.gore) burst(cx, cy - 4, 6, ['#8a1020', '#c02030', '#5a0c14'], 30, .5, 90); else burst(cx, cy - 4, 6, ['#ffffff', '#ffd34a', '#7fd0ff'], 30, .3, 40); sound(() => sfx(SET.gore ? 'grunt' : 'spark')); }
         else { burst(cx, cy, 10, ['#ffd34a', '#ffffff', '#7fd0ff'], 45, .4, 80); sound(() => sfx('spark')); } }
       else if (s.kind === 'air') { burst(cx, cy, 8, ['#ffd34a', '#ff7a3b', '#5a5a68'], 40, .4, 60); sound(() => sfx('explode')); }
       else if (s.kind === 'sea') { fireball(cx, cy, 1.4); burst(cx, f.y - 2, 14, ['#9fd0ff', '#ffffff'], 50, .6, 120); sound(() => { ARS.water = true; try { sfx('explode'); } finally { ARS.water = false; } }); }
-      else { fireball(cx, cy, s.kind === 'veh' ? 1 : 1.8); shakeAt(S, s.kind === 'veh' ? 3 : 5); sound(() => sfx(s.kind === 'veh' ? 'explode' : 'bigexplode')); }
+      else { fireball(cx, cy, s.kind === 'veh' ? 1 : 1.8); shakeAt(S, s.kind === 'veh' ? 3 : 5); sound(() => sfx(s.kind === 'veh' ? 'explode' : 'bigexplode'));
+        for (let q = 0; q < (s.kind === 'veh' ? 5 : 8); q++) part({x:cx, y:cy, k:'chunk', vx:(Math.random() - .5) * 120, vy:-40 - Math.random() * 70, gr:220, life:2.4, sz:2 + Math.random() * 3, col:q % 2 ? '#3a3e48' : s.sty.dk, spin:(Math.random() - .5) * 24, ground:f.y - Math.random() * 3}); }   // armour plates and wheels thrown clear
     }
   }
 
-  function plan(R) {
+  /* Dismemberment. Heavy weapons blow a soldier apart: head, torso, two arms and two legs fly, trail blood and land on
+     the ground. Small arms sometimes take just an arm. Drones come apart in metal pieces with sparks and oil. Human gore
+     only with Settings → Mature on; machines always. */
+  const HEAVYK = new Set(['shell', 'rocket', 'arc', 'bombs', 'beam', 'torpedo', 'rail']);
+  function dismember(S, s, f, cx, cy) {
+    const bio = hasTag(s.u, 'bio'); if (bio && !SET.gore) return false;
+    const foe = s === S.D ? S.A : S.D, kind = foe && foe.u ? projKind(foe.u, 'p') : 'mg', heavy = HEAVYK.has(kind) || (foe && (foe.kind === 'veh' || foe.kind === 'big' || foe.kind === 'struct'));
+    if (!heavy && Math.random() > .25) return false;
+    const T = TEAMS[s.u.team] || {}, skin = bio ? ['#d09a74', '#b07a54', '#8a5a3a'][f.k % 3] : '#9aa3b5', cloth = T.m || '#4a5a6a', dark = T.d || '#2a2a34';
+    const side = s.i ? -1 : 1, away = -side;                                                       // thrown away from the shooter
+    const piece = (shape, ox, oy, w, h, col, col2, sp) => part({x:cx + ox, y:cy + oy, k:'limb', shape, w, h, col, col2, rot:Math.random() * 6, spin:(Math.random() - .5) * sp,
+      vx:away * (30 + Math.random() * 80) + (Math.random() - .5) * 40, vy:-50 - Math.random() * 80, gr:240, life:2.6, ground:f.y - 1 - Math.random() * 2, bleed:bio, oil:!bio});
+    const sz = s.sc;
+    if (heavy) {
+      f.gone = true;                                                                               // the figure is replaced by its pieces
+      piece('head', 0, -10 * sz, 3.4 * sz, 3.4 * sz, skin, bio ? cloth : '#ff2a40', 20);
+      piece('torso', 0, -3 * sz, 4 * sz, 6 * sz, cloth, dark, 10);
+      for (const o of [-1, 1]) { piece('arm', o * 3, -5 * sz, 1.6 * sz, 5 * sz, cloth, skin, 28); piece('leg', o * 1.5, 3 * sz, 1.8 * sz, 6 * sz, dark, '#1a1a20', 22); }
+    } else piece('arm', 3 * side, -5 * sz, 1.6 * sz, 5 * sz, cloth, skin, 28);                       // a severed arm; the body still falls
+    if (bio) { burst(cx, cy - 4, heavy ? 22 : 9, ['#8a1020', '#c02030', '#5a0c14', '#6a0c18'], heavy ? 70 : 40, .6, 110); part({x:cx, y:cy - 4, k:'smoke', life:.5, sz:6, col:'#5a0c14'}); }
+    else { burst(cx, cy - 4, heavy ? 16 : 8, ['#ffd34a', '#ffffff', '#7fd0ff'], 60, .4, 80); }
+    if (heavy) part({x:cx, y:cy - 6, k:'flash', life:.08, sz:5});
+    sound(() => sfx(bio ? 'splat' : 'spark')); if (bio) sound(() => sfx('scream'));
+    return true;
+  }  function plan(R) {
     const {a, t} = R, main = R.hits.find(h => h.u === t && h.by === a), ctr = R.hits.find(h => h.u === a && h.by === t);
     const extra = R.hits.filter(h => h.by === a && h.u !== t && h.u !== a && h.h1 < h.h0).length;
     const A = sideOf(a, R.a0, ctr ? ctr.h1 : R.a0, 0), D = sideOf(t, R.t0, main ? main.h1 : R.t0, 1);
@@ -15029,27 +15126,70 @@ if (!SET.bcam) SET.bcam = 'mine';
   }
 
   /* ---- drawing ---- */
+  /* ---- HD figures: each sprite is upscaled 8x with Scale2x (edges stay crisp, diagonals smooth out) and lit from the
+     top left: brighter upper surfaces, darker undersides, a rim highlight on lit edges. Cached per sprite canvas. */
+  const HDC = new WeakMap();
+  function scale2x(src) {
+    const w = src.width, h = src.height, si = src.getContext('2d').getImageData(0, 0, w, h).data, c = document.createElement('canvas'); c.width = w * 2; c.height = h * 2;
+    const o = c.getContext('2d'), od = o.createImageData(w * 2, h * 2), d = od.data;
+    const px = (x, y) => { x = Math.max(0, Math.min(w - 1, x)); y = Math.max(0, Math.min(h - 1, y)); const i = (y * w + x) * 4; return (si[i] << 24 | si[i + 1] << 16 | si[i + 2] << 8 | si[i + 3]) >>> 0; };
+    const put = (x, y, v) => { const i = (y * w * 2 + x) * 4; d[i] = v >>> 24; d[i + 1] = v >>> 16 & 255; d[i + 2] = v >>> 8 & 255; d[i + 3] = v & 255; };
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const P = px(x, y), A = px(x, y - 1), B = px(x + 1, y), C = px(x - 1, y), D = px(x, y + 1);
+      let e0 = P, e1 = P, e2 = P, e3 = P;
+      if (A !== D && C !== B) { e0 = C === A ? C : P; e1 = A === B ? B : P; e2 = C === D ? C : P; e3 = D === B ? B : P; }
+      put(x * 2, y * 2, e0); put(x * 2 + 1, y * 2, e1); put(x * 2, y * 2 + 1, e2); put(x * 2 + 1, y * 2 + 1, e3);
+    }
+    o.putImageData(od, 0, 0); return c;
+  }
+  function hdSprite(spr) {
+    let c = HDC.get(spr); if (c) return c;
+    c = scale2x(scale2x(scale2x(spr))); const x = c.getContext('2d'), w = c.width, h = c.height, im = x.getImageData(0, 0, w, h), d = im.data;
+    const A = (i, j) => i < 0 || j < 0 || i >= w || j >= h ? 0 : d[(j * w + i) * 4 + 3];
+    for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) { const k = (j * w + i) * 4; if (d[k + 3] < 20) continue;
+      let m = 1.12 - .3 * (j / h);                                                            // top lit, underside in shadow
+      if (A(i - 6, j - 6) < 20) m += .28; else if (A(i + 6, j + 6) < 20) m -= .18;           // rim light / shaded edge
+      d[k] = Math.min(255, d[k] * m); d[k + 1] = Math.min(255, d[k + 1] * m); d[k + 2] = Math.min(255, d[k + 2] * m); }
+    x.putImageData(im, 0, 0); HDC.set(spr, c); return c;
+  }
+  const ROTOR = new Set(['GUNSHIP']);
   function drawFig(S, s, f, now) {
     const sc = s.sc, sz = 32 * sc;
     let x = f.x, y = f.y - sz, a = 1, rot = 0;
     if (s.kind === 'air') y += Math.sin(now * 3 + f.bob) * 2;
     if (s.kind === 'sea') y += Math.sin(now * 2 + f.bob) * 1;
-    if (now - f.fire < .08) x += s.i ? 1 : -1;                     // recoil
+    if (s.kind === 'inf' && f.die == null) y += Math.sin(now * 2.6 + f.bob) * .45;                 // breathing
+    const mt = s.u.d && s.u.d.mt;
+    if (s.kind === 'veh' && f.die == null) { if (mt === 'hover') y += Math.sin(now * 3 + f.bob) * .8 - 1; else y += ((now * 24 + f.bob) | 0) % 2 * .35; }   // hover bob / engine shudder
+    if (now - f.fire < .08) x += s.i ? 1.5 : -1.5;                   // recoil
     if (f.die != null) { const d = now - f.die;
+      if (f.gone) return;                                            // blown apart: the pieces are particles now
       if (s.kind === 'inf') { rot = Math.min(1, d / .22) * (s.i ? 1.4 : -1.4); a = 1 - Math.max(0, (d - .35) / .35); }
       else if (s.kind === 'air') { y += d * d * 140; rot = (s.i ? -1 : 1) * d * 2; if (Math.random() < .6) part({x:x + sz / 2, y:y + sz * .45, k:Math.random() < .3 ? 'fire' : 'smoke', life:.6, sz:3, vy:-6}); a = y > GY ? 0 : 1; }
       else if (s.kind === 'sea') { y += d * 26; a = 1 - d / 1.2; }
       else { a = 1 - d / .45; y += d * (s.kind === 'struct' ? 30 : 0); }
       if (a <= 0) return; }
     const spr = s.u.isStruct ? getStructSprite(s.u.type, s.u.team, false) : getSprite(s.u.d, s.u.team, false, s.fac === 'O' ? ((now * 6) | 0) % 4 : ((now * 4 + f.bob) | 0) % 2);
+    // ground contact: soft shadow, hover glow
+    if (f.die == null && s.kind !== 'air') { g.fillStyle = 'rgba(0,0,0,.32)'; g.beginPath(); g.ellipse(x + sz / 2, f.y - .5, 11 * sc, 1.6 * sc, 0, 0, 6.283); g.fill();
+      if (mt === 'hover') { g.fillStyle = s.fac === 'O' ? 'rgba(255,40,60,.28)' : 'rgba(46,242,255,.28)'; g.beginPath(); g.ellipse(x + sz / 2, f.y - .5, 9 * sc, 1.4 * sc, 0, 0, 6.283); g.fill(); } }
     g.save(); g.globalAlpha = a; g.translate(x + sz / 2, y + sz);
     if (rot) g.rotate(rot);
     if (s.i) g.scale(-1, 1);
-    g.drawImage(spr, -sz / 2, -sz, sz, sz); g.restore();
-    if (f.die == null && s.kind !== 'air') { g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(x + 6 * sc, f.y - 1, 20 * sc, 2); }
+    g.shadowColor = s.fac === 'O' ? 'rgba(255,40,60,.32)' : s.fac === 'R' ? 'rgba(46,242,255,.4)' : 'rgba(255,255,255,.2)'; g.shadowBlur = 10;   // faint team glow
+    g.imageSmoothingEnabled = true; g.drawImage(hdSprite(spr), -sz / 2, -sz, sz, sz); g.imageSmoothingEnabled = false; g.shadowBlur = 0;
+    if (f.die == null && s.kind === 'veh' && mt === 'tracks') {                                       // treads rolling: link highlights scroll along the track line
+      g.fillStyle = 'rgba(220,230,240,.35)'; const ty = -sz * .14, tl = -sz * .36, tr = sz * .36, ph = (now * 18 + f.bob * 3) % 3;
+      for (let tx = tl + ph; tx < tr; tx += 3) g.fillRect(tx, ty, 1, .6); }
+    g.restore();
+    if (f.die == null && s.kind === 'air' && s.u.d && ROTOR.has(s.u.d.cls)) {                           // rotor disc: a blur with two spinning blades
+      const cx = x + sz / 2, cy = y + sz * .2, r = 13 * sc, an = now * 40;
+      g.fillStyle = 'rgba(200,210,230,.12)'; g.beginPath(); g.ellipse(cx, cy, r, 1.6, 0, 0, 6.283); g.fill();
+      g.strokeStyle = 'rgba(230,236,245,.45)'; g.lineWidth = .7; for (let b = 0; b < 2; b++) { const q = Math.cos(an + b * Math.PI); g.beginPath(); g.moveTo(cx - r * q, cy); g.lineTo(cx + r * q, cy); g.stroke(); } }
+    if (f.die == null && (s.kind === 'veh' || s.kind === 'big') && mt !== 'hover' && Math.random() < .05)                 // exhaust from the back deck
+      part({x:s.i ? x + sz * .88 : x + sz * .12, y:y + sz * .55, k:'smoke', life:.7, sz:2, vy:-8, vx:s.i ? 6 : -6, col:'#2a2a32'});
     if (f.die == null && (s.kind === 'struct' || s.kind === 'big') && s.show <= 5 && Math.random() < .25) part({x:x + 10 + Math.random() * sz * .6, y:y + 10, k:s.show <= 3 ? 'fire' : 'smoke', life:.6, sz:2 + Math.random() * 2, vy:-14});
-  }
-  function drawShot(o, now) {
+  }  function drawShot(o, now) {
     const p = Math.min(1, (now - o.t0) / (o.t1 - o.t0)); if (p < 0) return;
     const {x0, y0, x1, y1, kind, col} = o, lx = x0 + (x1 - x0) * p, ly = y0 + (y1 - y0) * p;
     g.fillStyle = col; g.strokeStyle = col;
@@ -15078,7 +15218,20 @@ if (!SET.bcam) SET.bcam = 'mine';
   function drawParts(dt) {
     for (let i = P.length - 1; i >= 0; i--) { const p = P[i]; p.t += dt; if (p.t >= p.life) { P.splice(i, 1); continue; }
       p.vy += p.gr * dt; p.x += p.vx * dt; p.y += p.vy * dt; const q = p.t / p.life;
-      if (p.k === 'flash') { g.globalAlpha = 1 - q; g.fillStyle = '#fff6d0'; const r = p.sz * (1 - q * .4); g.beginPath(); g.arc(p.x, p.y, r, 0, 7); g.fill(); }
+      if ((p.k === 'limb' || p.k === 'chunk') && p.ground != null) {                                    // pieces: tumble, trail, land and stay
+        if (p.y >= p.ground && p.vy > 0) { p.y = p.ground; p.vy = -p.vy * .25; p.vx *= .5; p.spin *= .4; if (Math.abs(p.vy) < 12) { p.vy = 0; p.gr = 0; p.vx = 0; p.spin = 0; p.landed = true; } }
+        p.rot = (p.rot || 0) + (p.spin || 0) * dt; if (p.t > p.life - .05) p.t = p.life - .05;          // pieces stay for the rest of the scene
+        if (!p.landed && p.bleed && Math.random() < .3) part({x:p.x, y:p.y, k:'p', col:Math.random() < .5 ? '#8a1020' : '#c02030', life:.5, sz:1, gr:120, vy:0});
+        if (!p.landed && p.oil && Math.random() < .5) part({x:p.x, y:p.y, k:'p', col:Math.random() < .5 ? '#ffd34a' : '#22261a', life:.4, sz:1, gr:90});
+        g.globalAlpha = 1; g.save(); g.translate(p.x, p.y); g.rotate(p.rot || 0);
+        if (p.k === 'chunk') { g.fillStyle = p.col; g.fillRect(-p.sz / 2, -p.sz / 3, p.sz, p.sz * .66); g.fillStyle = 'rgba(255,255,255,.18)'; g.fillRect(-p.sz / 2, -p.sz / 3, p.sz, .5); }
+        else if (p.shape === 'head') { g.fillStyle = p.col; g.beginPath(); g.arc(0, 0, p.w / 2, 0, 6.283); g.fill(); g.fillStyle = p.col2; g.beginPath(); g.arc(0, -p.w * .1, p.w / 2, Math.PI, 0); g.fill(); }
+        else { g.fillStyle = p.col; g.fillRect(-p.w / 2, -p.h / 2, p.w, p.h * .75); g.fillStyle = p.col2; g.fillRect(-p.w / 2, p.h * .25, p.w, p.h * .25);
+          if (p.bleed) { g.fillStyle = '#a8182a'; g.fillRect(-p.w / 2, -p.h / 2, p.w, .7); } }
+        g.restore(); if (p.landed && p.bleed && !p.pooled) { p.pooled = true; for (let q = 0; q < 6; q++) part({x:p.x + (Math.random() - .5) * 4, y:p.ground + .5, k:'pool', col:'#6a0c18', life:9, sz:1.2}); }
+        continue; }
+      if (p.k === 'pool') { if (p.t > p.life - .05) p.t = p.life - .05; g.globalAlpha = .9; g.fillStyle = p.col; g.fillRect(p.x, p.y, p.sz * 1.6, .7); continue; }
+      if (p.k === 'flash') {  g.globalAlpha = 1 - q; g.fillStyle = '#fff6d0'; const r = p.sz * (1 - q * .4); g.beginPath(); g.arc(p.x, p.y, r, 0, 7); g.fill(); }
       else if (p.k === 'fire') { g.globalAlpha = 1 - q; g.fillStyle = q < .3 ? '#ffe9a0' : q < .6 ? '#ff9a3b' : '#c8402a'; const r = p.sz * (1 + q); g.fillRect(p.x - r / 2, p.y - r / 2, r, r); }
       else if (p.k === 'smoke') { g.globalAlpha = .55 * (1 - q); g.fillStyle = p.col === '#fff' ? '#3a3a44' : p.col; const r = p.sz * (1 + q * 1.5); g.fillRect(p.x - r / 2, p.y - r / 2, r, r); }
       else { g.globalAlpha = 1 - q * q; g.fillStyle = p.col; g.fillRect(p.x, p.y, p.sz, p.sz); } }
@@ -15094,13 +15247,13 @@ if (!SET.bcam) SET.bcam = 'mine';
   function drawPanel(S, s, now, slide) {
     const x0 = s.i ? 128 : 0, off = (s.i ? 1 : -1) * slide * 130;
     g.save(); g.beginPath(); g.rect(x0, TOP, 128, HUD - TOP); g.clip(); g.translate(off, 0);
-    const bg = backdrop(s.tk, s.i); g.drawImage(bg, x0, TOP);
+    const bg = backdrop(s.tk, s.i); g.imageSmoothingEnabled = true; g.drawImage(bg, x0, TOP, 128, HUD - TOP); g.imageSmoothingEnabled = false;
     const order = s.figs.slice().sort((p, q) => p.y - q.y);
     for (const f of order) drawFig(S, s, f, now);
-    if (s.kind === 'sea') { g.globalAlpha = .55; g.drawImage(bg, 0, GY - TOP + 2, 128, HUD - GY - 2, x0, GY + 2, 128, HUD - GY - 2); g.globalAlpha = 1; }   // hulls sit in the water
+    if (s.kind === 'sea') { g.globalAlpha = .55; g.drawImage(bg, 0, (GY - TOP + 2) * BGK, 128 * BGK, (HUD - GY - 2) * BGK, x0, GY + 2, 128, HUD - GY - 2); g.globalAlpha = 1; }   // hulls sit in the water
     drawWeather(now, x0);
     if (s.fac === 'O' && ((now * 5) | 0) % 3 === 0) {                 // the Overmind's panel glitches: a slipped scanline band, red bleed
-      const by = TOP + ((now * 97) % (HUD - TOP - 8)) | 0; g.drawImage(cv, x0, by, 128, 6, x0 + (((now * 13) | 0) % 2 ? 2 : -2), by, 128, 6);
+      const by = TOP + ((now * 97) % (HUD - TOP - 8)) | 0; g.drawImage(cv, x0 * HDK, by * HDK, 128 * HDK, 6 * HDK, x0 + (((now * 13) | 0) % 2 ? 2 : -2), by, 128, 6);
       g.fillStyle = 'rgba(255,30,50,.12)'; g.fillRect(x0, by, 128, 6); }
     g.restore();
   }
@@ -15122,6 +15275,7 @@ if (!SET.bcam) SET.bcam = 'mine';
   }
   function render(S, now, dt) {
     const slide = now < .2 ? Math.pow(1 - now / .2, 2) : 0;
+    g.setTransform(HDK, 0, 0, HDK, 0, 0); g.imageSmoothingEnabled = false;
     g.fillStyle = '#05060a'; g.fillRect(0, 0, W, H);
     const sh = S.shake > .1 ? S.shake : 0; S.shake *= Math.pow(.02, dt);
     g.save(); if (sh) g.translate(((Math.random() - .5) * sh) | 0, ((Math.random() - .5) * sh) | 0);
@@ -19061,10 +19215,14 @@ CHAT.R = {
   kill:['やった!', '잡았다!', '搞定!', 'Down, lah!', 'Patay na!', 'One less tin can!', 'Scrap metal! ガラクタだ!', 'Nice, 대박!', 'Ganda!'],
   vkill:['撃破!', '격파!', '击毁!', 'Target down!', 'Scrap it, lah!'],
   hurt:['Medic! 衛生兵!', '위생병!', '救命!', 'Aray!', 'I\'m hit, 아파!', 'Cover! 隠れろ!', 'Tulong!', '痛っ!', 'Bachao!'],
-  vhurt:['被弾!', '피격!', 'Hull breach!', 'We\'re burning, lah!', 'Armour holding… 버텨!']
+  vhurt:['被弾!', '피격!', 'Hull breach!', 'We\'re burning, lah!', 'Armour holding… 버텨!'],
+  cap:['Block secured! 占領!', '여기 우리 거야!', '拿下了!', 'Atin na \'to!', 'Flag up, lah!', 'This street\'s ours!'],
+  heal:['Thanks, doc! 助かった!', '고마워!', '谢了!', 'Salamat!', 'Patched up, lah!'], vheal:['Hull patched!', '수리 완료!', 'Running again! 復旧!'],
+  low:['Need backup! 援護を!', '지원 요청!', '撑不住了!', 'Tulong dito!', 'Can\'t hold… बचाओ!'], vlow:['Hull failing! 持たない!', '장갑 한계!', 'Losing power, lah!'],
+  boss:['What is THAT?! なんだあれ!', '저게 뭐야?!', '那是什么?!', 'Diyos ko…', 'Big one, lah!', 'Eyes up! 化け物だ!']
 };
 CHAT.ORACLE = {sel:['P(win)=0.71', '計算完了', 'Acknowledged.', 'ありがとう, Commander'], move:['Recalculating route.', 'Δ position: OK'], atk:['Probability of hit: 0.88', 'Correcting your odds.'],
-  kill:['Outcome as predicted.', 'Estimate revised: +1'], hurt:['Integrity 64%.', 'That was not in the model.']};
+  kill:['Outcome as predicted.', 'Estimate revised: +1'], hurt:['Integrity 64%.', 'That was not in the model.'], cap:['Asset acquired.'], heal:['Repaired. Thank you.'], low:['Integrity critical.', 'P(survive) falling.'], boss:['That is larger than modelled.']};
 CHAT.bin = s => [...s].map(c => c.charCodeAt(0).toString(2).padStart(8, '0')).join(' ');
 CHAT.bits = n => Array.from({length:n}, () => Math.random() < .5 ? '0' : '1').join('');
 CHAT.O = {                                                                          // the machines: binary, sometimes a real word
@@ -19072,7 +19230,9 @@ CHAT.O = {                                                                      
   move:() => DTH.pick([CHAT.bin('GO'), '0110 →', CHAT.bits(6) + ' ▸▸', '10' + CHAT.bits(6)]),
   atk:() => DTH.pick(['01000110 ▶', CHAT.bin('ZAP'), '1111' + CHAT.bits(4) + ' !', 'PURGE 0x' + (Math.random() * 255 | 0).toString(16).toUpperCase().padStart(2, '0')]),
   kill:() => DTH.pick(['00000000', CHAT.bin('DEL'), 'NULL', '∅ ' + CHAT.bits(4), 'RECYCLED 0001']),
-  hurt:() => DTH.pick([CHAT.bin('ERR'), '0101?!', 'ERR 0x0F', CHAT.bits(4) + '▯▯▮', '1111 1111!'])
+  hurt:() => DTH.pick([CHAT.bin('ERR'), '0101?!', 'ERR 0x0F', CHAT.bits(4) + '▯▯▮', '1111 1111!']),
+  cap:() => DTH.pick(['ACQ 0001', CHAT.bin('OWN'), 'SECTOR++']), heal:() => DTH.pick(['REPAIR ✓', '0111 1111', 'HP++']),
+  low:() => DTH.pick(['INTEGRITY 0x1F', '▮▯▯▯▯', CHAT.bin('SOS')]), boss:() => '0000 0001 ▲'
 };
 CHAT.line = (u, kind) => {
   const d = u.d, veh = !isFootU(u);
@@ -19082,7 +19242,7 @@ CHAT.line = (u, kind) => {
   const k = veh && kind === 'sel' ? 'veh' : veh && CHAT.R['v' + kind] ? 'v' + kind : kind;
   return CHAT.R[k] ? DTH.pick(CHAT.R[k]) : null;
 };
-CHAT.CHANCE = {sel:1, move:.45, atk:.6, kill:.85, hurt:.4};
+CHAT.CHANCE = {sel:1, move:.45, atk:.6, kill:.85, hurt:.4, cap:1, heal:.9, low:.9, boss:1};
 CHAT.say = (u, kind) => {
   try {
     if (!G || G.editor || SET.chatter === false || !u || !u.d || u.isStruct) return;
@@ -19130,10 +19290,22 @@ CHAT.draw = () => {
     const r = _hurt(u, dmg, by);
     try { if (u && !u.isStruct && G) { const dead = u.hp <= 0 || !G.units.includes(u);
       if (dead) { if (by && !by.isStruct && G.units.includes(by)) setTimeout(() => CHAT.say(by, 'kill'), 250); }
-      else if (dmg > 0) CHAT.say(u, 'hurt'); } } catch (e) {}
+      else if (dmg > 0) CHAT.say(u, u.hp <= u.d.hp * .3 ? 'low' : 'hurt'); } } catch (e) {}
     return r;
   };
-  hook('start', () => { CHAT.B.length = 0; });
+  // more triggers: capturing, being healed or repaired, sighting a boss for the first time
+  if (typeof doCapture === 'function') { const _cap = doCapture; doCapture = function (u, ...a) { const r = _cap.call(this, u, ...a); try { CHAT.say(u, 'cap'); } catch (e) {} return r; }; }
+  if (typeof doHeal === 'function') { const _heal = doHeal; doHeal = function (u, t, ...a) { const r = _heal.call(this, u, t, ...a); try { if (t) setTimeout(() => CHAT.say(t, 'heal'), 200); } catch (e) {} return r; }; }
+  if (typeof doFix === 'function') { const _fix = doFix; doFix = function (u, t, ...a) { const r = _fix.call(this, u, t, ...a); try { if (t && !t.isStruct) setTimeout(() => CHAT.say(t, 'heal'), 200); } catch (e) {} return r; }; }
+  hook('turn', team => { try { if (!G || team !== ME) return; G.chatBoss = G.chatBoss || {};
+    for (const b of G.units) if (hasTag(b, 'boss') && !G.chatBoss[b.uid] && visibleTo(b, ME)) { G.chatBoss[b.uid] = 1;
+      const near = G.units.filter(u => u.team === ME).sort((p, q) => mdist(p.x, p.y, b.x, b.y) - mdist(q.x, q.y, b.x, b.y))[0]; if (near) setTimeout(() => CHAT.say(near, 'boss'), 600); } } catch (e) {} });
+  // generals speak their power line in their own voice during the cut-in
+  const _pc = powerCutscene; powerCutscene = function (team, c, p, lv, ...a) {
+    try { const id = G && G.teams[team] && G.teams[team].co, line = c && c.lines && (lv === 'super' ? c.lines.super : c.lines.power);
+      if (id && line && AU.ctx && !SET.mute && typeof voxSay === 'function') voxSay(id, line, AU.ctx.currentTime + .15); } catch (e) {}
+    return _pc.call(this, team, c, p, lv, ...a);
+  };  hook('start', () => { CHAT.B.length = 0; });
   // Settings → Display: Unit chatter on/off
   const _ss = showSettings; showSettings = function (...a) { const r = _ss.apply(this, a);
     try { if (!document.querySelector('#mbox [data-k="chatter"]')) {
@@ -19145,6 +19317,394 @@ CHAT.draw = () => {
   const _ap = applySetting; applySetting = function (el) { if (el && el.dataset && el.dataset.k === 'chatter') { SET.chatter = el.value === '1'; saveSet(); return; } return _ap(el); };
 }
 /* end:p67_chatter.js */
+/* ===== BASE ZONE, AUTO-HARVEST, CIVILIANS, HIGHLIGHT (v0.6.1, from the player's first full game) =====
+   1. Build zone: structures go inside a circle around a Construction Yard (the deployed Rig) or, on HQ-base
+      maps, an HQ: radius 6, docks 9 so a coastal base can reach the water. Before, anything within 3 tiles
+      of ANY of your buildings was allowed, so a base could creep across the map one wall at a time and the
+      Rig stopped mattering. Now a second base means driving a second Rig there.
+   2. Harvesters work at the start of your turn (C&C-style): idle ones mine, drive to the nearest Lumenite,
+      or unload at a Refinery, with no camera jumps. Settings → Gameplay → Harvesters can switch back to
+      "end of turn", where you can give them orders first.
+   3. Civilians: half as many, drawn at 60% size so they read as people next to tanks.
+   4. Highlight my units: ◎ on the toolbar (or O) rings every unit you command, for when army colours are close. */
+const BASE = {R:6, RDOCK:9, civShare:.5, civScale:.6};
+BASE.near = (x, y, cx, cy, r) => (x - cx) * (x - cx) + (y - cy) * (y - cy) <= r * r + r;   // a round zone (r + 1/2)
+BASE.centres = team => G.structs.filter(s => s.team === team && s.type === 'yard' && s.built).map(s => [s.x, s.y])
+  .concat(hqBase() ? ownedHQs(team).map(p => [p.x, p.y]) : []);
+{
+  const _cp = canPlace; canPlace = function (team, type, x, y) {
+    if (!inB(x, y) || occupied(x, y) || propAt(x, y)) return false;
+    const ch = G.map[y][x];
+    if (type === 'dock') { if (ch !== 's' || !DIRS.some(([dx, dy]) => inB(x + dx, y + dy) && 'wlq'.includes(G.map[y + dy][x + dx]))) return false; }
+    else if (!NP.TERRAIN[ch].build) return false;
+    const r = type === 'dock' ? BASE.RDOCK : BASE.R;
+    return BASE.centres(team).some(([cx, cy]) => BASE.near(x, y, cx, cy, r));
+  };
+  void _cp;
+}
+/* ---------------- harvesters at the start of your turn ---------------- */
+BASE.harvRun = async team => {
+  const g = G, idle = G.units.filter(u => u.team === team && u.d.harv && !u.done && !u.stun);
+  if (!idle.length) return;
+  const was = busy, f0 = focus; busy = true; try { resetUI(); updateButtons(); } catch (e) {}
+  focus = () => Promise.resolve();                                                      // no camera jumps: they just go to work
+  try { for (const h of idle) { if (G !== g || G.over || !G.units.includes(h)) break; await autoHarvest(h); } }
+  finally { focus = f0; if (G === g) { busy = was; try { updateButtons(); updateHUD(); } catch (e) {} } }
+};
+{
+  const _st = startTurn; startTurn = async function (team, ...a) {
+    const r = await _st.call(this, team, ...a);
+    try { if (G && !G.over && !G.editor && G.turn === team && !isAI(team) && SET.harvAuto !== 'end') await BASE.harvRun(team); } catch (e) { console.warn('auto-harvest', e); }
+    return r;
+  };
+}
+/* ---------------- fewer, smaller civilians ---------------- */
+{
+  const _sc = spawnCivilians; spawnCivilians = function (...a) {
+    const L = G.L, had = 'civilians' in L, v = L.civilians;
+    L.civilians = Math.round((v ?? Math.round(G.W * G.H / 120)) * BASE.civShare);
+    try { return _sc.apply(this, a); } finally { if (had) L.civilians = v; else delete L.civilians; }
+  };
+  const _du = drawUnit; drawUnit = function (u, t, ...a) {
+    if (!u || u.team !== 0) return _du.call(this, u, t, ...a);
+    const [px, py] = unitPos(u), fx = px * 16 + 8, fy = py * 16 + 15, k = BASE.civScale;     // shrink towards their feet
+    ctx.save(); ctx.translate(fx, fy); ctx.scale(k, k); ctx.translate(-fx, -fy);
+    try { return _du.call(this, u, t, ...a); } finally { ctx.restore(); }
+  };
+}
+/* ---------------- highlight my units ---------------- */
+BASE.own = false;
+BASE.toggleOwn = on => { BASE.own = on !== undefined ? on : !BASE.own; const b = $('#bOwn'); if (b) b.classList.toggle('on', BASE.own); };
+hook('draw', t => {                                                                       // a pulsing ring on the ground under each of your units
+  if (!BASE.own || !G) return;
+  const p = .5 + .5 * Math.sin(performance.now() / 260);
+  ctx.save(); ctx.lineWidth = 1.2;
+  for (const u of G.units) { if (u.team !== ME && !(G.teams[u.team] && allied(u.team, ME) && !isAI(u.team))) continue;
+    const [px, py] = unitPos(u), X = px * 16 + 8, Y = py * 16 + 14;
+    ctx.strokeStyle = `rgba(255,255,255,${.55 + .4 * p})`; ctx.beginPath(); ctx.ellipse(X, Y, 7 + p, 2.6 + p * .4, 0, 0, 6.283); ctx.stroke();
+    ctx.strokeStyle = TEAMS[u.team].ui || '#7ff8ff'; ctx.beginPath(); ctx.ellipse(X, Y, 5.5, 2, 0, 0, 6.283); ctx.stroke(); }
+  ctx.restore();
+});
+{
+  const _draw = draw; draw = function (...a) { const r = _draw.apply(this, a);              // and a marker above each, drawn over everything
+    try { if (BASE.own && G) { const p = Math.sin(performance.now() / 200) * 2; ctx.save(); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      for (const u of G.units) { if (u.team !== ME) continue; const [px, py] = unitPos(u), sx = (px * 16 + 8 - cam.x) * cam.z, sy = (py * 16 - cam.y) * cam.z - 4 + p;
+        ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#05060a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(sx - 5, sy - 7); ctx.lineTo(sx + 5, sy - 7); ctx.lineTo(sx, sy); ctx.closePath(); ctx.stroke(); ctx.fill(); }
+      ctx.restore(); } } catch (e) {}
+    return r; };
+  const th = $('#bThreat'); if (th && !$('#bOwn')) { th.insertAdjacentHTML('afterend', '<button id="bOwn" class="np" title="Highlight your units (O)" aria-label="Highlight your units">◎</button>'); $('#bOwn').onclick = () => BASE.toggleOwn(); }
+  addEventListener('keydown', e => { if (!G || MODAL || DLG || G.editor || (e.target.closest && e.target.closest('input,textarea,select')) || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key.toLowerCase() === 'o') BASE.toggleOwn(); });
+  hook('start', () => BASE.toggleOwn(BASE.own));
+  // Settings → Gameplay: when harvesters work
+  const _ss = showSettings; showSettings = function (...a) { const r = _ss.apply(this, a);
+    try { if (!document.querySelector('#mbox [data-k="harvAuto"]')) {
+      const html = `<div class="opt">Harvesters <select data-k="harvAuto"><option value="start" ${SET.harvAuto !== 'end' ? 'selected' : ''}>Work at the start of my turn</option><option value="end" ${SET.harvAuto === 'end' ? 'selected' : ''}>Work at the end of my turn (orders first)</option></select></div>`;
+      const grp = [...document.querySelectorAll('#mbox details.setgrp')].find(d => /Gameplay/.test(d.querySelector('summary').textContent));
+      if (grp) grp.insertAdjacentHTML('beforeend', html); else { const rows = document.querySelectorAll('#mbox .opt'); if (rows.length) rows[rows.length - 1].insertAdjacentHTML('afterend', html); }
+    } } catch (e) {}
+    return r; };
+  const _ap = applySetting; applySetting = function (el) { if (el && el.dataset && el.dataset.k === 'harvAuto') { SET.harvAuto = el.value; saveSet(); return; } return _ap(el); };
+}
+/* end:p68_base.js */
+/* ===== DISMEMBERMENT ON THE MAP (v0.6.1) =====
+   When a heavy weapon (or a heavy unit) kills a soldier, the engine already blows the body into red gibs. Now
+   recognisable pieces fly too: a helmeted head, arms and legs in the army's colours, tumbling, trailing blood and
+   landing as marks that stay for the mission. Only with Settings → Mature. Drones lose metal limbs and a red-eyed
+   head with sparks and oil whatever the setting (they're machines). The battle scenes do the same up close (p50). */
+const LIMB = {A:[], last:0, HEAVY:new Set(['shell', 'rocket', 'arc', 'bombs', 'beam', 'torpedo', 'rail'])};
+LIMB.heavyKill = by => { if (!by) return true; if (by.isStruct) return by.d.cls !== 'FLAK'; try { return LIMB.HEAVY.has(projKind(by, lastHit && lastHit.by === by ? lastHit.slot : 'p')) || HEAVY_CLS.has(by.d.cls); } catch (e) { return false; } };
+LIMB.burst = (u, bio, heavy) => {
+  const T = TEAMS[u.team] || {}, px = u.x * 16 + 8, py = u.y * 16 + 8, skin = DTH.pick(['#d09a74', '#b07a54', '#8a5a3a']);
+  const cloth = T.m || '#4a5a6a', dark = T.d || '#2a2a34', g = G;
+  const add = (shape, w, h, col, col2) => LIMB.A.push({g, shape, w, h, col, col2, bio, x:px + rnd(-2, 2), y:py - 3, vx:rnd(-45, 45), vy:rnd(-75, -30), gr:170, rot:rnd(0, 6), spin:rnd(-14, 14), ground:u.y * 16 + rnd(9, 15), t:0});
+  if (heavy) { add('head', 3, 3, bio ? skin : '#9aa3b5', bio ? cloth : '#ff2a40'); for (const o of [0, 1]) { add('arm', 1.4, 4, bio ? cloth : '#7a8290', bio ? skin : '#5a6070'); add('leg', 1.6, 5, bio ? dark : '#5a6070', '#1a1a20'); } }
+  else add('arm', 1.4, 4, bio ? cloth : '#7a8290', bio ? skin : '#5a6070');
+};
+LIMB.paint = p => {                                                                         // lands for good in the decal layer
+  if (!decalG || p.g !== G) return; decalG.save(); decalG.translate(p.x, p.y); decalG.rotate(p.rot);
+  if (p.shape === 'head') { decalG.fillStyle = p.col; decalG.beginPath(); decalG.arc(0, 0, p.w / 2, 0, 6.283); decalG.fill(); decalG.fillStyle = p.col2; decalG.fillRect(-p.w / 2, -p.w / 2, p.w, p.w / 2); }
+  else { decalG.fillStyle = p.col; decalG.fillRect(-p.w / 2, -p.h / 2, p.w, p.h * .75); decalG.fillStyle = p.col2; decalG.fillRect(-p.w / 2, p.h * .25, p.w, p.h * .25); }
+  decalG.restore();
+  if (p.bio) splat(p.x, p.y + 1, 10, BLOOD, 2); else splat(p.x, p.y + 1, 6, OIL, 1.5);
+};
+hook('draw', () => {
+  if (!LIMB.A.length) return;
+  const now = performance.now() / 1000, dt = Math.min(.05, now - (LIMB.last || now)); LIMB.last = now;
+  for (let i = LIMB.A.length - 1; i >= 0; i--) {
+    const p = LIMB.A[i]; if (p.g !== G) { LIMB.A.splice(i, 1); continue; }
+    p.t += dt; p.vy += p.gr * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.rot += p.spin * dt;
+    if (p.bio && Math.random() < .35) part({x:p.x, y:p.y, vx:0, vy:0, gr:80, life:.6, col:DTH.pick(BLOOD), stick:p.y + rnd(1, 4)});        // a trail of blood
+    if (!p.bio && Math.random() < .3) part({x:p.x, y:p.y, vx:rnd(-10, 10), vy:rnd(-10, 0), gr:60, life:.3, col:DTH.pick(['#ffd34a', '#ffffff', '#7fd0ff'])});   // sparks
+    if (p.vy > 0 && p.y >= p.ground) { LIMB.A.splice(i, 1); p.y = p.ground; LIMB.paint(p); continue; }
+    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+    if (p.shape === 'head') { ctx.fillStyle = p.col; ctx.beginPath(); ctx.arc(0, 0, p.w / 2, 0, 6.283); ctx.fill(); ctx.fillStyle = p.col2; ctx.fillRect(-p.w / 2, -p.w / 2, p.w, p.w / 2); }
+    else { ctx.fillStyle = p.col; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h * .75); ctx.fillStyle = p.col2; ctx.fillRect(-p.w / 2, p.h * .25, p.w, p.h * .25); }
+    ctx.restore();
+  }
+});
+hook('start', () => { LIMB.A.length = 0; });
+{
+  const _death = deathFX; deathFX = function (u, by) {
+    const n0 = DEATHS.length, a0 = DTH.A.length, r = _death(u, by);
+    try {
+      if (u && isFootU(u) && G && !G.editor) {
+        const bio = hasTag(u, 'bio'), anim = DEATHS.slice(n0).some(d => d.u === u) || DTH.A.slice(a0).some(a => a.u === u);
+        const crush = by && !by.isStruct && (by.d.mt === 'tracks' || by.d.mt === 'walker') && mdist(by.x, by.y, u.x, u.y) === 1;
+        const heavy = LIMB.heavyKill(by);
+        if (bio && SET.gore && !crush && !anim && heavy) LIMB.burst(u, true, true);                      // the engine gibbed them: add the limbs
+        else if (bio && SET.gore && anim && heavy && Math.random() < .3) LIMB.burst(u, true, false);     // knocked down, an arm torn away
+        else if (!bio && heavy && Math.random() < .7) LIMB.burst(u, false, Math.random() < .5);          // drones shed parts
+      }
+    } catch (e) { /* visuals only */ }
+    return r;
+  };
+}
+/* end:p69_limbs.js */
+/* ===== REI'S LEFTOVERS (v0.6.1) =====
+   1. REWRITE (ORACLE's super): you choose up to three visible, non-boss enemies from a list (the nearest armed
+      ones are ticked for you) and they fight for you for two of your turns. The AI takes the nearest useful
+      units instead of the priciest anywhere on the map (Rei got an AA gun across the map he couldn't use).
+   2. Factories: a unit of yours parked on a Fabricator no longer blocks it; the new unit rolls out onto the
+      nearest free tile, one per pad per turn. Tapping a unit that has already moved on your pad opens the
+      factory; tapping one that can still move asks "Move" or "Factory".
+   3. Night briefings say "night (shorter sight)" instead of "Fog: off" (engine line).
+   4. The squad deploy screen always appears before your first turn, even when you skip the story. */
+const RFIX = {};
+/* ---------------- 1. REWRITE ---------------- */
+RFIX.score = (team, e) => {                                                               // armed, healthy, close to your army
+  const mine = G.units.filter(u => u.team === team), near = Math.min(99, ...mine.map(u => mdist(u.x, u.y, e.x, e.y)));
+  const armed = e.d.cls !== 'NONE' ? 1 : .2;
+  return armed * (e.d.cost || 3000) * (e.hp / e.d.hp) / (1 + near * .6);
+};
+async function rewritePicks(team, cands) {
+  cands = cands.slice().sort((a, b) => RFIX.score(team, b) - RFIX.score(team, a));
+  if (!cands.length) return [];
+  if (isAI(team) || !G || team !== ME) return cands.slice(0, 3);
+  const mine = G.units.filter(u => u.team === team), near = e => Math.min(99, ...mine.map(u => mdist(u.x, u.y, e.x, e.y)));
+  return new Promise(res => {
+    const chosen = new Set(cands.slice(0, 3).map(e => e.uid));
+    const row = e => `<label class="brow" style="grid-template-columns:auto 32px 1fr auto;cursor:pointer"><input type="checkbox" data-rw="${e.uid}" ${chosen.has(e.uid) ? 'checked' : ''}>`
+      + `<canvas data-rwspr="${e.uid}" width="32" height="32"></canvas><span>${esc(e.d.n)} <span class="dim">· HP ${NP.displayHP(e.hp, e.d.hp)} · ${near(e)} tiles from your nearest unit</span></span><span class="bc">${e.d.cls === 'NONE' ? 'unarmed' : esc(e.d.cls.toLowerCase())}</span></label>`;
+    showModal(`<h2>REWRITE</h2><p>Choose up to <b>3</b> enemy units to take over. They join you now, ready to act, and stay yours for <b>two turns</b>.</p>`
+      + `<div class="blist">${cands.slice(0, 12).map(row).join('')}</div><div class="mbtns"><button class="np hot" data-act="ok">Rewrite</button></div>`,
+      {closable:false, on:() => { const ids = [...document.querySelectorAll('#mbox [data-rw]')].filter(c => c.checked).map(c => +c.dataset.rw).slice(0, 3); hideModal(); res(cands.filter(e => ids.includes(e.uid))); }});
+    document.querySelectorAll('#mbox canvas[data-rwspr]').forEach(c => { const e = cands.find(x => x.uid === +c.dataset.rwspr); const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(getSprite(e.d, e.team, false), 0, 0, 32, 32); });
+    document.querySelectorAll('#mbox [data-rw]').forEach(c => c.addEventListener('change', () => {          // never more than three ticked
+      const on = [...document.querySelectorAll('#mbox [data-rw]')].filter(x => x.checked); if (on.length > 3) c.checked = false; }));
+  });
+}
+/* ---------------- 2. factories ---------------- */
+RFIX.stamp = () => G.day + ':' + G.turn;
+{
+  const _pl = prodLock; prodLock = function (team, src, d) {
+    const r = _pl(team, src, d);
+    if (r !== 'pad occupied' || src.isStruct) return r;
+    const u = unitAt(src.x, src.y); if (!u || !allied(u.team, team)) return r;                   // an enemy on your pad still blocks it
+    if (src.prodT === RFIX.stamp()) return 'already produced this turn';
+    return exitTile(src.x, src.y, d) ? '' : 'pad and exits blocked';
+  };
+  const _pr = produce; produce = function (team, src, d) {
+    if (src.isStruct || !occupied(src.x, src.y)) return _pr(team, src, d);
+    const at = exitTile(src.x, src.y, d), T = G.teams[team], cost = unitCost(team, d);              // your unit is on the pad: roll out beside it
+    T.funds -= cost; T.spent += cost; if (T.free) { T.free = false; floatText(at[0], at[1], 'FREE', '#ffb02e'); }
+    const u = spawn(d.id, at[0], at[1], team); u.done = true; src.prodT = RFIX.stamp();
+    sfx('deploy'); fxRing(at[0], at[1], TEAMS[team].ui); return u;
+  };
+  const _tap = onTap; onTap = async function (x, y, src) {
+    try { if (myTurn() && inB(x, y) && UI.mode === 'idle') {
+      const u = unitAt(x, y), p = propAt(x, y);
+      if (u && u.team === ME && p && p.owner === ME && terr(x, y).prop.makes) {
+        if (u.done) { setCursor(x, y); openBuild(p); return; }
+        setCursor(x, y);
+        showMenu([{label:'Move ' + u.d.n, fn:() => { hideMenu(); select(u); }}, {label:'Factory', fn:() => { hideMenu(); openBuild(p); }}, {label:'✕ Back', fn:() => hideMenu()}], x, y);
+        return;
+      }
+    } } catch (e) { /* fall through */ }
+    return _tap.call(this, x, y, src);
+  };
+}
+/* ---------------- 5. the build sidebar no longer lingers over the title after you leave a base mission ---------------- */
+{
+  const _lg = leaveGame; leaveGame = function (...a) { const r = _lg.apply(this, a);
+    try { document.body.classList.remove('cnc'); const el = $('#side'), mini = $('#mini'); if (mini && el && el.contains(mini)) document.body.appendChild(mini); if (el) el.innerHTML = ''; } catch (e) {}
+    return r; };
+}
+/* ---------------- 4. the squad deploy screen before your first turn ---------------- */
+{
+  const _st = startTurn; startTurn = async function (team, ...a) {
+    try { const g = G;
+      if (g && !g.editor && !isAI(team) && g.sq && g.sq.avail && g.sq.avail.length && !g.sq.deployed && !(sqState().skipDeploy) && typeof sqDeployScreen === 'function') {
+        await new Promise(res => sqDeployScreen(() => { $('#mbox').classList.remove('wide'); res(); }));
+        if (G !== g) return;
+      } } catch (e) { console.warn('deploy screen', e); }
+    return _st.call(this, team, ...a);
+  };
+}
+/* end:p70_reifix.js */
+/* ===== BASE DEFENCE YOU CAN READ (v0.6.1) =====
+   With the base zone (p68) bases are tighter, so layout matters; make it legible.
+     walls      neighbouring wall segments and gates join into one barrier (a plated band across the seam)
+     gates      energy bars in the army's colour; they part when one of your units stands on or next to the gate
+     no power   anything switched off by low power blinks a red ⚡ and throws the odd spark, so a dead turret
+                line is obvious before the enemy finds it (it was only greyed out)
+   Drawn over the map in world space after the main draw. */
+const BDEF = {WALLY:new Set(['wall', 'gate'])};
+BDEF.world = () => { const s = cam.z * dpr; ctx.setTransform(s, 0, 0, s, -Math.round(cam.x * s), -Math.round(cam.y * s)); };
+BDEF.draw = () => {
+  if (!G || !G.structs.length) return;
+  const t = performance.now() / 1000, x0 = Math.floor(cam.x / 16) - 1, y0 = Math.floor(cam.y / 16) - 1, x1 = x0 + Math.ceil(innerWidth / cam.z / 16) + 2, y1 = y0 + Math.ceil(innerHeight / cam.z / 16) + 2;
+  const seen = s => s.x >= x0 && s.x <= x1 && s.y >= y0 && s.y <= y1 && (typeof visibleTo !== 'function' || s.team === ME || visibleTo(s, ME));
+  ctx.save(); BDEF.world();
+  for (const s of G.structs) { if (!seen(s)) continue; const X = s.x * 16, Y = s.y * 16, T = TEAMS[s.team] || {}, col = T.ui || '#c8c8d0';
+    if (BDEF.WALLY.has(s.type) && s.built) {                                                      // join to the next wall or gate on the right and below
+      for (const [dx, dy] of [[1, 0], [0, 1]]) { const n = structAt(s.x + dx, s.y + dy); if (!n || !BDEF.WALLY.has(n.type) || n.team !== s.team || !n.built) continue;
+        ctx.fillStyle = '#3a3e4a'; if (dx) ctx.fillRect(X + 12, Y + 6, 8, 6); else ctx.fillRect(X + 5, Y + 12, 6, 8);
+        ctx.fillStyle = col; ctx.globalAlpha = .55; if (dx) ctx.fillRect(X + 12, Y + 6, 8, 1); else ctx.fillRect(X + 5, Y + 12, 1, 8); ctx.globalAlpha = 1; } }
+    if (s.type === 'gate' && s.built) {                                                          // energy bars; open when a friend is on or beside it
+      const open = G.units.some(u => allied(u.team, s.team) && mdist(u.x, u.y, s.x, s.y) <= 1), k = open ? .15 : 1, fl = .7 + .3 * Math.sin(t * 9 + s.uid);
+      ctx.globalAlpha = .85 * fl; ctx.fillStyle = col; for (let i = 0; i < 3; i++) { const bx = X + 3 + i * 5; ctx.fillRect(bx, Y + 3, 1.2, 10 * k); }
+      ctx.globalAlpha = 1; }
+    if (s.built && !structActive(s)) {                                                           // no power: a blinking bolt, now and then a spark
+      if (Math.sin(t * 6 + s.uid) > 0) { ctx.fillStyle = '#ff3b3b'; ctx.beginPath(); ctx.moveTo(X + 9, Y - 5); ctx.lineTo(X + 6, Y + 1); ctx.lineTo(X + 8.5, Y + 1); ctx.lineTo(X + 7, Y + 6); ctx.lineTo(X + 11, Y - .5); ctx.lineTo(X + 8.5, Y - .5); ctx.closePath(); ctx.fill(); }
+      if (Math.random() < .03) fxBurst(X + 4 + Math.random() * 8, Y + 4, 3, ['#ffd34a', '#ffffff', '#7fd0ff'], 25, .25); }
+  }
+  ctx.restore();
+};
+{
+  const _draw = draw; draw = function (...a) { const r = _draw.apply(this, a); try { BDEF.draw(); } catch (e) { /* visuals only */ } return r; };
+}
+/* end:p71_basedef.js */
+/* ===== HARVESTER WAR (v0.6.1) =====
+   C&C's harvester hunting, as a mid-game objective.
+     raids    killing an enemy harvester pays its carried Lumenite plus a ¢1,000 bounty to the killer's army
+              ("RAIDED"), and the AI now hunts harvesters too (they rank above their price as targets)
+     claims   a Lumenite tile within 6 tiles of a Refinery is claimed by that army (the nearest Refinery wins).
+              Mining your own claim yields +25%; mining in someone else's yields -25%. Claimed fields are
+              outlined in the claimant's colour, so a Refinery by a rich field is worth defending, and
+              planting one beside the enemy's field is worth attacking. */
+const HWAR = {R:6, BOUNTY:1000, OWN:1.25, FOE:.75};
+HWAR.claim = (x, y) => {
+  let best = null, bd = 1e9;
+  for (const s of G.structs) if (s.type === 'refinery' && s.built && s.team) { const d = Math.hypot(s.x - x, s.y - y); if (d <= HWAR.R + .5 && d < bd) { bd = d; best = s.team; } }
+  return best;
+};
+{
+  const _dh = doHarvest; doHarvest = function (u, ...a) {                                        // claims change the yield for this swing only
+    const c = HWAR.claim(u.x, u.y), k = c == null ? 1 : allied(c, u.team) ? HWAR.OWN : HWAR.FOE, H = u.d.harv, r0 = H.rate;
+    if (k !== 1) { H.rate = Math.round(r0 * k); }
+    try { return _dh.call(this, u, ...a); } finally { H.rate = r0; if (k !== 1 && G) floatText(u.x, u.y - 1, k > 1 ? 'CLAIMED +25%' : 'CONTESTED -25%', k > 1 ? '#7dff4a' : '#ff8a5a'); }
+  };
+  const _av = attackValue; attackValue = function (u, t, ...a) {
+    let v = _av.call(this, u, t, ...a);
+    try { if (t && t.d && t.d.harv && v > -1e8) v = v * 1.5 + (t.ore || 0) * .8 + 1500; } catch (e) {}   // the AI goes raiding
+    return v;
+  };
+  const _hurt = hurt; hurt = function (u, dmg, by) {
+    const was = u && u.d && u.d.harv && G && G.units.includes(u), ore = u && u.ore || 0, r = _hurt(u, dmg, by);
+    try { if (was && by && by.team && !allied(by.team, u.team) && (u.hp <= 0 || !G.units.includes(u))) {
+      const pay = ore + HWAR.BOUNTY, T = G.teams[by.team]; if (T) { T.funds += pay; floatText(u.x, u.y, 'RAIDED +¢' + pay.toLocaleString(), '#ffb02e'); sfx('cash'); }
+      if (typeof CHAT !== 'undefined' && !by.isStruct) setTimeout(() => { if (CHAT.B) CHAT.B.push({u:by, x:by.x, y:by.y, text:by.d.f === 'O' ? CHAT.bin('$$') : DTH.pick(['Harvester down! 稼ぎ頭を潰した!', '수확기 격파!', 'Cut their money, lah!']), t:0, life:1.6, ov:by.d.f === 'O', team:by.team, g:G}); }, 260);
+    } } catch (e) { /* bounty only */ }
+    return r;
+  };
+}
+hook('draw', () => {                                                                             // claimed fields, outlined in the claimant's colour
+  if (!G || !G.ore || !G.L.build) return;
+  const keys = Object.keys(G.ore); if (!keys.length) return;
+  if (!HWAR.cache || HWAR.cache.ver !== G.structs.length + ':' + G.day) {                         // recompute when buildings change
+    HWAR.cache = {ver:G.structs.length + ':' + G.day, map:new Map()};
+    for (const k of keys) { const x = k % G.W, y = (k / G.W) | 0, c = HWAR.claim(x, y); if (c != null) HWAR.cache.map.set(+k, c); } }
+  ctx.save(); ctx.lineWidth = .8;
+  for (const [k, team] of HWAR.cache.map) { if (!G.ore[k]) continue; const x = k % G.W, y = (k / G.W) | 0, T = TEAMS[team]; if (!T) continue;
+    ctx.strokeStyle = T.ui; ctx.globalAlpha = .55;
+    for (const [dx, dy, x0, y0, x1, y1] of [[0, -1, 0, 0, 16, 0], [0, 1, 0, 16, 16, 16], [-1, 0, 0, 0, 0, 16], [1, 0, 16, 0, 16, 16]])   // outline only the field's outer edge
+      if (HWAR.cache.map.get(k + dx + dy * G.W) !== team || !G.ore[k + dx + dy * G.W]) { ctx.beginPath(); ctx.moveTo(x * 16 + x0, y * 16 + y0); ctx.lineTo(x * 16 + x1, y * 16 + y1); ctx.stroke(); } }
+  ctx.restore();
+});
+/* end:p72_harvest.js */
+/* ===== NEW SKIRMISH BIOMES (v0.6.1) =====
+   Two more terrains for Custom Battle and Horde, built on the existing generator and reshaped afterwards
+   (the map stays mirror-symmetric, so it stays fair):
+     Flooded Subway     Neon City after the sea came up through the metro: most streets are drowned canals,
+                        crossings survive as bridges, collapsed platforms litter the blocks; dark and raining
+     Orbital Elevator   the Glass Highlands around the tether of a space elevator: an impassable megastructure
+                        in the middle, a ring road round it and spokes out to both bases
+   If a reshape would ever cut the two bases off from each other, the plain base map is used instead. */
+const BIOME = {
+  subway:{base:'urban', n:'Flooded Subway', dark:.58, weather:'rain'},
+  elevator:{base:'highlands', n:'Orbital Elevator', dark:.3, weather:'clear'}
+};
+for (const [k, b] of Object.entries(BIOME)) GEN_THEMES[k] = Object.assign({}, GEN_THEMES[b.base], {n:b.n, dark:b.dark, weather:b.weather});
+BIOME.connected = (m, W, H, a, b) => {                                                             // can infantry walk from base to base?
+  const seen = new Uint8Array(W * H), q = [a[1] * W + a[0]]; seen[q[0]] = 1;
+  while (q.length) { const k = q.pop(), x = k % W, y = (k / W) | 0; if (x === b[0] && y === b[1]) return true;
+    for (const [dx, dy] of DIRS) { const nx = x + dx, ny = y + dy; if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue; const nk = ny * W + nx;
+      if (seen[nk] || !(NP.moveCost(m[ny][nx], 'foot') > 0)) continue; seen[nk] = 1; q.push(nk); } }
+  return false;
+};
+BIOME.reshape = (L, key) => {
+  const H = L.map.length, W = L.map[0].length, m = L.map.map(r => r.split('')), rnd = mulberry(hashSeed((L.genOpts && L.genOpts.seed) + key));
+  const set = (x, y, c) => { if (x < 0 || y < 0 || x >= W || y >= H) return; m[y][x] = c; m[H - 1 - y][W - 1 - x] = c; };
+  const hqs = []; for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (m[y][x] === 'H') hqs.push([x, y]);
+  const busy = new Set((L.units || []).map(u => u[1] + ',' + u[2]));
+  const safe = (x, y) => !'HCFAPTLY'.includes(m[y][x]) && !busy.has(x + ',' + y) && !busy.has((W - 1 - x) + ',' + (H - 1 - y)) && !hqs.some(([hx, hy]) => Math.abs(hx - x) + Math.abs(hy - y) < 5);
+  if (key === 'subway') {
+    for (let y = 0; y < H; y++) for (let x = 0; x < Math.ceil(W / 2); x++) { if (!safe(x, y)) continue;
+      const c = m[y][x], cross = c === 'r' && ['r', '='].includes(m[y - 1] && m[y - 1][x]) && ['r', '='].includes(m[y][x - 1]);
+      if (c === 'r' && !cross && rnd() < .62) set(x, y, '~');                                          // drowned street
+      else if (c === 'r' && cross) set(x, y, '=');                                                       // the crossing survives as a bridge
+      else if (c === '.' && rnd() < .07) set(x, y, 'x'); }                                              // collapsed platforms
+  } else if (key === 'elevator') {
+    const cx = (W - 1) / 2, cy = (H - 1) / 2, R = Math.max(4, Math.round(Math.min(W, H) * .2));
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const d = Math.hypot(x - cx, y - cy); if (!safe(x, y)) continue;
+      if (d < 2.2) m[y][x] = 'M';                                                                        // the tether's foot
+      else if (Math.abs(d - R) < .55) m[y][x] = 'r';                                                    // ring road
+      else if (d < R && d > 2.2 && (Math.abs(x - cx) < .6 || Math.abs(y - cy) < .6)) m[y][x] = 'r';    // spokes to the ring
+      else if (d < R - 1 && m[y][x] === '^') m[y][x] = '.'; }                                            // the plaza is levelled
+    for (const [hx, hy] of hqs) { let x = hx, y = hy; for (let i = 0; i < W * 2 && Math.hypot(x - cx, y - cy) > R; i++) {   // a road from each base to the ring
+      if (Math.abs(x - cx) > Math.abs(y - cy)) x += Math.sign(cx - x); else y += Math.sign(cy - y);
+      if (safe(x, y) && !'wl'.includes(m[y][x])) m[y][x] = m[y][x] === '~' ? '=' : 'r'; } }
+  }
+  if (hqs.length >= 2 && !BIOME.connected(m, W, H, hqs[0], hqs[hqs.length - 1])) return L;              // never strand a base
+  return Object.assign(L, {map:m.map(r => r.join('')), biome:key, dark:BIOME[key].dark});
+};
+{
+  const _gen = genLevel; genLevel = function (o) {
+    const B = o && BIOME[o.theme]; if (!B) return _gen(o);
+    const L = _gen(Object.assign({}, o, {theme:B.base, weather:o.weather === 'auto' || !o.weather ? B.weather : o.weather}));
+    try { BIOME.reshape(L, o.theme); } catch (e) { console.warn('biome', e); }
+    if (L.genOpts) L.genOpts = Object.assign({}, L.genOpts, {theme:o.theme});                           // replays and saves regenerate the same biome
+    if (!/Subway|Elevator/.test(L.name || '')) L.name = B.n + (L.name ? ' · ' + L.name : '');
+    return L;
+  };
+}
+/* end:p73_biomes.js */
+/* ===== MEASURED DIFFICULTY ON BRIEFINGS (v0.6.1) =====
+   Every campaign mission was played twice by the game's own AI on Veteran, commanding your side against the
+   mission's enemy (build/music/enc/diff-sweep.json). Each run scores: a win scores days/par (0.5-3); a timeout
+   2.2, a loss 3, both shifted by how far behind your army was at the end. The two runs are averaged and the
+   missions RANKED: easiest 30% Easy, next 30% Fair, next 25% Hard, hardest 15% Very hard; boss missions at least
+   Hard. (In absolute terms the AI overstates difficulty, since it stalls instead of closing games out, so the
+   ranking says more than the raw score.) The AI is the same on both sides, so the label measures the mission's
+   own balance, not anyone's skill. The briefing shows it, and on Recruit says how much easier it plays. */
+const DIFFL = {
+  T:{'3-3':['Easy',0.5], '5-3':['Easy',0.5], '4-6':['Easy',0.52], '3-8':['Easy',0.56], '3-6':['Easy',0.65], '4-10':['Hard',0.86], '2-7':['Easy',1], '2-3':['Easy',1], '1-1':['Easy',1.33], '1-8':['Easy',1.5], '1-5':['Easy',1.7], '2-2':['Easy',1.8], '3-7':['Easy',1.98], '2-10':['Hard',2], '1-4':['Easy',2], '1-2':['Fair',2], '1-3':['Fair',2.06], '4-4':['Fair',2.12], '2-4':['Fair',2.16], '3-9':['Fair',2.16], '4-1':['Fair',2.17], '3-4':['Fair',2.18], '1-9':['Fair',2.18], '5-10':['Hard',2.2], '4-9':['Fair',2.24], '2-1':['Fair',2.25], '4-5':['Fair',2.28], '1-7':['Fair',2.31], '3-2':['Fair',2.31], '4-3':['Fair',2.38], '5-6':['Hard',2.45], '5-9':['Hard',2.45], '4-8':['Hard',2.48], '5-2':['Hard',2.56], '2-8':['Hard',2.59], '2-6':['Hard',2.67], '4-7':['Hard',2.72], '4-2':['Hard',2.76], '3-1':['Hard',2.9], '5-7':['Hard',2.9], '5-8':['Hard',2.94], '2-5':['Hard',2.96], '1-10':['Hard',3], '3-5':['Very hard',3.02], '5-5':['Very hard',3.1], '5-4':['Very hard',3.28], '2-9':['Very hard',3.34], '5-1':['Very hard',3.39], '1-6':['Very hard',3.4], '3-10':['Very hard',3.42]},   // [label, score] from the 2026-10-17 sweep (2 runs per mission, Veteran)
+  LABELS:[[1.2, 'Easy', '#7dff4a'], [1.7, 'Fair', '#2ef2ff'], [2.4, 'Hard', '#ffb02e'], [99, 'Very hard', '#ff4a5a']]
+};
+DIFFL.of = id => { const t = DIFFL.T[id]; if (!t) return null; const i = DIFFL.LABELS.findIndex(l => l[1] === t[0]); return {s:t[1], n:t[0], col:DIFFL.LABELS[i][2], i}; };
+DIFFL.html = id => {
+  const d = DIFFL.of(id); if (!d) return '';
+  const rec = (G && G.diffKey || SET.diff) === 'recruit' && d.i > 0 ? ` <span class="dim">(on Recruit it plays like ${DIFFL.LABELS[d.i - 1][1]})</span>` : '';
+  return `<p class="p74d" style="font-size:12px" title="Measured by the game's AI playing your side against this mission on Veteran">Difficulty: <b style="color:${d.col}">${d.n}</b>${rec}</p>`;
+};
+{
+  const _bc = showBriefingCard; showBriefingCard = function (...a) {
+    const r = _bc.apply(this, a);
+    try { if (G && G.campaign && !document.querySelector('#mbox .p74d')) { const p = [...document.querySelectorAll('#mbox p')].find(e => /^Win:/.test(e.textContent)); const h = DIFFL.html(G.L.id); if (p && h) p.insertAdjacentHTML('afterend', h); } } catch (e) {}
+    return r;
+  };
+}
+/* end:p74_difflabel.js */
 resize();
 applySettings();
 miniInput();

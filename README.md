@@ -2,7 +2,7 @@
 
 **[▶ Play it free](https://tristanhotham.com/games/neon-protocol/)**, in your browser, with nothing to install.
 
-![Neon Protocol: Uprising](poster.jpg)
+![Neon Protocol: Uprising](share.jpg)
 
 ## About
 
@@ -17,7 +17,7 @@ A turn-based tactics game: Advance Wars battles with Command & Conquer base buil
 - Synthesised weapons, engines and voices for every unit, with Freesound recordings for explosions, ricochets, death cries, footsteps and ambience
 - Varied death animations and unit chatter: Resistance street slang mixing English with Asian languages, and Overmind binary
 
-This is version 0.6, an early build. The balance is still moving.
+This is version 0.6.1, an early build. The balance is still moving.
 
 ## How to play
 

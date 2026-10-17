@@ -1,5 +1,47 @@
 # Neon Protocol: Uprising: changelog
 
+## v0.6.1 (2026-10-17)
+From the first full game:
+- **Base zone:** you build inside a circle around your Construction Yard (the deployed Rig) or HQ: 6 tiles, or 9 for docks so a coastal base reaches the water. Before, anything within 3 tiles of any of your buildings counted, so a base could creep across the map one wall at a time and the Rig stopped mattering. A second base now means driving a second Rig there.
+- **Automatic harvesters:** idle harvesters mine, drive to the nearest Lumenite and unload at a Refinery at the start of your turn, with no camera jumps. Settings → Gameplay → Harvesters switches back to end of turn, so you can give orders first.
+- **Civilians:** half as many, and drawn at 60% size so they read as people next to tanks.
+- **Highlight my units:** ◎ on the toolbar (or the O key) puts a pulsing ring and a marker on every unit you command, for when army colours look alike.
+- **Battle scenes, sharper:**
+  - Drawn at three times the resolution, with sprites upscaled using Scale2x and lit from above: rim light, shaded undersides and a faint team-colour glow.
+  - Tank treads roll, engines shudder and smoke, hover tanks glow, gunship rotors spin, and soldiers breathe.
+  - Destroyed vehicles throw armour plates.
+- **Battle-scene backgrounds:** repainted at the same 6× resolution, with finer window grids, shaded tower edges, haze between the city layers and glowing neon signs.
+- **Title screen:**
+  - Painted at the screen's real pixel density, with a third city layer and haze.
+  - Air traffic with light trails, hologram billboards and distant lightning.
+  - Three rim-lit Resistance silhouettes on a rooftop, two layers of rain with ripples on the harbour, and a vignette.
+  - The menu buttons are frosted glass.
+- **Rei's leftovers:**
+  - REWRITE: you choose up to three targets from a list (the nearest useful ones are pre-ticked), and they stay yours for two turns. The AI picks nearby units instead of the priciest anywhere.
+  - Factories: your own unit on a Fabricator no longer blocks it; the new unit rolls out beside it, one per pad per turn. Tapping a unit that has moved on your pad opens the factory; one that can still move offers Move or Factory.
+  - Night briefings say "night (shorter sight)" instead of "Fog: off".
+  - The squad deploy screen always appears before your first turn, even when you skip the story.
+- **Measured difficulty** on every campaign briefing, from two AI-vs-AI runs per mission on Veteran:
+  - Missions are ranked rather than given absolute thresholds, because the AI overstates difficulty by stalling instead of closing games out. The result is 13 Easy, 14 Fair, 16 Hard and 7 Very hard, rising across the acts, with bosses at least Hard.
+  - On Recruit the briefing says how much easier the mission plays.
+  - The sweep ran on the build before the base-zone and harvester changes, so base-mission labels may shift slightly when re-measured.
+- **Chatter:**
+  - New lines for capturing, being repaired, last stands, and first sight of a boss.
+  - Generals now speak their power line in their own voice during the cut-in.
+- **Base defence you can read:** walls join into one barrier, Gates show energy bars that part for your units, and unpowered buildings blink a red ⚡ and spark.
+- **Harvester war:**
+  - Killing an enemy harvester pays its load plus a ¢1,000 bounty, and the AI hunts harvesters too.
+  - Lumenite within 6 tiles of a Refinery is that army's claim, outlined in its colour: +25% when you mine your own, −25% when you mine someone else's.
+- **New skirmish terrains:**
+  - Flooded Subway: streets drowned into canals, bridges at the crossings.
+  - Orbital Elevator: the space-elevator tether in the middle, ringed by a road with spokes to both bases.
+  - Both are in Custom Battle and Horde.
+- **Fix:** the base-building sidebar no longer lingers over the title screen after you leave a base mission.
+- **Dismemberment:**
+  - Battle scenes: heavy weapons blow soldiers into head, torso, arms and legs that trail blood and land on the ground. Small arms sometimes take an arm.
+  - Map: heavy kills throw recognisable limbs that leave permanent marks.
+  - Human gore only appears with Mature on. Overmind drones shed metal limbs and heads with sparks and oil either way.
+
 ## v0.6 (2026-10-17)
 - **Unit chatter:** speech bubbles over units when they're selected, move off, fire, score a kill or get hit, borrowed from Iron Front '44.
   - The Resistance talk Shin-Pacifica street slang: English code-switching with Japanese, Korean, Mandarin, Tagalog, Hindi, Vietnamese and Indonesian in their own scripts ("Move, 빨리!", "撃て!", "Tara na!", "चलो, चलो!"). Vehicle crews have their own lines.
