@@ -1,0 +1,227 @@
+[
+    {
+        "file":  "explosion-1.mp3",
+        "id":  "235968",
+        "user":  "tommccann",
+        "title":  "Explosion_01.wav",
+        "lic":  "CC0",
+        "dur":  7.8,
+        "kb":  177
+    },
+    {
+        "file":  "explosion-2.mp3",
+        "id":  "182429",
+        "user":  "qubodup",
+        "title":  "Explosion",
+        "lic":  "CC0",
+        "dur":  3,
+        "kb":  65
+    },
+    {
+        "file":  "explosion-muffled.mp3",
+        "id":  "149966",
+        "user":  "NenadSimic",
+        "title":  "Muffled Distant Explosion",
+        "lic":  "CC0",
+        "dur":  5.1,
+        "kb":  108
+    },
+    {
+        "file":  "explosion-distant.mp3",
+        "id":  "209769",
+        "user":  "Johnnyfarmer",
+        "title":  "Explosion Distant ",
+        "lic":  "CC0",
+        "dur":  10.9,
+        "kb":  151
+    },
+    {
+        "file":  "explosion-debris.mp3",
+        "id":  "108641",
+        "user":  "juskiddink",
+        "title":  "Nearby explosion with debris.wav",
+        "lic":  "CC BY 4.0",
+        "dur":  4.1,
+        "kb":  84
+    },
+    {
+        "file":  "ricochet-1.mp3",
+        "id":  "30932",
+        "user":  "aust_paul",
+        "title":  "bullet ricochet.wav",
+        "lic":  "CC0",
+        "dur":  2.4,
+        "kb":  53
+    },
+    {
+        "file":  "ricochet-2.mp3",
+        "id":  "148840",
+        "user":  "cedarstudios",
+        "title":  "ricochet.mp3",
+        "lic":  "CC0",
+        "dur":  1.8,
+        "kb":  43
+    },
+    {
+        "file":  "ricochet-3.mp3",
+        "id":  "213925",
+        "user":  "Diboz",
+        "title":  "pistol_riccochet.ogg",
+        "lic":  "CC0",
+        "dur":  2.6,
+        "kb":  60
+    },
+    {
+        "file":  "ricochet-metal.mp3",
+        "id":  "854335",
+        "user":  "mikiko850",
+        "title":  "Metal Bullet Ricochets",
+        "lic":  "CC BY 4.0",
+        "dur":  5.3,
+        "kb":  132
+    },
+    {
+        "file":  "bullet-impact.mp3",
+        "id":  "423107",
+        "user":  "OGsoundFX",
+        "title":  "Guns \u0026 Explosions Album - Bullet Impact 14.wav",
+        "lic":  "CC BY 4.0",
+        "dur":  0.8,
+        "kb":  19
+    },
+    {
+        "file":  "death-1.mp3",
+        "id":  "173126",
+        "user":  "Replix",
+        "title":  "Death sound (male)",
+        "lic":  "CC0",
+        "dur":  1.7,
+        "kb":  39
+    },
+    {
+        "file":  "death-2.mp3",
+        "id":  "163442",
+        "user":  "Under7dude",
+        "title":  "Man Dying",
+        "lic":  "CC0",
+        "dur":  1.6,
+        "kb":  39
+    },
+    {
+        "file":  "death-3.mp3",
+        "id":  "416838",
+        "user":  "tonsil5",
+        "title":  "Grunt2 - Death Pain.wav",
+        "lic":  "CC0",
+        "dur":  1.5,
+        "kb":  41
+    },
+    {
+        "file":  "death-4.mp3",
+        "id":  "416839",
+        "user":  "tonsil5",
+        "title":  "Grunt1 - Death Pain.wav",
+        "lic":  "CC0",
+        "dur":  1,
+        "kb":  25
+    },
+    {
+        "file":  "death-5.mp3",
+        "id":  "345456",
+        "user":  "Artmasterrich",
+        "title":  "Male_Death_04",
+        "lic":  "CC0",
+        "dur":  1,
+        "kb":  26
+    },
+    {
+        "file":  "screams.mp3",
+        "id":  "556976",
+        "user":  "marc3122",
+        "title":  "Male Screams [1]",
+        "lic":  "CC0",
+        "dur":  13.7,
+        "kb":  298
+    },
+    {
+        "file":  "pain-mix.mp3",
+        "id":  "442288",
+        "user":  "rockittt",
+        "title":  "male pain sound effects.wav",
+        "lic":  "CC0",
+        "dur":  7.6,
+        "kb":  172
+    },
+    {
+        "file":  "pain-grunt.mp3",
+        "id":  "547209",
+        "user":  "MrFossy",
+        "title":  "Voice_AdultMale_PainGrunts_09.wav",
+        "lic":  "CC0",
+        "dur":  0.3,
+        "kb":  9
+    },
+    {
+        "file":  "boots-gravel.mp3",
+        "id":  "530589",
+        "user":  "Nox_Sound",
+        "title":  "Footsteps_Boots_Gritty_Ground_(Gravel).wav",
+        "lic":  "CC0",
+        "dur":  11.4,
+        "kb":  170
+    },
+    {
+        "file":  "boots-run.mp3",
+        "id":  "235470",
+        "user":  "jcdecha",
+        "title":  "Running_Boots_medium_speed.wav",
+        "lic":  "CC0",
+        "dur":  14.2,
+        "kb":  244
+    },
+    {
+        "file":  "amb-war-loop.mp3",
+        "id":  "239139",
+        "user":  "qubodup",
+        "title":  "War Ambience Loop",
+        "lic":  "CC0",
+        "dur":  23.8,
+        "kb":  545
+    },
+    {
+        "file":  "amb-battlefield.mp3",
+        "id":  "385895",
+        "user":  "banan_",
+        "title":  "BattleField Ambience (Loop)",
+        "lic":  "CC0",
+        "dur":  59.2,
+        "kb":  1281
+    },
+    {
+        "file":  "amb-distant-explosions.mp3",
+        "id":  "320788",
+        "user":  "Kostrava",
+        "title":  "distant explosions",
+        "lic":  "CC0",
+        "dur":  64,
+        "kb":  1411
+    },
+    {
+        "file":  "amb-gunfire.mp3",
+        "id":  "205588",
+        "user":  "qubodup",
+        "title":  "Gunfire",
+        "lic":  "CC0",
+        "dur":  73.7,
+        "kb":  1348
+    },
+    {
+        "file":  "amb-bombing.mp3",
+        "id":  "342136",
+        "user":  "Filo_Rossi",
+        "title":  "Distant Bombing",
+        "lic":  "CC BY 4.0",
+        "dur":  26.3,
+        "kb":  510
+    }
+]

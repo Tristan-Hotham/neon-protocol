@@ -13,9 +13,11 @@ A turn-based tactics game: Advance Wars battles with Command & Conquer base buil
 - Twelve generals, each with a passive bonus, a power and a super power
 - Custom Battle from 1v1 to 4v4 with allies and co-op, Conquest, Horde mode and a Map Maker
 - Mouse, keyboard, touch and controller; colour-blind palette, reduced motion and text scaling
-- A 48-track original soundtrack
+- A 48-track soundtrack composed by Tristan Hotham
+- Synthesised weapons, engines and voices for every unit, with Freesound recordings for explosions, ricochets, death cries, footsteps and ambience
+- Varied death animations and unit chatter: Resistance street slang mixing English with Asian languages, and Overmind binary
 
-This is version 0.5, an early build. The balance is still moving.
+This is version 0.6, an early build. The balance is still moving.
 
 ## How to play
 
@@ -30,7 +32,7 @@ The Boot Camp missions teach one idea at a time, and the glossary in the pause m
 
 ## Running it locally
 
-The whole game is a single self-contained `index.html`, with the soundtrack in `music/` beside it. There is no build step and nothing to install.
+The whole game is a single self-contained `index.html`, with the soundtrack in `music/` and the recorded sound effects in `sfx/` beside it. There is no build step and nothing to install.
 
 Serve the folder over HTTP so the music can load, for example:
 
@@ -46,4 +48,4 @@ See all my games at **[tristanhotham.com/games](https://tristanhotham.com/games/
 
 ## Licence
 
-The code is under the [MIT licence](LICENSE). The music is not: see [CREDITS.md](CREDITS.md).
+The code is under the [MIT licence](LICENSE). The music and the recorded sound effects are not: see [CREDITS.md](CREDITS.md).

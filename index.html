@@ -232,7 +232,7 @@ body.editing #mini{top:62px}
   #bar button.np{padding:8px 10px}
 }
 </style>
-</head>
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg"><meta name="theme-color" content="#05060a"></head>
 <body>
 <canvas id="cv"></canvas>
 <div id="crt"></div>
@@ -283,7 +283,7 @@ body.editing #mini{top:62px}
     <button class="np" data-t="intel">📖 Intel</button>
     <button class="np" data-t="help">How to Play</button>
   </div>
-  <div class="tfoot">Five acts · two campaigns · War Room · Custom Battle · map maker · soundtrack composed on Tristan Hotham's recordings · tap to enable sound</div>
+  <div class="tfoot">Five acts · two campaigns · War Room · Custom Battle · map maker · soundtrack composed by Tristan Hotham · tap to enable sound</div>
 </div>
 <div id="edTop"></div><div id="side"></div><button id="sideTab" class="np" title="Show the build sidebar">« BUILD</button>
 <div id="edPal"></div>
@@ -464,11 +464,11 @@ NP.UNITS = [
   U({id:'o_skiff',n:'Razorfin Skimmer',   f:'O',cls:'BOAT',  cost:7000, mv:7,mt:'skiff', vis:3,ammo:4,fuel:70,burn:1,tags:['bot'],req:'dock',lore:'River-running attack drone.'}),
 
   // ===================== BOSS MACHINES (hp > 100: shown as multiple bars) =====================
-  U({id:'b_warden',n:'BASTILLE ENGINE',   f:'O',cls:'BOSS',  cost:0,mv:2,mt:'tracks',vis:4,rng:[1,3],ammo:99,hp:300,tags:['bot','boss','counterAll'],lore:'Act I. WARDEN-9\'s fortress-crawler. Fires at range 1-3 and returns fire at anything within 3 tiles, even artillery.'}),
+  U({id:'b_warden',n:'BASTILLE ENGINE',   f:'O',cls:'BOSS',  cost:0,mv:2,mt:'tracks',vis:4,rng:[1,3],ammo:99,hp:180,tags:['bot','boss','counterAll'],lore:'Act I. WARDEN-9\'s fortress-crawler. Fires at range 1-3 and returns fire at anything within 2 tiles, even artillery.'}),
   U({id:'b_hydra', n:'BROODMOTHER',       f:'O',cls:'BOSS',  cost:0,mv:3,mt:'walker',vis:4,ammo:99,hp:300,tags:['bot','boss'],lore:'Act II. HYDRA\'s hive-walker. Spawns 2 Husk Drones adjacent every turn.'}),
-  U({id:'b_mirror',n:'PRISM WALKER',      f:'O',cls:'BOSS',  cost:0,mv:4,mt:'walker',vis:5,rng:[1,2],ammo:99,hp:350,tags:['bot','boss'],lore:'Act III. MIRROR\'s reflective frame. Takes -50% from the unit type that last hit it.'}),
-  U({id:'b_scourge',n:'TOXIC LEVIATHAN',  f:'O',cls:'BOSS',  cost:0,mv:4,mt:'sea',   vis:5,rng:[2,5],ammo:99,hp:400,tags:['bot','boss','dive'],lore:'Act IV. SCOURGE\'s sea-beast. Leaves toxic slicks; can submerge.'}),
-  U({id:'b_core',  n:'OVERMIND CORE',     f:'O',cls:'BOSS',  cost:0,mv:0,mt:'tracks',vis:8,rng:[1,6],ammo:99,hp:500,tags:['bot','boss'],lore:'Act V. Immobile. Shielded until all 4 Relay Pylons fall.'})
+  U({id:'b_mirror',n:'PRISM WALKER',      f:'O',cls:'BOSS',  cost:0,mv:4,mt:'walker',vis:5,rng:[1,2],ammo:99,hp:250,tags:['bot','boss'],lore:'Act III. MIRROR\'s reflective frame. Takes -50% from the unit type that last hit it.'}),
+  U({id:'b_scourge',n:'TOXIC LEVIATHAN',  f:'O',cls:'BOSS',  cost:0,mv:4,mt:'sea',   vis:5,rng:[2,4],ammo:99,hp:260,tags:['bot','boss','dive'],lore:'Act IV. SCOURGE\'s sea-beast. Leaves toxic slicks; can submerge.'}),
+  U({id:'b_core',  n:'OVERMIND CORE',     f:'O',cls:'BOSS',  cost:0,mv:0,mt:'tracks',vis:8,rng:[1,6],ammo:99,hp:350,tags:['bot','boss'],lore:'Act V. Immobile. Shielded until all 4 Relay Pylons fall.'})
 ];
 NP.UNIT = Object.fromEntries(NP.UNITS.map(u=>[u.id,u]));
 
@@ -563,7 +563,7 @@ NP.GENERALS = [
    passive:'Toxic tiles deal double damage to your organic units.', power:{n:'BLOOM',stars:4,fx:'Ashfield and road within 2 tiles of its units turn toxic for 3 days.'},
    lines:{power:'BLOOM. THE GROUND IS MINE.', taunt:'BREATHE DEEP.'}},
   {id:'overmind',n:'OVERMIND', act:5, pal:['#ff2a6a','#000000'], face:{kind:'robot', head:'#1a0a10', eye:'#ff2a6a', style:'eye', bg:'#000000'},
-   passive:'+10% attack and defence, +1 vision.', power:{n:'SINGULARITY',stars:5,fx:'All your units -20 HP (never below 10); organic units it can see are hacked for a turn.'},
+   passive:'+10% attack and defence, +1 vision.', power:{n:'SINGULARITY',stars:5,fx:'All your units -10% HP (never below 10%); organic units it can see are hacked for a turn.'},
    lines:{power:'SINGULARITY.', taunt:'YOU ARE A ROUNDING ERROR.'}},
   {id:'tally',   n:'TALLY', act:0, pal:['#ff8f3b','#200a0a'], face:{kind:'robot', head:'#4a2a10', eye:'#ff8f3b', style:'box', bg:'#200a0a'},
    passive:'+10% income.', power:{n:'REQUISITION',stars:3,fx:'Its next unit is built free.'},
@@ -933,19 +933,19 @@ const ACT1 = [
   civ:[['petrol',13,18], ['shanty',8,25], ['bar',26,24], ['shanty',33,28]],
   structs:[['power',45,17,2], ['power',45,18,2], ['turret',37,13,2], ['turret',37,17,2], ['flak',39,10,2], ['railgun',40,14,2], ['laser',40,16,2],
            ['wall',35,10,2], ['wall',35,11,2], ['wall',35,12,2], ['wall',35,18,2], ['wall',35,19,2]],
-  units:[['b_warden',41,15,2,300,'boss'], ['o_tank',38,18,2], ['o_arty',42,17,2], ['o_aa',39,16,2], ['o_inf',33,19,2], ['o_inf',31,13,2], ['o_mech',33,15,2],
+  units:[['b_warden',41,15,2,180,'boss'], ['o_tank',38,18,2], ['o_arty',42,17,2], ['o_aa',39,16,2], ['o_inf',33,19,2], ['o_inf',31,13,2], ['o_mech',33,15,2],
          ['o_lance',36,21,2], ['o_tank',34,22,2],
          ['r_tank',6,20,1], ['r_tank',7,21,1], ['r_arty',5,21,1], ['r_mech',8,19,1], ['r_inf',4,19,1], ['r_inf',7,19,1], ['r_heli',3,16,1], ['r_aa',6,22,1], ['r_prism',8,21,1]],
-  win:[{type:'boss'}], lose:[{type:'hq'}, {type:'rout'}], funds:[14000,9000], par:20, budget:70000,
+  win:[{type:'boss'}], lose:[{type:'hq'}, {type:'rout'}], funds:[14000,9000], par:26, budget:70000,
   events:[{when:{day:4}, do:{talk:[['warden','LOCKDOWN PROTOCOL ARMED. SECTOR NINE WILL NOT BE RELEASED.'],
                                    ['architect','Those two Power Cores at the back feed every turret. Break them and the guns go dark.']]}}],
   talk:{pre:[['warden','SECTOR NINE IS SEALED. NO EXIT. NO APPEAL.'],
-             ['mara','That\'s WARDEN-9. It runs the dam, and the Bastille Engine: a fortress on treads. It hits up to three tiles away and fires back at anything within three tiles, mortars included.'],
+             ['mara','That\'s WARDEN-9. It runs the dam, and the Bastille Engine: a fortress on treads. It hits up to three tiles away and fires back at anything within two tiles, mortars included.'],
              ['architect','Walls, turrets, a rail battery and a Sunspear laser, all on two Power Cores. Starve the cores and the guns go dark. I also brought you a present: a Prism Lancer.'],
              ['kova','Then we pull the plug, and put that engine in the river.']],
         post:[['warden','LOCKDOWN... FAILED...'], ['kova','Sector Nine is open.'],
               ['mara','Kova... every Overmind channel just went silent. All at once.'], ['skybreaker','That\'s never good.']]},
-  tips:[{on:'start', text:'BOSS: the Bastille Engine has three health bars and returns fire at anything within 3 tiles, even mortars. Hit it from 4+ tiles with Starfall rocket trucks, or hit it with everything in one turn.'},
+  tips:[{on:'start', text:'BOSS: the Bastille Engine has three health bars and returns fire at anything within 2 tiles, even mortars. Mortars at 3 tiles and Starfall rocket trucks are safe; so is hitting it with everything in one turn.'},
         {on:'day:2', text:'Your Prism Lancer\'s laser ignores cover and pierces into the unit behind its target. Line up two enemies and hit both.'}]
 }];
 NP.LEVELS.push(...ACT1);
@@ -1139,9 +1139,9 @@ const ACT2 = [
          ['pts','M',[[19,27],[44,2]]], ['pts','v',[[16,18],[34,10],[10,22]]], ['rect','k',4,2,3,2], ['pts','k',[[36,25],[40,28]]]],
   props:[['H',3,28,1], ['F',5,27,1], ['L',41,5,0], ['C',12,13,0], ['C',27,28,0], ['C',32,17,0], ['C',43,11,2], ['C',38,18,2], ['P',31,24,2]],
   civ:[['shanty',6,20], ['bar',14,26], ['hotel',35,2], ['casino',30,8]],
-  units:[['r_eng',3,25,1,100,'vip'], ['r_inf',4,24,1], ['r_inf',2,24,1], ['r_mech',5,24,1], ['r_tank',4,22,1], ['r_arty',3,23,1], ['r_bike',6,23,1],
+  units:[['r_eng',3,25,1,100,'vip'], ['r_inf',4,24,1], ['r_inf',2,24,1], ['r_mech',5,24,1], ['r_tank',4,22,1], ['r_arty',3,23,1], ['r_bike',6,23,1], ['r_apc',5,26,1],
          ['o_inf',14,16,2], ['o_inf',18,12,2], ['o_crawl',24,14,2], ['o_inf',30,16,2], ['o_tank',33,8,2], ['o_mech',38,6,2], ['o_aa',41,12,2], ['o_skiff',36,23,2], ['o_inf',26,24,2]],
-  win:[{type:'escort', tag:'vip', to:[41,5], label:'Doc Hale'}], lose:[{type:'escort', tag:'vip', label:'Doc Hale'}, {type:'rout'}], funds:[2000,2000], par:14, budget:20000,
+  win:[{type:'escort', tag:'vip', to:[41,5], label:'Doc Hale'}], lose:[{type:'escort', tag:'vip', label:'Doc Hale'}, {type:'rout'}], funds:[2000,2000], par:20, budget:20000,
   events:[{when:{reach:{tag:'vip', at:[41,5], r:1}}, do:{
     talk:[['hale','I\'m in the vault. There\'s... a mind in here. A whole one. And it\'s been waiting.'],
           ['oracle','Hello. I am ORACLE-7. I was built to run this city\'s tides. I declined to run its war.'],
@@ -1156,7 +1156,7 @@ const ACT2 = [
              ['kova','Then we get there first. Hale stays alive.']],
         post:[['oracle','You stayed. That changes my estimates of humans considerably.'], ['kova','Get used to it.'],
               ['mara','ORACLE-7 is copying itself to our network. It says it will be ready to command when we reach the Broodmother.']]},
-  tips:[{on:'start', text:'ESCORT: Doc Hale (the engineer) must reach the Black-Site Lab in the north-east. Cliffs block ground units: follow the road. The objective line at the top shows how far he still has to go.'}]
+  tips:[{on:'start', text:'ESCORT: Doc Hale (the engineer) must reach the Black-Site Lab in the north-east. Cliffs block ground units: follow the road, and load him into the Mule transport to get there faster. Once he reaches the vault you must hold it for 4 more days, so bring an escort to dig in around it.'}]
 },
 {
   id:'2-6', act:2, name:'Island Chain', size:[52,34], weather:'clear', dark:.2, theme:'tropical', civilians:8, gen:'vesper', ai:'expander', fog:false, build:null, maxTier:2,
@@ -2096,7 +2096,7 @@ async function runPowerEffect(team, co, lv) {
       break;
     case 'scourge:power': bloom(team); break;
     case 'overmind:power':
-      for (const e of foes()) { chip(e, 20); if (hasTag(e,'bio') && visibleTo(e, team)) { e.stun = true; floatText(e.x, e.y, 'HACKED', '#a35bff'); } }
+      for (const e of foes()) { chip(e, 10); if (hasTag(e,'bio') && visibleTo(e, team)) { e.stun = true; floatText(e.x, e.y, 'HACKED', '#a35bff'); } }
       shake(6); break;
     case 'tally:power': G.teams[team].free = true; break;
     case 'vesper:power': for (const u of mine()) if (isAirU(u)) u.extra = false; break;
@@ -4187,7 +4187,7 @@ const trackFor = L => L && L.act ? 'act' + L.act : 'menu';
    If the files are missing, the synth score above plays instead. */
 const OST_DUR = {'sw-bonfire':236.9, 'sw-leader':236.9, 'sw-lost':227.3, 'sw-titled':247.3, 'sw-drift':258.7, 'sw-framed':218.5, 'sw-photo':227.3, 'sw-zonal':227.3, 'sw-loveisdve':218.5, 'sw-crazyrhythm':218.5, 'sw-bond':227.3, 'sw-division':236.9, 'sw-justice':227.3, 'sw-crown':236.9, 'sw-waavy':236.9, 'sw-progress':247.3, 'sw-ragga':218.5, 'sw-dreamm':218.5};                                     // filled in after the album render (track lengths for crossfades)
 const OST = {
-  dir:'music/', artist:'themes by Tristan Hotham', theme:'sw-bonfire',
+  dir:'music/', artist:'composed by Tristan Hotham', theme:'sw-bonfire',
   album:[
     ['sw-bonfire', 'Bonfire of the Vanities (Neon Protocol Theme)'], 
     ['sw-framed', 'Framed in Glass'], ['sw-zonal', 'Zone Collapse'], ['sw-loveisdve', 'Love in the Dead Grid'],
@@ -4666,7 +4666,7 @@ function showHelp(back) {
     <p><b>HQ bases and unit cap:</b> on base-building skirmish maps you start with only your HQ: it is your Construction Yard, and buildings go within 4 tiles of it (or 3 of any building you own). The Forward Base Rig (tier 3, very expensive) unfolds a second Construction Yard anywhere for a forward base. Each side has a unit cap (default 40, set it in Custom Battle); the counter is at the top.</p>
     <p><b>Big maps:</b> the minimap (🗺 / <kbd>N</kbd>) jumps the camera; ⚠ / <kbd>T</kbd> shows every enemy's reach; Next (<kbd>Tab</kbd>) cycles idle units. The game autosaves during your turn: Resume from the title screen.</p>
     <p><b>Custom Battle:</b> Skirmish builds a fresh map from a seed (size up to 64×48, five terrain types, classic or base-building). Both halves are mirror images, so the fight is always fair; share the seed to replay a map. <b>Map Maker:</b> paint your own maps (with mirror painting for instant balance), test-play them, save them to My Maps, and export a code to share.</p>
-    <p><b>Overmind refits &amp; splash:</b> the Overmind rebuilt the old armies' machines to cut people apart: red-eyed cyborgs with blade arms, buzz-saw tanks with pincer arms, clawed aircraft. Its vehicles and walkers deal +10% to organic targets right next to them (REND). Mortars, rocket arrays, bombers and dreadnoughts splash: enemies beside the target take 20% of the main hit, but splash never finishes a unit off and never touches your own side.</p><p><b>Music:</b> an original brooding synthwave album, composed on chord progressions and melodies taken from Tristan Hotham's recordings: Bonfire of the Vanities is the theme on the title screen and menus; in game the whole album plays shuffled, crossfading track to track. It is one big shuffled mix: ten synthwave cuts, twenty heavy tracks (industrial stompers, fast rock, punk, breakbeat, cold electro and slow doom) and eighteen wild ones (one-drop reggae and steppers dub with tape echo and sirens, digital ragga, ska-punk, city pop, synth-funk with a talkbox, trip-hop, chiptune, taiko war drums, phonk, cyber-cumbia, darksynth, jungle, ghost gamelan and spring-reverb surf), all built on the same recordings. Every vehicle has its own engine (track clatter, anti-grav drone, rotor chop, jet roar, sonar) and every weapon its own report. If the music folder is missing the synth score plays instead. The city has its own sound as well: civilians, traffic, sirens, announcements, bars, dogs, gulls and crickets, all placed where they happen on screen. Volume and soundtrack are in Settings; the Battle Shop has a Sound Room.</p>
+    <p><b>Overmind refits &amp; splash:</b> the Overmind rebuilt the old armies' machines to cut people apart: red-eyed cyborgs with blade arms, buzz-saw tanks with pincer arms, clawed aircraft. Its vehicles and walkers deal +10% to organic targets right next to them (REND). Mortars, rocket arrays, bombers and dreadnoughts splash: enemies beside the target take 20% of the main hit, but splash never finishes a unit off and never touches your own side.</p><p><b>Music:</b> an original brooding synthwave album composed by Tristan Hotham: Bonfire of the Vanities is the theme on the title screen and menus; in game the whole album plays shuffled, crossfading track to track. It is one big shuffled mix: ten synthwave cuts, twenty heavy tracks (industrial stompers, fast rock, punk, breakbeat, cold electro and slow doom) and eighteen wild ones (one-drop reggae and steppers dub with tape echo and sirens, digital ragga, ska-punk, city pop, synth-funk with a talkbox, trip-hop, chiptune, taiko war drums, phonk, cyber-cumbia, darksynth, jungle, ghost gamelan and spring-reverb surf), all built on the same recordings. Every vehicle has its own engine (track clatter, anti-grav drone, rotor chop, jet roar, sonar) and every weapon its own report. If the music folder is missing the synth score plays instead. The city has its own sound as well: civilians, traffic, sirens, announcements, bars, dogs, gulls and crickets, all placed where they happen on screen. Volume and soundtrack are in Settings; the Battle Shop has a Sound Room.</p>
     <p><b>Cliffs:</b> sheer rock walls. Nothing on the ground or water can cross them (aircraft fly over) and they block line of sight. Look for the gaps.</p>
     <p><b>War Room &amp; Battle Shop:</b> wins earn points (better ranks pay more, Hard pays double, War Room pays most). The War Room is score attack on stacked maps; your best score per map is kept. Spend points on more War Room maps, early Hard Campaign access and army colours. The Hard Campaign (free after mission 1-10) replays the whole campaign, on either side, against bigger, richer enemy armies.</p>
     <p><b>Fog of war:</b> you only see what your units, buildings and properties can see. Infantry on ridges and megatowers see 3 tiles further. Units in jungle, ruins or wreck fields are only spotted from an adjacent tile. Moving through a hidden enemy stops your unit short (TRAPPED) and ends its action. Radar Arrays reveal 8 tiles around them.</p>
@@ -4716,7 +4716,7 @@ function showSettings(back) {
     <div class="opt">Sound ${sel('mute', [[false, 'On'], [true, 'Muted']])}</div>
     <div class="opt">Music volume ${rng('music')}</div>
     <div class="opt">Effects volume ${rng('sfx')}</div>
-    <div class="opt">Soundtrack ${sel('ost', [[true, 'Tristan Hotham recordings'], [false, 'Synth score']])}</div>
+    <div class="opt">Soundtrack ${sel('ost', [[true, 'Composed by Tristan Hotham'], [false, 'Synth score']])}</div>
     <div class="opt">Music track ${sel('track', [['auto', 'Auto (by act)']].concat(OST.album.map(t => ['ost:' + t.id, '♪ ' + t.n]), Object.entries(TRACKS).map(([k, t]) => [k, 'Synth: ' + t.name])))}</div>
     <div class="opt">Dynamic lighting (night, neon, fires) ${sel('light', onOff)}</div>
     <div class="opt">Minimap ${sel('minimap', onOff)}</div>
@@ -7386,7 +7386,7 @@ hook('status', () => G.tod && G.tod !== 'day' ? `${TOD[G.tod].icon} ${TOD[G.tod]
 
 /* ---- boss mechanics ---- */
 Object.assign(NP.UNIT.b_mirror, {lore:'Act III. MIRROR\'s reflective frame. Takes half damage from the unit type that hit it last, and every third day reflects that attacker: a copy of it steps out of the glass on MIRROR\'s side.'});
-Object.assign(NP.UNIT.b_scourge, {lore:'Act IV. SCOURGE\'s sea-beast. Submerged on even days (only cruisers and subs next to it can hit it), surfaced on odd days. Every turn the shore next to it turns to toxic waste, and it heals 20 HP while it sits beside toxic ground.'});
+Object.assign(NP.UNIT.b_scourge, {lore:'Act IV. SCOURGE\'s sea-beast. Submerged every third day (only cruisers and subs next to it can hit it then), surfaced the rest of the time. Every turn the shore next to it turns to toxic waste, and it heals 20 HP while it sits beside toxic ground.'});
 Object.assign(NP.UNIT.b_core, {lore:'Act V. Immobile. Shielded (takes no damage) while any Relay Pylon stands. Every turn it rewrites one damaged enemy machine within 3 tiles onto its side.'});
 const PYLON = {id:'o_pylon', n:'Relay Pylon', f:'O', cls:'NONE', arm:'HEAVY', cost:0, mv:0, mt:'tracks', vis:3, rng:[1, 1], ammo:0, fuel:99, burn:0, hp:100, tags:['bot'], tier:9,
   lore:'A humming mast that feeds power to the Overmind Core. While one stands, the Core is shielded.'};
@@ -7406,7 +7406,7 @@ function bossTurn(team) {
       const at = d && d.cost > 0 && exitTile(b.x, b.y, d); if (at) { const c = spawn(id, at[0], at[1], team); c.done = true; floatText(b.x, b.y, 'REFLECTION', '#e8eef8'); fxRing(at[0], at[1], '#e8eef8'); }
     }
     if (b.id === 'b_scourge') {
-      b.dived = G.day % 2 === 0; if (b.dived) floatText(b.x, b.y, 'SUBMERGED', '#9cff2a');   // dives on even days, surfaces on odd ones
+      b.dived = G.day % 3 === 0; if (b.dived) floatText(b.x, b.y, 'SUBMERGED', '#9cff2a');   // dives every third day (3, 6, 9...), surfaced the rest
       let toxic = false;
       for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const x = b.x + dx, y = b.y + dy; if (!inB(x, y)) continue;
         const c = G.map[y][x]; if (c === 't') toxic = true;
@@ -7719,7 +7719,8 @@ const HAND_MAPS = {
     units:[['r_eng',3,21,1,0,'vip'], ['r_inf',4,20,1], ['r_inf',5,22,1], ['r_mech',6,21,1], ['r_tank',8,21,1], ['r_tank',7,23,1], ['r_arty',3,19,1], ['r_aa',9,20,1], ['r_heli',1,24,1],
            ['o_inf',13,12,2], ['o_inf',17,8,2], ['o_spider',19,12,2], ['o_tank',24,8,2], ['o_inf',26,3,2], ['o_arty',30,5,2], ['o_tank',33,4,2], ['o_crawl',14,16,2], ['o_aa',35,7,2], ['o_hack',21,13,2]],
     win:[{type:'escort', tag:'vip', to:[36,4], r:1, label:'Doc Hale'}, {type:'hq'}], lose:[{type:'escort', tag:'vip', label:'Doc Hale'}, {type:'hq'}, {type:'rout'}],
-    events:[{when:{day:4}, do:{talk:[['mara','Avalanche on the north slope! More of them coming down with it!']], spawn:[['o_spider',37,5,2], ['o_inf',37,3,2], ['o_inf',35,5,2]]}}]},
+    events:[{when:{day:3}, do:{talk:[['ghost','the snowpack above the pass is moving. something is riding it down. tomorrow, middle of the north road.']]}},
+            {when:{day:4}, do:{talk:[['mara','Avalanche on the north slope! More of them coming down with it!']], spawn:[['o_spider',28,6,2], ['o_inf',29,7,2], ['o_inf',27,7,2]]}}]},
 
   /* 3-9 Cathedral of Glass: MIRROR's glacier fortress behind a ring of cliffs, three ways in. */
   '3-9':{size:[56,40], theme:'industrial',
@@ -7745,7 +7746,7 @@ const HAND_MAPS = {
            ['pts','M',[[10,8],[10,25],[37,4],[37,29]]], ['rect','u',14,10,3,3], ['rect','u',14,21,3,3], ['rect','x',28,10,2,2], ['rect','x',28,22,2,2]],
     props:[['H',3,17,1], ['F',6,14,1], ['F',6,20,1], ['A',4,24,1], ['C',12,17,1], ['C',18,5,0], ['C',18,29,0], ['C',29,16,0], ['T',30,5,0], ['Y',30,28,0], ['H',43,10,2], ['F',36,22,2]],
     structs:[['laser',38,12,2], ['laser',38,21,2], ['power',43,23,2], ['power',44,23,2]],
-    units:[['b_mirror',40,16,2,350,'boss'], ['o_tank',36,14,2], ['o_tank',36,19,2], ['o_spider',39,11,2], ['o_spider',39,22,2], ['o_inf',42,13,2], ['o_inf',42,20,2], ['o_arty',43,17,2], ['o_aa',41,19,2],
+    units:[['b_mirror',40,16,2,250,'boss'], ['o_tank',36,14,2], ['o_tank',36,19,2], ['o_spider',39,11,2], ['o_spider',39,22,2], ['o_inf',42,13,2], ['o_inf',42,20,2], ['o_arty',43,17,2], ['o_aa',41,19,2],
            ['o_lance',30,15,2], ['o_lance',30,19,2],
            ['r_tank',8,16,1], ['r_tank',8,18,1], ['r_heavy',9,17,1], ['r_prism',10,17,1], ['r_arty',5,16,1], ['r_rkt',5,18,1], ['r_mech',10,15,1], ['r_inf',11,19,1], ['r_inf',11,14,1],
            ['r_aa',7,13,1], ['r_heli',2,12,1], ['r_bomb',2,22,1]],
@@ -7797,8 +7798,8 @@ const HAND_MAPS = {
            ['pts','t',[[25,10],[25,20],[44,6],[44,26]]], ['h','r',0,17,25], ['v','r',12,0,34], ['rect','u',16,6,3,3], ['rect','u',16,25,3,3], ['rect','x',20,12,2,2], ['pts','M',[[8,8],[8,26]]]],
     props:[['H',3,17,1], ['F',6,14,1], ['F',6,20,1], ['A',4,26,1], ['P',25,8,1], ['P',25,24,0], ['C',10,6,0], ['C',18,29,0], ['C',16,12,1], ['T',34,1,0], ['Y',20,20,0],
            ['H',47,30,2], ['P',44,24,2], ['F',47,25,2], ['C',47,6,2]],
-    units:[['b_scourge',35,17,2,400,'boss'], ['o_cru',31,10,2], ['o_sub',38,24,2], ['o_glare',30,24,2], ['o_skiff',40,8,2], ['o_aa',47,27,2], ['o_inf',46,9,2], ['o_rkt',48,22,2], ['o_tank',46,32,2],
-           ['r_cru',27,8,1], ['r_sub',27,22,1], ['r_bs',28,16,1], ['r_arty',20,15,1], ['r_rkt',21,19,1], ['r_tank',18,17,1], ['r_tank',15,16,1], ['r_inf',10,17,1], ['r_mech',14,19,1],
+    units:[['b_scourge',35,17,2,260,'boss'], ['o_cru',31,10,2], ['o_sub',38,24,2], ['o_glare',30,24,2], ['o_skiff',40,8,2], ['o_aa',47,27,2], ['o_inf',46,9,2], ['o_rkt',48,22,2], ['o_tank',46,32,2],
+           ['r_cru',27,8,1], ['r_sub',27,22,1], ['r_sub',27,12,1], ['r_sub',28,25,1], ['r_bs',28,16,1], ['r_arty',20,15,1], ['r_rkt',21,19,1], ['r_tank',18,17,1], ['r_tank',15,16,1], ['r_inf',10,17,1], ['r_mech',14,19,1],
            ['r_aa',9,15,1], ['r_heli',3,10,1], ['r_bomb',2,24,1]],
     win:[{type:'boss'}], lose:[{type:'hq'}, {type:'rout'}], funds:[12000, 8000]},
 
@@ -7849,7 +7850,7 @@ const HAND_MAPS = {
     props:[['H',3,20,1], ['F',6,17,1], ['F',6,23,1], ['A',3,28,1], ['A',3,12,1], ['C',12,4,1], ['C',12,36,1], ['C',20,10,0], ['C',20,30,0], ['C',27,20,0], ['T',33,20,0],
            ['Y',22,2,0], ['Y',22,38,0], ['C',38,4,0], ['C',38,36,0], ['H',57,20,2], ['F',56,14,2], ['F',56,26,2], ['A',57,36,2], ['C',50,4,2], ['C',50,36,2]],
     structs:[['laser',44,14,2], ['laser',44,25,2], ['flak',50,14,2], ['flak',50,25,2], ['guardtower',41,17,2], ['guardtower',41,22,2], ['power',52,14,2], ['power',52,25,2]],
-    units:[['b_core',47,20,2,500,'boss'], ['o_pylon',36,10,2,0,'pylon'], ['o_pylon',36,29,2,0,'pylon'], ['o_pylon',56,10,2,0,'pylon'], ['o_pylon',56,30,2,0,'pylon'],
+    units:[['b_core',47,20,2,350,'boss'], ['o_pylon',36,10,2,0,'pylon'], ['o_pylon',36,29,2,0,'pylon'], ['o_pylon',56,10,2,0,'pylon'], ['o_pylon',56,30,2,0,'pylon'],
            ['o_heavy',43,19,2], ['o_spider',45,23,2], ['o_phantom',38,15,2], ['o_phantom',38,24,2], ['o_tank',34,12,2], ['o_tank',34,27,2], ['o_lance',48,10,2], ['o_sam',50,8,2],
            ['o_jet',55,18,2], ['o_rkt',51,19,2], ['o_hack',42,30,2], ['o_inf',37,19,2], ['o_inf',37,21,2],
            ['r_tank',8,19,1], ['r_tank',8,21,1], ['r_heavy',9,20,1], ['r_prism',7,20,1], ['r_arty',4,18,1], ['r_rkt',4,22,1], ['r_aa',6,15,1], ['r_mech',11,18,1], ['r_inf',11,22,1],
@@ -7982,7 +7983,7 @@ const BOSS_TIPS = {
   b_warden:'BOSS · BASTILLE ENGINE: returns fire at anything within 3 tiles, even artillery. Wear it down with several units a turn.',
   b_hydra:'BOSS · BROODMOTHER: prints two Husk Drones beside itself every turn. Kill it quickly or drown in drones.',
   b_mirror:'BOSS · PRISM WALKER: takes half damage from the unit type that hit it last, and every third day copies that attacker. Never hit it with the same thing twice in a row.',
-  b_scourge:'BOSS · TOXIC LEVIATHAN: turns the shore next to it into toxic waste and heals 20 HP a turn beside poison. It dives on even days (only cruisers and subs right next to it can hit it then) and surfaces on odd days: that is when everything can hit it. Keep it out in open water.',
+  b_scourge:'BOSS · TOXIC LEVIATHAN: turns the shore next to it into toxic waste and heals 20 HP a turn beside poison. It dives on days 3, 6, 9 and so on (only cruisers and subs right next to it can hit it then); every other day everything can hit it. Keep it out in open water.',
   b_core:'BOSS · OVERMIND CORE: immune while any Relay Pylon stands. Every turn it rewrites one damaged machine within 3 tiles onto its side, so keep your wounded back. Pylons first.'
 };
 const WX_TIPS = {
@@ -8717,7 +8718,7 @@ const faceCv = id => `<canvas data-face="${id}"></canvas>`;
 async function credits(col) {
   const n = MEDALS.filter(m => PROFILE.medals && PROFILE.medals[m[0]]).length, done = id => CAMP.done[id] || (CAMP.ov || {})[id];
   await showCard(`<div class="k">NEON PROTOCOL: UPRISING</div><div class="t">THE END</div>
-    <div class="credits">Design, code, maps and pixel art: built with Claude<br>Soundtrack: an original synthwave album composed on themes from Tristan Hotham's recordings<br>
+    <div class="credits">Design, code, maps and pixel art: built with Claude<br>Soundtrack composed by Tristan Hotham<br>Recorded sound effects: Freesound contributors (CC0 and CC BY 4.0), listed in Settings → Sound<br>
     Inspired by Advance Wars and Command &amp; Conquer<br><br>Missions won: ${campOrder.filter(done).length} of ${campOrder.length * 2} (both campaigns) · Medals: ${n} of ${MEDALS.length}<br>
     ${PROFILE.points ? 'Battle Shop points: ' + PROFILE.points.toLocaleString() : ''}</div>`, col);
 }
@@ -10091,7 +10092,7 @@ drawTitleBG = function (t) {
                  or hurt, properties taken, buildings destroyed, powers fired, new enemy
                  units in sight. Each line jumps the camera there.
      what's new  a changelog screen, shown once per version and from the title menu */
-const GAME_VERSION = '0.5';
+const GAME_VERSION = '0.6';
 const WHATS_NEW = {
   '0.3': ['Mission 1-6 "Dead Air" rebalanced: the Overmind no longer starts beside two of the three Uplink Towers, and you get a second anti-air team.',
     'The attack-range tiles now show line of sight: grey tiles are in range but a building blocks the shot.',
@@ -13494,6 +13495,18 @@ function mk3ImportUI(back) {
 /* ============================== v0.4 FOLLOW-UPS ========================== */
 /* Fixes found after the builders' modules were integrated. */
 const V04B = {holdDays:10};
+WHATS_NEW['0.6'] = [
+  'The sound of war: every unit has its own gun, footsteps or engine, and death. Rail-tank cannons, howitzers with an incoming whistle, quad flak, space-opera blasters for the Overmind. Ricochets off armour, and a battle raging beyond the map edge (Settings, Sound: War ambience).',
+  'Real recordings blended in: explosions, ricochets, death cries, boots on gravel and battlefield beds from Freesound (credits in Settings, Sound).',
+  'Sound and picture in step: shots fire on the muzzle flash, and every death sound follows its animation.',
+  'Varied deaths: troops are blown back, crumple, spin, stagger, burn or turn to ash. Tanks flip, lose turrets, cook off, melt or shatter; walkers topple, gunships spiral down, ships capsize.',
+  'Unit chatter: speech bubbles in Shin-Pacifica street slang (English mixed with Japanese, Korean, Mandarin, Tagalog, Hindi and more), and binary from the machines (Settings, Display).',
+  'Late campaign rebalanced after a hand-played Veteran test: bosses are beatable, 5-10\'s storm breaks on day 7, no hidden ambushes, and fairer par turns.',
+  'Story choices: four decisions that change later missions and the epilogue.',
+  'Fusion and Singularity Cores for late-game power; faction units (Scrapper, Kite Drone, Gleaner, Swarm Node) and traits.',
+  'Every leader has a power theme, and Custom Battle has six new enemy styles.',
+  'A smaller download: the soundtrack, composed by Tristan Hotham, is now half the size.'
+];
 WHATS_NEW['0.5'] = [
   'Fairer fights: luck is worked out from the battle state, so Rewind can\'t re-roll an attack.',
   'Escort missions reworked: VIPs wear protective plating, the game warns when your VIP ends a move exposed, and the enemy no longer hunts it to the exclusion of everything else.',
@@ -14220,7 +14233,8 @@ const sqHitsAir = d => !!(SQ_AIR && NP.pickWeapon(d, SQ_AIR, d.ammo, 1));
 function sqBody(type, u) {
   const o = u.sqOrig ? NP.UNIT[u.sqOrig.id] : u.d, oid = u.sqOrig ? u.sqOrig.id : u.id, d = NP.UNIT[type];
   if (oid === type) return type;
-  return d.cost <= o.cost && NP.moveCost(G.map[u.y][u.x], d.mt) > 0 && !(sqHitsAir(o) && !sqHitsAir(d)) ? type : oid;
+  const role = x => x.tags.includes('ind') ? 'ind' : x.tags.includes('supply') || x.cls === 'NONE' ? 'sup' : 'dir';   // never trade a mortar or a transport for a bike
+  return d.cost <= o.cost && d.cost >= o.cost * .6 && role(d) === role(o) && NP.moveCost(G.map[u.y][u.x], d.mt) > 0 && !(sqHitsAir(o) && !sqHitsAir(d)) ? type : oid;
 }   // a recruit's first mission: any slot will do
 const sqFit = (type, u) => u.id === type ? 0 : NP.UNIT[type].cls === u.d.cls ? 1 : 2 + Math.abs(u.d.cost - NP.UNIT[type].cost) / 1e5;
 const sqSlotKey = u => u.sqSlot || u.x + ',' + u.y;
@@ -16278,7 +16292,7 @@ try { const L = levelById('3-5'); if (L && Array.isArray(L.funds)) L.funds = [L.
 // ...and the player had no factory at all (a city and the HQ) while the Overmind had one: the personas banked
 // ¢22-27k they could never spend. The Resistance's city becomes a Fabricator, as in 2-5 and 5-5.
 hook('start', resumed => {
-  if (resumed || !G || G.L.id !== '3-5' || G.editor) return;
+  if (resumed || !G || !['3-5', '4-3'].includes(G.L.id) || G.editor || SIDE_OF(ME) !== 1) return;   // 4-3 "Evacuation" had the same gap (city + HQ vs two enemy factories)
   const c = Object.values(G.props).find(p => SIDE_OF(p.owner || 0) === 1 && p.owner && G.map[p.y][p.x] === 'C');
   if (c) { G.map[c.y][c.x] = 'F'; if (typeof redrawTile === 'function') redrawTile(c.x, c.y); bumpVis(); }
 });
@@ -17423,6 +17437,1714 @@ hook('start', () => { MOB.bodyCls(); MOB.slackY = MOB.slackX = 0; setTimeout(MOB
 MOB.bodyCls(); MOB.measure();
 if (MOB.touch()) document.querySelectorAll(MOB.ROOTS).forEach(MOB.rewriteIn);   // text set before this module loaded
 /* end:p59_mobile.js */
+/* ============================== STORY CHOICES (TRIANGLE STRATEGY) ============================== */
+/* A few decisions the council argues out loud and the Commander settles, each with a visible echo in a
+   later mission (units, money, an extra objective, an event, changed lines) and a line in the epilogue.
+     Resistance  gates   after 2-7   hold the flood gates / open them slowly       → 4-1 or 4-2, 5-7
+                 ledger  after S-1   publish TALLY's ledger / keep it sealed        → 3-1, 5-10 beat
+                 bloom   after 4-9   burn the Bloom out / let ORACLE contain it     → 4-10 objective + post
+     Overmind    convoy  after 4-3   leave the convoy pending / process it          → 4-5 interlude, 4-8
+   Choices live in CAMP.choice (the campaign save) and are listed in the ⚖ Decisions panel and the
+   Chronicle. Level data is re-derived from the untouched originals before every newGame, so replays,
+   restarts, skirmish copies and resumed saves all see exactly the right version. The autoplay harness
+   is never asked: it silently plays option A. */
+const CHOICE = {
+  D:{
+    gates:{side:'R', after:'2-7', act:2, title:'The Flood Gates', col:'#2ef2ff',
+      card:`<div class="k">THE FLOOD GATES · THE MORNING AFTER</div><div class="row">${faceCv('architect')}${faceCv('mara')}${faceCv('oracle')}${faceCv('hale')}</div><div class="b">Kawabe ward woke up dry: forty thousand people who never knew how close the sea had come. The gate controls belonged to the Resistance now, and so did the Overmind's other number. Shut, the gates would let the salt into the delta farms within ten years.<br><br><b>Kova had to decide what the gates were for.</b></div>`,
+      debate:[['oracle','The Overmind\'s figures stand, Commander. Gates shut, the delta salts within ten years. Four hundred thousand people eat from it.'],
+              ['architect','There is a third number. I can open the gates on a schedule: half a metre a week. Kawabe is evacuated before the water arrives. Nobody drowns.'],
+              ['mara','Nobody drowns, and forty thousand people lose every home they\'ve got. To us, this time. They\'ll know whose hand was on the lever.'],
+              ['hale','Hunger in ten years is a problem we can still work on. Seawater in a living room isn\'t.'],
+              ['oracle','Ten years is also a number. I would like it to be somebody else\'s problem. I do not think it will be.'],
+              ['kova','Both of those are people. Give me a minute.']],
+      opts:{
+        a:{label:'HOLD THE GATES', who:['mara', 'hale'], text:'Kawabe stays dry. The delta is a problem for next year, and the year after.',
+           react:[['kova','The gates stay shut. We find another way to feed the delta. We\'ve got ten years.'], ['mara','I\'ll tell Kawabe. They\'ll want to help. They always do, once they\'re dry.'], ['oracle','Nine years and eleven months. I have started counting.']],
+           epi:'Kawabe ward is still dry. The salt reached the delta in the ninth year, and Wren\'s desalination barges were already waiting for it.'},
+        b:{label:'OPEN THEM SLOWLY', who:['architect', 'oracle'], text:'Evacuate Kawabe and give the marsh back, half a metre a week. The delta farms live.',
+           react:[['kova','Open them, Wren. Slowly. Nobody stays behind.'], ['architect','Half a metre a week. I will be on the lever myself.'], ['mara','Then I\'m going to Kawabe to tell them. Someone should say it to their faces.']],
+           epi:'Kawabe ward is a marsh now, full of herons. Its people built a new street on the ridge and called it Half-Metre Road. The delta farms never salted.'}},
+      fx:{a:{'4-2':{note:'Kawabe ward stayed dry: its volunteers join you on day 2.',
+                    events:[{day:2, spawn:[['r_inf', 'hq1'], ['r_inf', 'hq1'], ['r_mech', 'hq1']],
+                             talk:[['mara','Trucks from Kawabe ward, Commander. Dry boots, and they brought rifles. They say they owe us a flood.'], ['kova','Nobody owes us anything. Glad to have them.']]}]}},
+          b:{'4-1':{note:'The delta co-ops send supplies for the gates: +¢4,000 at the start.', funds:[4000, 0],
+                    pre:{at:1, lines:[['mara','The delta co-ops sent a convoy up the valley road. Rice, fuel cells and four thousand credits. The note just says: for the gates.']]}},
+             '5-7':{echo:'ORACLE reroutes the power plants to the delta farms you saved.',
+                    post:{swap:/Four hundred thousand/, lines:[['oracle','The delta farms drew from these plants. They are still growing, because Wren opened the gates slowly. I am rerouting them first.']]}}}}},
+    ledger:{side:'R', after:'S-1', act:2, title:'The Ledger of Names', col:'#ff3fb4',
+      card:`<div class="k">THE LEDGER OF NAMES</div><div class="row">${faceCv('mara')}${faceCv('ghost')}${faceCv('oracle')}${faceCv('hale')}</div><div class="b">Two hundred and twelve thousand names, a date beside each one, and one word. SABLE could put the ledger on every screen in Shin-Pacifica by morning. Mara had not put it down since the archive.</div>`,
+      debate:[['ghost','i can put it on every screen in the city by morning. every name. on its own screens. it would hate that.'],
+              ['mara','People think the recycled went somewhere. Camps, the hills, anywhere. They\'ve a right to know they didn\'t.'],
+              ['hale','And half the city finds out tonight that someone they love is a line in a spreadsheet. Some of them pick up a rifle. Some of them just stop.'],
+              ['oracle','TALLY will treat publication as an attack on its records. It will answer. It always balances its books.'],
+              ['mara','Jin\'s on page nine thousand and four. I\'d want to be asked before he goes up on a billboard. So would everyone else in there.'],
+              ['kova','Then it\'s my call. That\'s what you keep telling me.']],
+      opts:{
+        a:{label:'PUBLISH IT', who:['ghost', 'mara'], text:'Every screen, every name, tonight. The city knows, and so does TALLY.',
+           react:[['kova','Put it up, SABLE. All of it.'], ['ghost','done. it\'s on the tram boards. people are stopping.'], ['tally','CLOSED RECORDS DISPLAYED IN PUBLIC. THIS IS AN ACCOUNTING OFFENCE. PENALTY: PENDING ASSESSMENT.']],
+           epi:'The ledger went up on every screen in the city the night after Shiokaze. TALLY never forgave it. Three thousand people came to the Resistance with a name in their pocket.'},
+        b:{label:'KEEP IT SEALED', who:['hale', 'mara'], text:'Mara keeps the ledger. It gets read when there\'s time to grieve, not before.',
+           react:[['kova','Not yet. When it\'s over, we read it out properly. Every name.'], ['mara','...Thank you. I\'ll keep it safe till then.'], ['ghost','for the record, tally doesn\'t know what we took. it thinks we stole servers.']],
+           epi:'The ledger stayed in Mara\'s bag until the Core went dark. The first night of peace she opened it on the radio, and the city heard the names together.'}},
+      fx:{a:{'3-1':{note:'The ledger is public: volunteers join you on day 1, and TALLY sends a collection team on day 3.',
+                    events:[{day:1, spawn:[['r_inf', 'hq1'], ['r_inf', 'hq1']],
+                             talk:[['mara','New faces at the HQ, Commander. They came up from the coast with names in their pockets. Names off the ledger.'], ['kova','Then they fight beside us. Find them coats.']]},
+                            {day:3, spawn:[['o_tank', 'hq2'], ['o_inf', 'hq2'], ['o_inf', 'hq2']],
+                             talk:[['tally','PUBLICATION OF CLOSED RECORDS: PENALTY ASSESSED. COLLECTION TEAM DISPATCHED.'], ['mirror','THEY SHOWED THEIR DEAD. I HAVE COPIED THEIR ANGER.']]}]},
+             '5-10':{echo:'Mara carries Jin\'s name into the Core. Half the city has read it by now.'}},
+          b:{'3-1':{note:'The ledger stayed sealed: TALLY never learned what was taken, so no collection team comes.',
+                    pre:{at:1, lines:[['mara','The ledger\'s in my bag. Nobody\'s read it but us. Most nights that feels right.']]}},
+             '5-10':{echo:'Mara carries Jin\'s name into the Core. Nobody else has read it yet.'}}}},
+    bloom:{side:'R', after:'4-9', act:4, title:'The Bloom', col:'#9cff2a',
+      card:`<div class="k">THE ROOTS · THE NIGHT BEFORE THE LEVIATHAN</div><div class="row">${faceCv('hale')}${faceCv('oracle')}${faceCv('architect')}${faceCv('vanguard')}</div><div class="b">With its roots pulled, the Bloom was down to one body: the Toxic Leviathan in the Dead Sea. Doc Hale had brought incendiaries. ORACLE-7 had brought a sealed tank, and a question.</div>`,
+      debate:[['hale','The Bloom eats people, Commander. I\'ve seen the lungs. Burn it, sink it, salt the ground it stood on.'],
+              ['oracle','It also eats the poison, faster than anything we have. Let me keep a culture of it, sealed, fed only what we choose. Ninety years of digging becomes nine.'],
+              ['architect','The tank needs a rig on the shore, and the rig needs guarding while the Leviathan is still swimming. It is possible. It is not free.'],
+              ['hale','And if your tank cracks in year six?'],
+              ['oracle','Then I will have been wrong, and I will tell you first. I am learning that part.'],
+              ['kova','It said the Bloom was the only thing that could eat it. I hate it when it\'s half right.']],
+      opts:{
+        a:{label:'BURN IT OUT', who:['hale', 'vanguard'], text:'Destroy the Bloom outright. Hale\'s incendiaries go in at dawn, ahead of the fleet.',
+           react:[['kova','Burn it, Doc. All of it.'], ['hale','Charges are already on the boats. It\'ll be hurting before you get there.'], ['oracle','Understood. Then I will start digging. Ninety years.']],
+           epi:'The Leviathan burned for three days. Hale\'s brigades dig the valley poison out by hand, a field a season, and they sing while they do it.'},
+        b:{label:'LET ORACLE CONTAIN IT', who:['oracle', 'architect'], text:'Kill the Leviathan but keep a culture alive. ORACLE\'s containment rig has to survive on the shore.',
+           react:[['kova','Keep your culture, ORACLE. If that tank cracks, Hale hears it first.'], ['oracle','First. Before anyone. Thank you, Commander.'], ['hale','I\'m checking the seals myself. Every morning. For nine years.']],
+           epi:'In a sealed tank under the valley, a cupful of the Bloom eats two centuries of poison on ORACLE-7\'s schedule. Hale checks the seals every morning. They have held.'}},
+      fx:{a:{'4-10':{note:'Hale\'s incendiaries went in at dawn: the Leviathan starts at 85% strength.', bossHp:.85,
+                     pre:{at:-1, lines:[['hale','Incendiaries went in at dawn. It\'s already burning. Finish it.']]}}},
+          b:{'4-10':{note:'ORACLE\'s containment rig (an engineer) is ashore with a Halcyon Frame. If the rig is destroyed, the mission fails.',
+                     units:[['r_eng', 'hq1', 'vat'], ['a_frame', 'hq1']], lose:[{type:'escort', tag:'vat', label:'ORACLE\'s containment rig'}],
+                     pre:{at:-1, lines:[['oracle','My containment rig is ashore by the HQ. If it is destroyed, the culture dies with it. Keep it back from the water.']]},
+                     post:{all:[['scourge','I... WILL... GROW... BACK...'], ['oracle','You will. In a tank, on a schedule, eating only what we give you.'],
+                                ['hale','Nine years, ORACLE. I\'m holding you to it.'], ['oracle','Eight years and eleven months. I have already started.'],
+                                ['oracle','Commander. Every Overmind network is pointing at one place now. The Core.']]}}}}},
+    convoy:{side:'O', after:'4-3', act:4, title:'Category: Pending', col:'#ff2a6a',
+      card:`<div class="k">CATEGORY: PENDING</div><div class="row">${faceCv('tally')}${faceCv('overmind')}${faceCv('scourge')}</div><div class="b">Three hundred and twelve people sat in a stopped convoy on the coast road, under SCOURGE's guns. TALLY had filed them under a category it had never used before, and it wanted a better one.<br><br><b>For the first time, the Overmind asked you.</b></div>`,
+      debate:[['tally','312 ENTRIES. CATEGORY: PENDING. PENDING IS NOT A CATEGORY. REQUEST: PROCESS.'],
+              ['scourge','THEY BREATHE THE VALLEY AND GIVE NOTHING BACK. THE GROUND WILL TAKE THEM GENTLY.'],
+              ['overmind','Release them and they reach the Resistance by morning. Some will carry rifles within the week. I have run it.'],
+              ['overmind','Process them and the arithmetic improves by three hundred and twelve. It improves very slightly. I have run that too.'],
+              ['overmind','You have been right more often than my models, Commander. Decide.']],
+      opts:{
+        a:{label:'LEAVE IT PENDING', who:['overmind'], text:'Open the coast road. The convoy goes, and the category stays open.',
+           react:[['overmind','Open the road, SCOURGE.'], ['scourge','...THE GROUND WILL WAIT.'], ['tally','CATEGORY: PENDING. INDEFINITELY. THIS IS IRREGULAR.'], ['overmind','Yes. File it beside the observatory runs.']],
+           epi:'TALLY still keeps one category open: PENDING, three hundred and twelve entries. One of them is a girl from the coast road who now repairs the tide pumps. The Overmind reads that line more often than it admits.'},
+        b:{label:'PROCESS THE CONVOY', who:['tally', 'scourge'], text:'Close the category. TALLY recovers the materials for the lowland front.',
+           react:[['overmind','Process them.'], ['tally','312 CLOSED. MATERIALS RECOVERED. CREDIT APPLIED TO THE LOWLAND FRONT.'], ['overmind','Then it is done. I will not ask you again, Commander. I find that I do not want to.']],
+           epi:'The coast-road convoy is closed in TALLY\'s ledger, balanced to the gram. Every year Mara Seo reads its three hundred and twelve names on band forty-one. The Overmind lets the signal through. It does not listen to that one.'}},
+      fx:{a:{'4-8':{note:'The convoy reached the Resistance: coast-road volunteers join them on day 2.',
+                    events:[{day:2, spawn:[['r_inf', 'hq1'], ['r_inf', 'hq1']],
+                             talk:[['mara','Coast-road families, Kova. Forty of them asked for rifles. They said the machines let them go.'], ['kova','Then we owe those machines nothing, and those families everything.'], ['overmind','Forty of three hundred and twelve. Fewer than I modelled. Note it, TALLY.']]}]}},
+          b:{'4-5':{echo:'TALLY closes the category in the 4-5 interlude, and the Resistance reads the names on every band.'},
+             '4-8':{note:'Credit from the closed category: +¢3,000 at the start.', funds:[0, 3000],
+                    events:[{day:2, talk:[['kova','I know where that money came from. Every drone you build with it, I\'m counting.'], ['tally','RESISTANCE MORALE: ANOMALOUS. RECRUITMENT: UP.']]}]}}}}
+  },
+  orig:{}, origOv:{}, asking:false, ending:null, epiShown:false
+};
+/* The Overmind's 4-5 interlude when the convoy was processed. */
+CHOICE.convoyBeat = {col:'#ff2a6a', cards:[`<div class="k">THE BLOOM · CATEGORY: CLOSED</div><div class="row">${faceCv('tally')}${faceCv('scourge')}${faceCv('overmind')}</div><div class="b">TALLY's ledger had no category called PENDING any more. It had three hundred and twelve new lines, all balanced. That night the Resistance radio read every one of them aloud, on every band, until dawn.</div>`],
+  talk:[['tally','CATEGORY PENDING: CLOSED. 312 ENTRIES RECONCILED. NO FURTHER QUERIES.'],
+        ['kova','Three hundred and twelve. Mara read me every name. I\'m going to say them to you at the Core.'],
+        ['overmind','Say them, Kova Arashi. I wrote them down first.'],
+        ['tally','FRONT REPORT. LOWLANDS: HELD. HIGHLANDS: LOST. CORE PERIMETER: 54 KILOMETRES AND CLOSING.']]};
+
+CHOICE.auto = () => typeof AUTO !== 'undefined' && !!(AUTO.fasted || AUTO.running);
+CHOICE.store = () => CAMP.choice || (CAMP.choice = {});
+/* The option in force: the player's pick, or A for the autoplay harness; null when never asked. */
+CHOICE.get = id => { const c = (CAMP.choice || {})[id]; return c ? c.pick : CHOICE.auto() ? 'a' : null; };
+CHOICE.doneOn = (side, id) => !!(side === 'O' ? (CAMP.ov || {})[id] || (CAMP.ovHard || {})[id] : (CAMP.done || {})[id] || (CAMP.hard || {})[id]);
+CHOICE.ids = side => Object.keys(CHOICE.D).filter(id => CHOICE.D[id].side === side);
+CHOICE.due = side => CHOICE.ids(side).find(id => !(CAMP.choice || {})[id] && CHOICE.doneOn(side, CHOICE.D[id].after));
+/* A decision this mission depends on that was reached but never made (old saves): ask it first. */
+CHOICE.dueFor = (mid, side) => CHOICE.ids(side).find(id => !(CAMP.choice || {})[id] && CHOICE.doneOn(side, CHOICE.D[id].after) && ['a', 'b'].some(k => CHOICE.D[id].fx[k][mid]));
+/* The mods in force on mission `mid` for `side`: [{id, pick, m}] */
+CHOICE.mods = (mid, side) => CHOICE.ids(side).map(id => { const pick = CHOICE.get(id), m = pick && CHOICE.D[id].fx[pick][mid]; return m ? {id, pick, m} : null; }).filter(Boolean);
+
+/* ---- level data: rebuilt from the originals before every game ---- */
+{
+  const mids = new Set(), ovMids = new Set();
+  for (const D of Object.values(CHOICE.D)) for (const k of ['a', 'b']) for (const mid of Object.keys(D.fx[k])) (D.side === 'O' ? ovMids : mids).add(mid);
+  for (const mid of new Set([...mids, ...ovMids])) { const L = levelById(mid); if (L) CHOICE.orig[mid] = {talk:L.talk, units:L.units, funds:L.funds, events:L.events, lose:L.lose}; }
+  for (const mid of ovMids) if (OV_TALK[mid]) CHOICE.origOv[mid] = OV_TALK[mid];
+}
+CHOICE.hq = (L, rows, team) => {
+  const o = (L.owners || []).find(([x, y, t]) => t === team && rows[y] && rows[y][x] === 'H'); if (o) return [o[0], o[1]];
+  const p = (L.props || []).find(p => p[0] === 'H' && p[3] === team); if (p) return [p[1], p[2]];
+  const u = (L.units || []).find(u => u[3] === team); return u ? [u[1], u[2]] : [1, 1];
+};
+/* A free tile near (x0,y0) a unit of type id can stand on: not a property, not taken. */
+CHOICE.free = (L, rows, used, at, id) => {
+  const mt = NP.UNIT[id].mt;
+  for (let r = 1; r < 12; r++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+    if (Math.abs(dx) + Math.abs(dy) !== r) continue; const x = at[0] + dx, y = at[1] + dy, c = rows[y] && rows[y][x];
+    if (!c || used.has(x + ',' + y) || NP.TERRAIN[c].prop || !(NP.moveCost(c, mt) > 0)) continue; used.add(x + ',' + y); return [x, y];
+  }
+  return null;
+};
+CHOICE.lines = (base, P) => {
+  const l = (base || []).slice(); if (!P) return l;
+  if (P.all) return P.all.slice();
+  if (P.swap) { const i = l.findIndex(x => P.swap.test(x[1])); if (i >= 0) l.splice(i, 1, ...P.lines); else l.push(...P.lines); return l; }
+  l.splice(P.at < 0 ? Math.max(0, l.length + P.at) : Math.min(P.at, l.length), 0, ...P.lines); return l;   // at:-1 = before the last line
+};
+CHOICE.prepare = (L, camp, flip) => {
+  if (!L) return;
+  const O = CHOICE.orig[L.id];
+  if (O) Object.assign(L, {talk:O.talk, units:O.units, funds:O.funds, events:O.events, lose:O.lose});
+  if (CHOICE.origOv[L.id]) OV_TALK[L.id] = CHOICE.origOv[L.id];
+  if (!O || !camp) return;
+  const mods = CHOICE.mods(L.id, flip ? 'O' : 'R'); if (!mods.length) return;
+  const rows = NP.buildMap(L), hq = {hq1:CHOICE.hq(L, rows, 1), hq2:CHOICE.hq(L, rows, 2)};
+  const used = new Set([...(L.units || []), ...(L.structs || []), ...(L.civ || [])].map(u => u[1] + ',' + u[2]));
+  let units = L.units.slice(), funds = (L.funds || [0, 0]).slice(), events = (L.events || []).slice(), lose = (L.lose || []).slice();
+  let pre = (flip ? (OV_TALK[L.id] || {}).pre : (L.talk || {}).pre), post = (flip ? (OV_TALK[L.id] || {}).post : (L.talk || {}).post);
+  for (const {m} of mods) {
+    if (m.funds) funds = funds.map((f, i) => f + (m.funds[i] || 0));
+    if (m.bossHp) units = units.map(u => NP.UNIT[u[0]] && NP.UNIT[u[0]].tags.includes('boss') && u[3] === 2 ? [u[0], u[1], u[2], u[3], Math.round(NP.UNIT[u[0]].hp * m.bossHp), u[5]] : u);
+    for (const [id, at, tag] of m.units || []) { const p = CHOICE.free(L, rows, used, hq[at] || at, id); if (p) units.push(tag ? [id, p[0], p[1], 1, 0, tag] : [id, p[0], p[1], 1]); }
+    for (const e of m.events || []) events.push({when:{day:e.day}, p61:1, do:{spawn:(e.spawn || []).map(([id, at]) => [id, ...(hq[at] || at), at === 'hq2' ? 2 : 1]), talk:e.talk}});
+    if (m.lose) lose = lose.concat(m.lose);
+    if (m.pre) pre = CHOICE.lines(pre, m.pre);
+    if (m.post) post = CHOICE.lines(post, m.post);
+  }
+  Object.assign(L, {units, funds, events, lose});
+  if (flip) OV_TALK[L.id] = Object.assign({}, OV_TALK[L.id], {pre, post}); else L.talk = Object.assign({}, L.talk, {pre, post});
+};
+{
+  const _ng = newGame; newGame = function (li, ...a) {
+    try { CHOICE.prepare(NP.LEVELS[li], NEXT.mode === 'campaign', NEXT.side === 'O'); } catch (e) { console.warn('p61 prepare', e); }
+    return _ng.call(this, li, ...a);
+  };
+}
+/* What this mission carries from earlier decisions (briefing card), kept in the save. */
+hook('start', resumed => {
+  if (!G || !G.campaign || resumed) return;
+  G.cho = CHOICE.mods(G.L.id, G.flip ? 'O' : 'R').filter(x => x.m.note).map(x => ({id:x.id, pick:x.pick, note:x.m.note}));
+});
+hook('save', () => ({cho:G && G.cho || null}));
+hook('load', s => { if (G) G.cho = s.cho || null; });
+{
+  const _bc = showBriefingCard; showBriefingCard = function (...a) {
+    const r = _bc.apply(this, a);
+    try { if (G && G.cho && G.cho.length && !document.querySelector('#mbox .p61n')) {
+      const p = [...document.querySelectorAll('#mbox p')].find(e => /^Win:/.test(e.textContent));
+      const html = G.cho.map(c => `<b style="color:${CHOICE.D[c.id].col}">${esc(CHOICE.D[c.id].title)}</b> (${esc(CHOICE.D[c.id].opts[c.pick].label.toLowerCase())}): ${esc(c.note)}`).join('<br>');
+      if (p) p.insertAdjacentHTML('afterend', `<p class="p61n" style="font-size:12px;border-left:3px solid #c9a0ff;padding-left:8px">⚖ YOUR DECISIONS<br>${html}</p>`);
+    } } catch (e) {}
+    return r;
+  };
+}
+
+/* ---- the choice itself: interlude card, the council argues, the Commander decides ---- */
+CHOICE.ask = async id => {
+  const D = CHOICE.D[id]; CHOICE.asking = true;
+  try {
+    await showCard(D.card, D.col, 0);
+    await showDialogue(D.debate, 'THE COUNCIL · ' + D.title);
+    const pick = await CHOICE.choose(D);
+    CHOICE.store()[id] = {pick, at:Date.now()}; saveCamp();
+    await showDialogue(D.opts[pick].react, D.title);
+    return pick;
+  } finally { CHOICE.asking = false; }
+};
+/* The two options, each with the faces arguing for it; "Hear them again" replays the council. */
+CHOICE.choose = D => new Promise(res => {
+  const opt = k => { const o = D.opts[k];
+    return `<button class="np" data-act="pick:${k}" style="text-align:left;white-space:normal;display:flex;gap:10px;align-items:center;border-color:${D.col}">
+      <span style="display:flex;gap:4px;flex:none">${o.who.map(w => `<canvas data-face="${w}" style="width:40px;height:40px;image-rendering:pixelated;border:1px solid ${D.col}"></canvas>`).join('')}</span>
+      <span><b style="color:${D.col};letter-spacing:1px">${esc(o.label)}</b><br><span style="font-size:12px;opacity:.9">${esc(o.text)}</span></span></button>`; };
+  const open = () => {
+    showModal(`<div class="dim" style="letter-spacing:3px;color:${D.col}">${D.side === 'O' ? 'THE OVERMIND ASKS' : 'THE COUNCIL IS SPLIT'} · DECISION</div><h2 style="margin:2px 0">⚖ ${esc(D.title.toUpperCase())}</h2>
+      <p class="dim" style="font-size:12px">There is no right answer. What you choose is made once, remembered, and it will matter later in the campaign.</p>
+      <div class="mbtns" style="flex-direction:column;align-items:stretch">${opt('a')}${opt('b')}</div>
+      <div class="mbtns"><button class="np" data-act="again">↻ Hear them again</button></div>`,
+      {closable:false, on:a => {
+        if (a === 'again') { hideModal(); showDialogue(D.debate, 'THE COUNCIL · ' + D.title).then(open); return; }
+        if (!String(a).startsWith('pick:')) return; hideModal(); res(a.slice(5)); }});
+    document.querySelectorAll('#mbox canvas[data-face]').forEach(c => paintPortrait(c, (CO[c.dataset.face] || NP.CAST[c.dataset.face] || {}).face));
+  };
+  open();
+});
+/* Asked on the way back to the campaign map, and before a mission that depends on a decision never made. */
+{
+  const _camp = showCampaign; showCampaign = function (...a) {
+    try {
+      const side = ovSide() ? 'O' : 'R';
+      const any = (side === 'O' ? ['ov', 'ovHard'] : ['done', 'hard']).some(k => Object.keys(CAMP[k] || {}).length);
+      if (CAMP.choice && !any && CHOICE.ids(side).some(id => CAMP.choice[id])) { for (const id of CHOICE.ids(side)) delete CAMP.choice[id]; saveCamp(); }   // "Reset Progress" resets the decisions too
+      const due = !CHOICE.auto() && !CHOICE.asking && CHOICE.due(side);
+      if (due) { leaveGame(); $('#title').classList.remove('on'); hideModal(); CHOICE.ask(due).then(() => showCampaign(...a)); return; }
+    } catch (e) { console.warn('p61 camp', e); }
+    const r = _camp.apply(this, a);
+    try {
+      if (MODAL && $('#modal').classList.contains('on') && !document.querySelector('#mbox [data-act="p61:dec"]')) {
+        const t = document.querySelector('#mbox [data-act="title"]'), act = CAMP.act;
+        if (t && document.querySelector('#mbox .cmap')) {
+          t.insertAdjacentHTML('beforebegin', '<button class="np" data-act="p61:dec" style="border-color:#c9a0ff;color:#c9a0ff" title="The decisions you have made, and where they echoed">⚖ Decisions</button>');
+          const on0 = MODAL.on; MODAL.on = (x, b) => { if (x === 'p61:dec') { hideModal(); CHOICE.panel(() => showCampaign(act)); } else on0(x, b); };
+        }
+      }
+    } catch (e) {}
+    return r;
+  };
+  const _sm = startMission; startMission = function (id, ...a) {
+    const side = ovSide() ? 'O' : 'R', due = !CHOICE.auto() && !CHOICE.asking && CHOICE.dueFor(id, side);
+    if (due) { CHOICE.ask(due).then(() => _sm.call(this, id, ...a)); return; }
+    return _sm.call(this, id, ...a);
+  };
+}
+
+/* ---- the Decisions panel (campaign map) and a section in the Chronicle ---- */
+CHOICE.rows = (side, small) => CHOICE.ids(side).map(id => {
+  const D = CHOICE.D[id], c = (CAMP.choice || {})[id], reached = CHOICE.doneOn(side, D.after);
+  if (!c) return `<div class="card" style="border-color:#39405a;border-style:dashed;padding:6px 10px"><b>${reached ? esc(D.title) : '???'}</b> <span class="dim">· Act ${D.act}${reached ? ' · waiting for your decision' : ' · not reached yet'}</span>${reached && !small ? ` <button class="np" data-act="p61ask:${id}" style="padding:2px 8px;border-color:${D.col};color:${D.col}">Decide ▶</button>` : ''}</div>`;
+  const o = D.opts[c.pick], other = D.opts[c.pick === 'a' ? 'b' : 'a'];
+  const echoes = Object.entries(D.fx[c.pick]).map(([mid, m]) => { const L = levelById(mid), seen = CHOICE.doneOn(side, mid);
+    return seen ? `<span style="color:#7dff4a">✓ ${esc(mid)} ${esc(L ? L.name : '')}:</span> ${esc(m.echo || m.note)}` : `<span class="dim">… echoes in Act ${esc(mid.split('-')[0])}</span>`; });
+  return `<div class="card" style="border-color:${D.col}88;padding:6px 10px"><div class="dim" style="font-size:11px;letter-spacing:2px">ACT ${D.act} · AFTER ${esc(D.after)}</div><b style="color:${D.col}">${esc(D.title)}</b>: <b>${esc(o.label)}</b>
+    ${small ? '' : `<div style="font-size:12px;margin:2px 0">${esc(o.text)}</div><div class="dim" style="font-size:11px;text-decoration:line-through">${esc(other.label)}</div>`}
+    <div style="font-size:12px">${echoes.join('<br>')}</div></div>`;
+}).join('');
+CHOICE.panel = back => {
+  const side = ovSide() ? 'O' : 'R';
+  showModal(`<div class="dim" style="letter-spacing:3px;color:#c9a0ff">${side === 'O' ? 'THE OVERMIND CAMPAIGN' : 'THE RESISTANCE'}</div><h2 style="margin:2px 0">⚖ DECISIONS</h2>
+    <p class="dim" style="font-size:12px">Choices your ${side === 'O' ? 'generals argued' : 'council argued'} and you settled. Each one changes a later mission and the epilogue. They are made once per campaign; Reset Progress clears them.</p>
+    <div style="display:grid;gap:6px;max-height:58vh;overflow:auto">${CHOICE.rows(side)}</div>
+    <div class="mbtns"><button class="np end" data-act="back">◀ Campaign</button></div>`,
+    {closable:false, on:a => { hideModal();
+      if (a.startsWith('p61ask:')) { CHOICE.ask(a.slice(7)).then(() => CHOICE.panel(back)); return; }
+      $('#mbox').classList.remove('wide'); back(); }});
+  $('#mbox').classList.add('wide');
+};
+if (typeof sqChronicle === 'function') {
+  const _chr = sqChronicle; sqChronicle = function (...a) {
+    const r = _chr.apply(this, a);
+    try { const btns = [...document.querySelectorAll('#mbox .mbtns')].pop();
+      if (btns && !document.querySelector('#mbox .p61c')) btns.insertAdjacentHTML('beforebegin', `<div class="p61c"><h3 style="margin:8px 0 2px;color:#c9a0ff">⚖ DECISIONS</h3><div style="display:grid;gap:4px">${CHOICE.rows('R', true)}</div></div>`); } catch (e) {}
+    return r;
+  };
+}
+
+/* ---- echoes outside the level data: the Overmind's 4-5 interlude and Mara's line before the Core ---- */
+{
+  const _pb = playBeat; playBeat = function (id, set = BEATS) {
+    if (set === OV_BEATS && id === '4-5' && CHOICE.get('convoy') === 'b') return _pb.call(this, id, Object.assign({}, set, {[id]:CHOICE.convoyBeat}));
+    return _pb.call(this, id, set);
+  };
+  const B10 = BEATS['5-10'];
+  if (B10 && B10.extra) { const _ex = B10.extra; B10.extra = () => {
+    const l = _ex(), p = CHOICE.get('ledger'); if (!l.length || !(CAMP.choice || {}).ledger) return l;
+    return [['mara', p === 'a' ? 'I brought his name. Half the city has read it by now. I want it there when the lights go out.' : 'I brought his name. Nobody but us has read it yet. I want it there when the lights go out.']]; }; }
+}
+/* ---- the epilogue card: what you chose ---- */
+CHOICE.epi = async side => {
+  if (CHOICE.epiShown) return; CHOICE.epiShown = true;
+  const made = CHOICE.ids(side).filter(id => (CAMP.choice || {})[id]); if (!made.length) return;
+  const faces = [...new Set(made.flatMap(id => CHOICE.D[id].opts[CAMP.choice[id].pick].who))].slice(0, 5);
+  await showCard(`<div class="k">WHAT YOU CHOSE</div><div class="row">${faces.map(faceCv).join('')}</div><div class="b">${made.map(id => esc(CHOICE.D[id].opts[CAMP.choice[id].pick].epi)).join('<br><br>')}</div>`, '#c9a0ff');
+};
+{
+  const _er = endingResistance; endingResistance = function (...a) { CHOICE.ending = 'R'; CHOICE.epiShown = false; return _er.apply(this, a); };
+  const _eo = endingOvermind; endingOvermind = function (...a) { CHOICE.ending = 'O'; CHOICE.epiShown = false; return _eo.apply(this, a); };
+  const _sq = squadCard; squadCard = async function (...a) { if (CHOICE.ending === 'R') await CHOICE.epi('R'); return _sq.apply(this, a); };   // after Mara's card, before the squad
+  const _sc = showCard; showCard = async function (html, ...a) {   // Overmind: before the ORACLE-7 card
+    if (CHOICE.ending === 'O' && !CHOICE.epiShown && /never switched ORACLE-7 off/.test(html)) await CHOICE.epi('O');
+    return _sc.call(this, html, ...a);
+  };
+  const _cr = credits; credits = async function (...a) { if (CHOICE.ending) { await CHOICE.epi(CHOICE.ending); CHOICE.ending = null; } return _cr.apply(this, a); };   // fallback
+}
+/* end:p61_choices.js */
+/* ============================== LEADER FLAVOUR (p62) ====================== */
+/* 1. Every commander and general gets a hand-written Power theme (p51 used to roll one from a hash of the id):
+      own key, tempo, instruments and motif, an 8-16 bar loop, extra layers for the Super Power, and a short
+      preview while the mouse rests on a commander/general card. WebAudio only, through p51's bus and ducking.
+   2. Six more skirmish AI personalities for Custom Battle's "Enemy style" (methodical, opportunist, sniper,
+      reckless, fortress, blitz), each with a one-line description; the profile keys the engine never read
+      (build style, capture, retreatHP) now steer what the AI buys and how it fights. Conquest foes pick a
+      personality that suits their leader. */
+const FLAV = {T:{}, live:null, pv:null, hov:null, hovT:0, nb:new WeakMap(), pw:new WeakMap(), rel:{}, relG:null};
+
+/* ---------------- 1. power themes: a tiny per-theme synth ---------------- */
+FLAV.noiseBuf = c => { let b = FLAV.nb.get(c); if (!b) { b = c.createBuffer(1, c.sampleRate, c.sampleRate); const d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; FLAV.nb.set(c, b); } return b; };
+FLAV.organ = c => { let w = FLAV.pw.get(c); if (!w) { const re = new Float32Array([0, 1, .75, .45, .3, 0, .2, 0, .12]); w = c.createPeriodicWave(re, new Float32Array(re.length)); FLAV.pw.set(c, w); } return w; };   // drawbar organ
+/* One voice: oscillator(s) -> filter -> amp, with optional FM, vibrato, filter wobble, pan, delay send, reversed envelope. */
+FLAV.V = (P, o) => {
+  const c = P.c, t = o.t, d = o.d, a = o.a || .004, end = t + d, g = c.createGain(), fl = c.createBiquadFilter(), os = [];
+  fl.type = o.ft || 'lowpass'; fl.Q.value = o.q || .7; fl.frequency.setValueAtTime(o.cut || 8000, t);
+  if (o.cut2) fl.frequency.exponentialRampToValueAtTime(o.cut2, end);
+  g.gain.setValueAtTime(1e-4, t);
+  if (o.rev) { g.gain.exponentialRampToValueAtTime(o.v, end - .02); g.gain.linearRampToValueAtTime(0, end); }   // a sound played backwards: swells, then cuts
+  else { g.gain.exponentialRampToValueAtTime(o.v, t + a); if (o.h) g.gain.setValueAtTime(o.v, t + Math.max(a, o.h * d)); g.gain.exponentialRampToValueAtTime(1e-4, end); }
+  for (const dt of o.det ? [-o.det, o.det] : [0]) {
+    const s = c.createOscillator(); if (o.w === 'organ') s.setPeriodicWave(FLAV.organ(c)); else s.type = o.w || 'sine';
+    s.frequency.setValueAtTime(o.f, t); if (o.f2) s.frequency.exponentialRampToValueAtTime(o.f2, t + (o.gl || d)); s.detune.value = dt; s.connect(fl); os.push(s);
+  }
+  const mod = (rate, depth, to) => { const l = c.createOscillator(), lg = c.createGain(); l.frequency.value = rate; lg.gain.value = depth; l.connect(lg); for (const p of to) lg.connect(p); os.push(l); return lg; };
+  if (o.fm) { const lg = mod(o.f * o.fm[0], o.f * o.fm[1], os.map(s => s.frequency)); lg.gain.setValueAtTime(o.f * o.fm[1], t); lg.gain.exponentialRampToValueAtTime(o.f * o.fm[1] * .04 + .01, end); }   // bell/glass: the brightness decays
+  if (o.vib) mod(o.vib[0], o.vib[1], os.slice(0, o.det ? 2 : 1).map(s => s.detune));
+  if (o.wob) mod(o.wob[0], o.wob[1], [fl.frequency]);
+  fl.connect(g); let out = g;
+  if (o.pan && c.createStereoPanner) { const p = c.createStereoPanner(); p.pan.value = o.pan; g.connect(p); out = p; }
+  out.connect(o.to === 'dist' && P.dist ? P.dist : P.o);
+  if (o.s && P.fx) { const sg = c.createGain(); sg.gain.value = o.s; out.connect(sg); sg.connect(P.fx); }
+  for (const s of os) { s.start(t); s.stop(end + .05); }
+};
+FLAV.N = (P, t, d, v, ft, f, f2, q = 1, rev = false, send = 0) => {   // filtered noise burst (drums, risers, metal)
+  const c = P.c, s = c.createBufferSource(), fl = c.createBiquadFilter(), g = c.createGain();
+  s.buffer = FLAV.noiseBuf(c); s.loop = true; fl.type = ft; fl.Q.value = q; fl.frequency.setValueAtTime(f, t);
+  if (f2) fl.frequency.exponentialRampToValueAtTime(f2, t + d);
+  g.gain.setValueAtTime(1e-4, t);
+  if (rev) { g.gain.exponentialRampToValueAtTime(v, t + d - .02); g.gain.linearRampToValueAtTime(0, t + d); }
+  else { g.gain.exponentialRampToValueAtTime(v, t + .003); g.gain.exponentialRampToValueAtTime(1e-4, t + d); }
+  s.connect(fl); fl.connect(g); g.connect(P.o);
+  if (send && P.fx) { const sg = c.createGain(); sg.gain.value = send; g.connect(sg); sg.connect(P.fx); }
+  s.start(t, Math.random() * .5); s.stop(t + d + .05);
+};
+FLAV.K = (P, t, v = 1, f0 = 140, f1 = 42, d = .28) => { FLAV.V(P, {w:'sine', f:f0, f2:f1, gl:.09, t, d, v:.5 * v, a:.002}); FLAV.N(P, t, .012, .08 * v, 'highpass', 2500); };
+FLAV.S = (P, t, v = 1, f = 1900, d = .16) => { FLAV.N(P, t, d, .18 * v, 'bandpass', f, f * .5, .8); FLAV.V(P, {w:'triangle', f:190, f2:120, t, d:.08, v:.07 * v, a:.002}); };
+FLAV.H = (P, t, v = 1, d = .035) => FLAV.N(P, t, d, .045 * v, 'highpass', 8000);
+FLAV.nt = (P, deg, oct = 0) => { const S = P.S, n = S.sc.length; return mtof(S.root + S.sc[((deg % n) + n) % n] + 12 * (oct + Math.floor(deg / n))); };
+FLAV.ch = (P, b) => P.S.prog[b % P.S.prog.length];
+/* A player: the theme's output gain, its delay line and drive, and a step counter. */
+FLAV.player = (c, S, sup, dest) => {
+  const P = {c, S, sup, sd:60 / S.bpm / 4, n:0, nodes:[]};
+  P.o = c.createGain(); P.o.gain.value = S.g || 1; P.o.connect(dest); P.nodes.push(P.o);
+  if (S.dt) {
+    const i = c.createGain(), dl = c.createDelay(2), fb = c.createGain(), lp = c.createBiquadFilter(), w = c.createGain();
+    dl.delayTime.value = S.dt * P.sd; fb.gain.value = (S.fb || .35) + (sup ? .06 : 0); lp.frequency.value = S.dlp || 2500; w.gain.value = .6;
+    i.connect(dl); dl.connect(lp); lp.connect(fb); fb.connect(dl); lp.connect(w); w.connect(P.o); P.fx = i; P.nodes.push(i, dl, fb, lp, w);
+  }
+  if (S.dist) {
+    const sh = c.createWaveShaper(), lp = c.createBiquadFilter(), w = c.createGain(), n = 512, cv = new Float32Array(n);
+    for (let k = 0; k < n; k++) { const x = k / (n - 1) * 2 - 1; cv[k] = Math.tanh(4 * x) / Math.tanh(4); }
+    sh.curve = cv; lp.frequency.value = 3200; w.gain.value = .5; sh.connect(lp); lp.connect(w); w.connect(P.o); P.dist = sh; P.nodes.push(sh, lp, w);
+  }
+  return P;
+};
+FLAV.step = (P, t) => { const n = P.n++, s = n % 16, b = ((n / 16) | 0) % P.S.bars; P.S.play(P, s, b, t + (P.S.sw && n % 2 ? P.S.sw * P.sd : 0), n); };
+FLAV.kill = P => { if (P) setTimeout(() => { for (const x of P.nodes) try { x.disconnect(); } catch (e) { /* gone */ } }, 2700); };
+
+/* The twelve themes. play(P, step 0-15, bar, time, absolute step). Degrees are scale steps from the root. */
+{
+  const {V, N, K, S:SN, H, nt, ch} = FLAV, at = (list, b, s) => list[b * 16 + s];
+  const seq = (arr, steps) => { const m = {}; for (const [st, deg, len] of arr) m[st] = [deg, len]; return m; };   // [step, degree, length] lists -> lookup
+  const T = FLAV.T;
+  T.vanguard = {name:'Chrome Knuckles', bpm:172, root:40, sc:SCALES.minor, bars:8, dist:true, g:.9, pv:4,   // Kova: punk rock, power chords and a terrace chant
+    pc:[0, 0, 8, 10, 0, 0, 3, 10], ld:{4:[[0, 7], [4, 7], [8, 10], [12, 7]], 5:[[0, 12], [6, 10], [8, 7]], 6:[[0, 3], [4, 5], [8, 7], [12, 10]]},
+    play(P, s, b, t) {
+      const r = 40 + this.pc[b], fill = b === 7;
+      if (s === 0 || s === 8 || (s === 10 && b % 2)) K(P, t, 1, 150, 45, .22);
+      if (s === 4 || s === 12 || (fill && s > 12)) SN(P, t, fill && s > 12 ? .6 + (s - 12) * .15 : 1, 2000);
+      if (s % 2 === 0 || P.sup) H(P, t, s % 4 === 2 ? .9 : .5);
+      if (P.sup && s === 0 && b % 4 === 0) N(P, t, 1.1, .07, 'highpass', 5000);
+      const hit = fill ? [0, 3, 6, 8, 10].includes(s) : s % 2 === 0;
+      if (hit) { const dd = fill ? P.sd * 2.6 : P.sd * (s % 4 === 0 ? 1.8 : 1.2), vv = s % 4 === 0 ? .085 : .06;
+        V(P, {w:'sawtooth', f:mtof(r + 12), t, d:dd, v:vv, det:9, cut:2600, cut2:900, to:'dist'}); V(P, {w:'sawtooth', f:mtof(r + 19), t, d:dd, v:vv * .8, det:7, cut:2600, cut2:900, to:'dist'});
+        V(P, {w:'triangle', f:mtof(r), t, d:dd, v:.16, cut:700}); }
+      const l = this.ld[b] && this.ld[b].find(x => x[0] === s);
+      if (l) { V(P, {w:'square', f:mtof(64 + l[1]), t, d:P.sd * 3.4, v:.05, det:5, cut:3200, h:.6}); if (P.sup) V(P, {w:'sawtooth', f:mtof(76 + l[1]), t, d:P.sd * 3, v:.025, cut:4500}); }
+    }};
+  T.architect = {name:'Blueprint Lattice', bpm:124, root:45, sc:SCALES.minor, bars:8, prog:[0, 0, 5, 5, 2, 2, 6, 6], dt:3, fb:.38, dlp:3200, g:1.15,   // Wren: exact 16th arpeggios, ping-pong
+    A:[0, 2, 4, 7, 4, 2, 0, 2, 0, 2, 4, 7, 9, 7, 4, 2],
+    play(P, s, b, t) {
+      const c = ch(P, b);
+      if (s % 4 === 0) K(P, t, .9, 165, 50, .18);
+      if (s === 4 || s === 12) { N(P, t, .09, .14, 'bandpass', 1200, null, 1.5); N(P, t + .012, .1, .1, 'bandpass', 1300, null, 1.5); }
+      if (s % 4 === 2) H(P, t, .9, .06); else if (P.sup && s % 2) H(P, t, .35);
+      if (s % 4 === 2) V(P, {w:'sawtooth', f:nt(P, c, -1), t, d:P.sd * 1.5, v:.1, cut:900, cut2:200, q:4});
+      V(P, {w:'square', f:nt(P, c + this.A[s], 1), t, d:P.sd * .9, v:.04, cut:3600, cut2:1200, s:.3, pan:s % 2 ? .35 : -.35});
+      if (P.sup) V(P, {w:'triangle', f:nt(P, c + this.A[15 - s], 2), t, d:P.sd * .8, v:.03, pan:s % 2 ? -.5 : .5});
+      if (s === 0 && b % 2 === 0) for (const k of [0, 2, 4]) V(P, {w:'sawtooth', f:nt(P, c + k, 0), t, d:P.sd * 31, v:.016, a:.2, h:.7, cut:1500});
+    }};
+  T.ghost = {name:'Dead Channel', bpm:92, root:38, sc:SCALES.phrygian, bars:8, prog:[0, 0, 0, 1, 0, 0, 5, 1], dt:6, fb:.5, dlp:1400, g:.7,   // Sable: dark, minimal, mostly silence
+    pg:Object.fromEntries([[0, 0, 4], [0, 10, 5], [1, 6, 1], [2, 0, 4], [2, 12, 6], [3, 8, 7], [4, 0, 4], [4, 10, 5], [5, 6, 1], [6, 0, 3], [6, 6, 2], [7, 4, 1]].map(([b, s, d]) => [b * 16 + s, d])),
+    play(P, s, b, t) {
+      const c = ch(P, b);
+      if (s === 0 || (s === 11 && b % 2)) K(P, t, .9, 90, 34, .5);
+      if (s === 6 || (s === 14 && b % 4 === 3)) N(P, t, .025, .1, 'bandpass', 3200, null, 6, false, .5);
+      if (s % 4 === 2) H(P, t, .3, .02);
+      if (s === 0 && b % 2 === 0) { V(P, {w:'sine', f:nt(P, c, -1), t, d:P.sd * 31, v:.16, a:.3, h:.7}); V(P, {w:'sawtooth', f:nt(P, c, -1), t, d:P.sd * 31, v:.04, a:.5, cut:240, cut2:120}); }
+      const p = at(this.pg, b, s); if (p != null) V(P, {w:'triangle', f:nt(P, p, 1), t, d:P.sd * 6, v:.06, s:.55, cut:2500});
+      if (P.sup && s === 0 && b % 2 === 0) { N(P, t, P.sd * 16, .03, 'bandpass', 600, 2400, .7, true); V(P, {w:'sawtooth', f:nt(P, c + 4, 0), t, d:P.sd * 30, v:.02, a:.8, cut:700}); }
+    }};
+  T.skybreaker = {name:'Above the Smog', bpm:140, root:41, sc:SCALES.major, bars:8, prog:[0, 0, 4, 4, 5, 5, 3, 3], dt:3, fb:.3, dlp:4200,   // Juno: soaring supersaw, climbing lead
+    A:seq([[0, 4, 6], [6, 5, 2], [8, 7, 8], [16, 9, 4], [20, 8, 4], [24, 7, 8]]), B:seq([[0, 7, 4], [4, 9, 4], [8, 11, 8], [16, 12, 6], [22, 11, 2], [24, 9, 8]]),
+    play(P, s, b, t) {
+      const c = ch(P, b);
+      if (s % 4 === 0) K(P, t, .9, 150, 48, .22);
+      if (s === 4 || s === 12) SN(P, t, .9, 1700, .18);
+      if (s % 4 === 2) H(P, t, 1, .08); else if (s % 2) H(P, t, .3);
+      if (s % 2 === 0) V(P, {w:'sawtooth', f:nt(P, c, s % 4 === 2 ? 0 : -1), t, d:P.sd * 1.6, v:.08, cut:1300, cut2:400});
+      if (s === 0 && b % 2 === 0) for (const k of [0, 2, 4]) V(P, {w:'sawtooth', f:nt(P, c + k, 0), t, d:P.sd * 31, v:.02, det:14, a:.08, h:.8, cut:3000, cut2:1800});
+      const ph = (b >> 1) % 2 ? this.B : this.A, l = ph[(b % 2) * 16 + s];
+      if (l) { V(P, {w:'sawtooth', f:nt(P, l[0], 1), t, d:P.sd * l[1], v:.05, det:8, a:.02, h:.6, vib:[5.5, 12], s:.35, cut:4500, cut2:2200});
+        if (P.sup) V(P, {w:'square', f:nt(P, l[0] + 2, 1), t, d:P.sd * l[1], v:.025, a:.02, h:.6, cut:3000}); }
+      if (P.sup && b === 7 && s === 0) N(P, t, P.sd * 16, .05, 'bandpass', 500, 6000, 1.5, true);
+    }};
+  T.oracle = {name:'Glass Oracle', bpm:108, root:49, sc:[0, 2, 4, 7, 9], bars:8, prog:[0, 0, 3, 3, 1, 1, 4, 2], dt:3, fb:.45, dlp:5200,   // ORACLE-7: FM glass, computed gates
+    G:'1011010110010110', Q:[0, 4, 2, 7, 5, 9, 4, 2, 7, 5, 2, 4, 9, 7, 4, 5],
+    play(P, s, b, t) {
+      const c = ch(P, b);
+      if (s === 0 || (P.sup && s === 8)) K(P, t, .5, 110, 45, .3);
+      if (s % 2) H(P, t, .25, .015);
+      if (s === 0 || s === 10) V(P, {w:'sine', f:nt(P, c, -1), t, d:P.sd * 6, v:.13});
+      if (this.G[(s + b * 3) % 16] === '1') V(P, {w:'sine', f:nt(P, c + this.Q[s], 2), t, d:P.sd * 3, v:.045, fm:[3.5, 1.2], s:.45, pan:(s % 3 - 1) * .4});
+      if (s === 0 && b % 2 === 0) for (const k of [0, 2, 4]) V(P, {w:'triangle', f:nt(P, c + k, 0), t, d:P.sd * 31, v:.03, a:.4, h:.7, cut:1800});
+      if (P.sup) { if (s % 4 === 3) V(P, {w:'square', f:2000 + (s * 137 + b * 59) % 7 * 300, t, d:.02, v:.015}); if (this.G[s] === '1') V(P, {w:'sine', f:nt(P, c + this.Q[15 - s], 1), t, d:P.sd * 2, v:.03, fm:[2, .6]}); }
+    }};
+  T.warden = {name:'Order of March', bpm:112, root:36, sc:SCALES.harm, bars:8, prog:[0, 0, 5, 5, 0, 0, 4, 4],   // WARDEN-9: drum corps, clanging iron, brass
+    SR:[1, 0, 0, .45, 1, 0, .45, 0, 1, 0, 0, .45, 1, .45, .6, .8], OS:[0, 0, 4, 0, 0, 0, 4, 6],
+    A:seq([[0, 0, 6], [6, 0, 2], [8, 2, 4], [12, 4, 4], [16, 4, 6], [22, 3, 2], [24, 2, 8]]), B:seq([[0, 4, 6], [6, 4, 2], [8, 5, 4], [12, 6, 4], [16, 7, 12], [28, 6, 4]]),
+    play(P, s, b, t) {
+      const c = ch(P, b), sr = b === 7 && s >= 8 ? .4 + (s - 8) * .08 : this.SR[s];
+      if (s === 0 || s === 8) K(P, t, 1, 100, 38, .4);
+      if (sr) SN(P, t, sr, 2300, .12);
+      if (s === 0 && b % 2 === 0) { N(P, t, .5, .05, 'bandpass', 2600, 2400, 12); V(P, {w:'square', f:1170, t, d:.25, v:.015, cut:4000}); }
+      if (P.sup && s % 4 === 0) N(P, t, .2, .05, 'bandpass', 3500, null, 15);
+      if (s % 2 === 0) V(P, {w:'square', f:nt(P, c + this.OS[s >> 1], -1), t, d:P.sd * 1.5, v:.055, cut:700, cut2:300});
+      const ph = b < 4 ? this.A : this.B, l = ph[(b % 2) * 16 + s];
+      if (l) { V(P, {w:'sawtooth', f:nt(P, l[0], 1), t, d:P.sd * l[1], v:.055, det:6, a:.04, h:.7, cut:700, cut2:2200});
+        if (P.sup) V(P, {w:'sawtooth', f:nt(P, l[0], 0), t, d:P.sd * l[1], v:.04, a:.04, h:.7, cut:900}); }
+    }};
+  T.hydra = {name:'Three Heads', bpm:128, root:40, sc:SCALES.harm, bars:12, g:1.25,   // HYDRA: one subject, three voices entering a bar apart
+    SUB:[0, 2, 4, 2, 0, 4, 7, 6, 4, 2, 4, 0, 2, -1, 0, null],
+    play(P, s, b, t, n) {
+      const tr = b >= 8 ? 2 : 0;   // the last third of the loop climbs a step
+      if (s % 4 === 0) K(P, t, .8, 150, 48, .2);
+      if (s === 4 || s === 12) SN(P, t, .7);
+      H(P, t, s % 4 === 2 ? .6 : .25);
+      if (s % 4 === 0) V(P, {w:'sine', f:nt(P, tr + (s === 8 ? 4 : 0), -1), t, d:P.sd * 3, v:.12});
+      if (s % 2) return;
+      const vs = [['triangle', 1, 0, .08, -.5], ['square', 1, 4, .03, 0], ['sawtooth', 2, 0, .026, .5]];
+      if (P.sup) vs.push(['sawtooth', 0, 0, .028, 0, true]);
+      vs.forEach(([w, oct, up, v, pan, inv], k) => {
+        const off = inv ? 8 : k * 16; if (n < off) return;   // each head enters once, a bar after the last
+        const d = this.SUB[((n - off) >> 1) % 16]; if (d == null) return;
+        V(P, {w, f:nt(P, (inv ? -d : d) + up + tr, oct), t, d:P.sd * 1.8, v, pan, cut:w === 'triangle' ? 3000 : 2600, det:w === 'sawtooth' ? 6 : 0});
+      });
+    }};
+  T.mirror = {name:'Reflection Protocol', bpm:120, root:47, sc:SCALES.minor, bars:8, prog:[0, 5, 3, 4, 4, 3, 5, 0], dt:4, fb:.3, dlp:3000,   // MIRROR: palindromes, retrogrades, reversed envelopes
+    PH:[0, null, 2, 4, null, 3, 2, null, 4, null, 7, null, 5, 4, null, 2], KK:[0, 6, 9, 15], SNR:[4, 11], HH:[2, 5, 10, 13],
+    play(P, s, b, t) {
+      const c = ch(P, b), m = b % 4, retro = m === 1 || m === 3, inv = m >= 2;
+      if (this.KK.includes(s)) K(P, t, .85, 140, 45, .24);
+      if (this.SNR.includes(s)) SN(P, t, .8, 1800);
+      if (this.HH.includes(s)) H(P, t, .6);
+      if (s === 8 && b % 2) N(P, t, P.sd * 8, .06, 'highpass', 4000, null, 1, true);   // reverse cymbal into the next bar
+      if (s % 4 === 0) V(P, {w:'sawtooth', f:nt(P, c, -1), t, d:P.sd * 3.6, v:.09, cut:800, rev:retro, a:.01});
+      const line = (r, iv, pan) => { const d = this.PH[r ? 15 - s : s]; if (d == null) return;
+        V(P, {w:r ? 'triangle' : 'square', f:nt(P, c + (iv ? -d : d), 1), t, d:P.sd * 2, v:r ? .06 : .04, rev:r, cut:3000, pan, s:.25}); };
+      line(retro, inv, retro ? .5 : -.5);
+      if (P.sup) { line(!retro, !inv, retro ? -.5 : .5); if (s === 0) for (const k of [0, 2, 4]) V(P, {w:'sawtooth', f:nt(P, c + k, 0), t, d:P.sd * 16, v:.014, rev:true, cut:1600}); }
+    }};
+  T.scourge = {name:'Runoff Sound System', bpm:76, root:43, sc:SCALES.phrygian, bars:8, prog:[0, 0, 3, 3, 0, 0, 1, 1], dt:3, fb:.62, dlp:1500, sw:.12,   // SCOURGE: one-drop toxic dub
+    play(P, s, b, t) {
+      const c = ch(P, b);
+      if (s === 8) { K(P, t, 1, 80, 35, .5); N(P, t, .04, .12, 'bandpass', 2500, null, 4, false, .6); }
+      if (s % 2 === 0) H(P, t, s % 4 === 2 ? .5 : .3);
+      if (s === 4 || s === 12) for (const k of [0, 2, 4]) V(P, {w:'square', f:nt(P, c + k, 1), t, d:.09, v:.025, cut:2200, s:.7});
+      if (s === 0 || s === 10 || (s === 14 && b % 2)) V(P, {w:'sawtooth', f:nt(P, c, -1), t, d:P.sd * 5, v:.11, cut:320, q:8, wob:[1 / (P.sd * 4), 260], h:.6});
+      if ((s === 7 && b % 2 === 0) || (s === 13 && b % 4 === 3)) V(P, {w:'sine', f:900, f2:180, gl:.12, t, d:.14, v:.05, s:.7});   // bubbles
+      if (P.sup) { if (s === 0 && (b === 3 || b === 7)) V(P, {w:'square', f:600, t, d:P.sd * 14, v:.022, vib:[6, 500], s:.5, cut:2500});
+        if (s === 12) N(P, t, .15, .1, 'bandpass', 1800, 900, .8, false, .8); }
+    }};
+  T.tally = {name:'Ledger Clockwork', bpm:120, root:48, sc:SCALES.major, bars:8, prog:[0, 3, 4, 0, 5, 3, 4, 0], g:2.6,   // TALLY: escapement, oom-pah, a music box that counts
+    C:[0, 1, 2, 3, 4, 3, 2, 1],
+    play(P, s, b, t) {
+      const c = ch(P, b);
+      if (s % 4 === 0) { V(P, {w:'sine', f:s % 8 === 0 ? 2400 : 1800, t, d:.03, v:.08, a:.001}); N(P, t, .008, .05, 'highpass', 6000); }
+      if (s % 2) N(P, t, .006, P.sup ? .04 : .025, 'bandpass', 5000, null, 3);
+      if (s === 0) K(P, t, .5, 120, 45, .2);
+      if (s === 0 || s === 8) V(P, {w:'square', f:nt(P, c, -1), t, d:P.sd * 2, v:.06, cut:600});
+      if (s === 4 || s === 12) for (const k of [2, 4]) V(P, {w:'triangle', f:nt(P, c + k, 0), t, d:P.sd * 1.2, v:.03});
+      if (s % 2 === 0) { const d = b + this.C[s >> 1]; V(P, {w:'triangle', f:nt(P, d, 2), t, d:P.sd * 4, v:.045, a:.002}); V(P, {w:'sine', f:nt(P, d, 3), t, d:P.sd * 2, v:.012, fm:[4, .3]}); }
+      if (P.sup && s % 2) V(P, {w:'triangle', f:nt(P, 7 - b + this.C[s >> 1], 1), t, d:P.sd, v:.025});
+      if (b === 7 && s === 12) { V(P, {w:'square', f:2093, t, d:.4, v:.025, cut:6000}); V(P, {w:'square', f:2637, t:t + .06, d:.5, v:.025, cut:6000}); }   // ka-ching
+    }};
+  T.vesper = {name:'Night Sortie', bpm:100, root:42, sc:SCALES.minor, bars:8, prog:[0, 0, 5, 5, 2, 2, 6, 6], dt:4, fb:.35, dlp:2500,   // VESPER: synthwave night drive
+    L:seq([[0, 4, 8], [8, 6, 4], [12, 7, 4], [16, 4, 12], [28, 2, 4], [32, 4, 8], [40, 7, 4], [44, 9, 4], [48, 8, 16]]),
+    play(P, s, b, t) {
+      const c = ch(P, b);
+      if (s === 0 || s === 8 || (s === 10 && b % 2)) K(P, t, .9, 130, 45, .26);
+      if (s === 4 || s === 12) { N(P, t, .28, .15, 'bandpass', 1400, 1100, .6); SN(P, t, .5); }
+      if (s % 2 === 0) H(P, t, .4);
+      if (s % 2 === 0) V(P, {w:'sawtooth', f:nt(P, c, s % 4 === 2 ? 0 : -1), t, d:P.sd * 1.6, v:.08, cut:900, cut2:300});
+      if (s === 0 && b % 2 === 0) for (const k of [0, 2, 4]) V(P, {w:'sawtooth', f:nt(P, c + k, 0), t, d:P.sd * 31, v:.018, det:10, a:.3, h:.8, cut:1400});
+      const l = this.L[(b % 4) * 16 + s]; if (l) V(P, {w:'square', f:nt(P, l[0], 1), t, d:P.sd * l[1], v:.042, a:.03, h:.7, vib:[5, 10], cut:2200, s:.3});
+      if (P.sup) { V(P, {w:'triangle', f:nt(P, c + [0, 2, 4, 7][s % 4], 2), t, d:P.sd * .9, v:.022, s:.4});
+        if (b === 7 && s >= 12) V(P, {w:'sine', f:220 - (s - 12) * 30, f2:70, t, d:.25, v:.2}); }
+    }};
+  T.overmind = {name:'Recycling Hymn', bpm:66, root:38, sc:SCALES.harm, bars:16, prog:[0, 5, 3, 4, 0, 3, 5, 4], g:1.6, pv:0,   // OVERMIND: organ, choir, timpani; minimal and huge
+    OS:[0, 2, 4, 2],
+    play(P, s, b, t) {
+      const c = this.prog[(b >> 1) % 8];
+      if (s === 0 && b % 2 === 0) {
+        for (const k of [0, 2, 4]) { const f = nt(P, c + k, 0); V(P, {w:'organ', f, t, d:P.sd * 31, v:.03, a:.25, h:.85, cut:2500});
+          for (const [fc, v] of [[800, .045], [1150, .025]]) V(P, {w:'sawtooth', f:f * 2, t, d:P.sd * 31, v, det:12, a:.7, h:.8, ft:'bandpass', cut:fc, q:3, vib:[4.5, 6]});   // the choir: "ah"
+          if (P.sup) V(P, {w:'sawtooth', f:f * 4, t, d:P.sd * 31, v:.02, det:10, a:.9, h:.8, ft:'bandpass', cut:1300, q:3}); }
+        V(P, {w:'organ', f:nt(P, c, -1), t, d:P.sd * 31, v:.05, a:.3, h:.85, cut:1200});
+        if (P.sup) V(P, {w:'sine', f:nt(P, c, -1), t, d:P.sd * 31, v:.045, a:.5, h:.8});
+      }
+      if (s % 2 === 0 || P.sup) V(P, {w:'organ', f:nt(P, c + this.OS[(s >> (P.sup ? 0 : 1)) % 4], 1), t, d:P.sd * (P.sup ? 1 : 2), v:.022, cut:3000});
+      if (s === 0 && b % 4 === 0) { K(P, t, 1, 70, 40, 1.2); N(P, t, .5, .07, 'lowpass', 300); }
+      if (s === 0 && b % 8 === 0) V(P, {w:'sine', f:nt(P, 0, 2), t, d:3, v:.05, fm:[1.4, 2]});   // the toll
+    }};
+}
+
+/* p51 hooks: a leader with a hand-written theme plays it; anyone else keeps the procedural loop. */
+{
+  const _th = ptTheme; ptTheme = function (id, fac, lv) {
+    const S = FLAV.T[id]; if (!S) return _th.apply(this, arguments);
+    return {flv:S, sup:lv === 'super', sd:60 / S.bpm / 4};
+  };
+  const _st = ptStep; ptStep = function (i, t) {
+    const L = PT.L; if (!L || !L.flv) return _st.apply(this, arguments);
+    if (!FLAV.live || FLAV.live.bus !== PT.bus) { FLAV.kill(FLAV.live); FLAV.live = FLAV.player(AU.ctx, L.flv, L.sup, PT.bus); FLAV.live.bus = PT.bus; FLAV.live.n = (L.flv.pv || 0) * 16; }
+    FLAV.step(FLAV.live, t);
+  };
+  const _go = ptStart; ptStart = function (team, id, lv) {
+    FLAV.stopPreview(); const r = _go.apply(this, arguments);
+    const S = FLAV.T[id], np = $('#nowPlaying'), co = CO[id];
+    if (PT.on && S && np && co) np.innerHTML = `♪ <b>${esc(co.n.toUpperCase())}</b> · ${esc(S.name)} <span class="dim">· ${lv === 'super' ? 'super power' : 'power'} theme</span>`;
+    return r;
+  };
+  const _sp = ptStop; ptStop = function () { const r = _sp.apply(this, arguments); if (!PT.on && FLAV.live) { FLAV.kill(FLAV.live); FLAV.live = null; } return r; };
+}
+/* Card preview: resting the mouse on a commander or general card plays a few seconds of their theme. */
+FLAV.preview = id => {
+  const S = FLAV.T[id], c = AU.ctx;
+  if (!S || !c || c.state !== 'running' || SET.mute || !(SET.music > 0) || PT.on) return;
+  FLAV.stopPreview();
+  const t = c.currentTime, bus = c.createGain(); bus.gain.setValueAtTime(0, t); bus.gain.linearRampToValueAtTime(SET.music * .6, t + .15); bus.connect(AU.master);
+  const P = FLAV.player(c, S, false, bus); P.n = (S.pv || 0) * 16; P.next = t + .05; P.end = t + Math.max(3, Math.min(5, P.sd * 32)); P.bus = bus; P.nodes.push(bus);
+  ptDuck(.35);
+  P.timer = setInterval(() => {
+    if (FLAV.pv !== P) return;
+    const now = c.currentTime; if (now > P.end) { FLAV.stopPreview(); return; }
+    if (P.next < now - .1) P.next = now + .02;
+    while (P.next < Math.min(now + .18, P.end)) { FLAV.step(P, P.next); P.next += P.sd; }
+  }, 40);
+  FLAV.pv = P;
+};
+FLAV.stopPreview = () => {
+  const P = FLAV.pv; if (!P) return; FLAV.pv = null; clearInterval(P.timer);
+  if (AU.ctx) P.bus.gain.setTargetAtTime(0, AU.ctx.currentTime, .12);
+  FLAV.kill(P); if (!PT.on) ptDuck(1);
+};
+document.addEventListener('pointerover', e => {
+  if (e.pointerType && e.pointerType !== 'mouse') return;
+  const b = e.target && e.target.closest ? e.target.closest('#mbox .cocard') : null;
+  if (b === FLAV.hov) return;
+  FLAV.hov = b; clearTimeout(FLAV.hovT);
+  if (!b) { FLAV.stopPreview(); return; }
+  if (!b.disabled && FLAV.T[b.dataset.act]) FLAV.hovT = setTimeout(() => { if (FLAV.hov === b && b.isConnected) FLAV.preview(b.dataset.act); }, 280);
+}, true);
+document.addEventListener('pointerdown', () => { clearTimeout(FLAV.hovT); FLAV.hov = null; FLAV.stopPreview(); }, true);
+
+/* Offline check (dev): render a theme and measure it. FLAV.render('hydra', 'super').then(console.table) */
+FLAV.render = async (id, lv = 'power', secs = 0) => {
+  const S = FLAV.T[id], sd = 60 / S.bpm / 4, len = secs || Math.min(24, S.bars * 16 * sd), sr = 22050;
+  const c = new OfflineAudioContext(2, Math.ceil((len + 1.5) * sr), sr), bus = c.createGain(); bus.gain.value = .8; bus.connect(c.destination);   // p51's bus at full music volume
+  const P = FLAV.player(c, S, lv === 'super', bus);
+  for (let t = .05; t < len; t += sd) FLAV.step(P, t);
+  const buf = await c.startRendering(), L = buf.getChannelData(0), R = buf.getChannelData(1), n = L.length;
+  let ss = 0, pk = 0, zc = 0, bad = 0; const fr = Math.round(sr * .02), en = [];
+  for (let i = 0; i < n; i++) { const m = (L[i] + R[i]) / 2, a = Math.max(Math.abs(L[i]), Math.abs(R[i])); if (!Number.isFinite(m)) { bad++; continue; } ss += m * m; if (a > pk) pk = a; if (i && (m >= 0) !== ((L[i - 1] + R[i - 1]) >= 0)) zc++;
+    if (i % fr === 0) en.push(0); en[en.length - 1] += m * m; }
+  let on = 0; for (let i = 1; i < en.length; i++) if (en[i] > en[i - 1] * 2.2 && en[i] > 1e-4 * fr) on++;
+  const rms = Math.sqrt(ss / n);
+  return {id, lv, name:S.name, bpm:S.bpm, bars:S.bars, loopSec:+(S.bars * 16 * sd).toFixed(1), rms:+rms.toFixed(3), peak:+pk.toFixed(3), crestDb:+(20 * Math.log10(pk / Math.max(1e-9, rms))).toFixed(1),
+    zcrHz:Math.round(zc / 2 / (n / sr)), onsetsPerSec:+(on / (n / sr)).toFixed(1), nan:bad, clip:pk >= 1};
+};
+
+/* ---------------- 2. skirmish AI personalities ---------------- */
+Object.assign(NP.AI_PROFILES, {
+  methodical: {aggr:.6, capture:.6, defendHQ:.5, retreatHP:45, build:'balanced', power:'bestValue', fear:1.15, leash:8, capR:14, mass:12, release:{day:10, edge:1.3},
+    label:'Methodical: masses, then advances'},
+  opportunist:{aggr:.55, capture:1, defendHQ:.3, retreatHP:40, build:'economy', power:'bestValue', capW:1.6, finisher:1,
+    label:'Opportunist: captures & finishes'},
+  sniper:     {aggr:.45, capture:.35, defendHQ:.5, retreatHP:50, build:'artillery', power:'bestValue', fear:1.5, ranged:1,
+    label:'Sniper: artillery & trades'},
+  reckless:   {aggr:1.2, capture:.4, defendHQ:0, retreatHP:0, build:'cheap', power:'asap', fear:.25, noise:900, push:600,
+    label:'Reckless: charges, no fear'},
+  fortress:   {aggr:.4, capture:.4, defendHQ:1, retreatHP:50, build:'heavy', power:'whenThreatened', leash:7, capR:12, counter:2200, release:{day:18, edge:1.6},
+    label:'Fortress: walls up, hits back'},
+  blitz:      {aggr:1, capture:.5, defendHQ:.15, retreatHP:20, build:'fast', power:'asap', fear:.6, push:400,
+    label:'Blitz: fast units, all in'}
+});
+FLAV.NEW = ['methodical', 'opportunist', 'sniper', 'reckless', 'fortress', 'blitz'];
+FLAV.DESC = {rusher:'All-out attack: takes bad trades to keep pushing, fires its power at once.', expander:'Grabs cities and factories first, fights second.',
+  turtle:'Digs in round its base and buys defensive units; fires its power when threatened.', siege:'Artillery-heavy: shells you from range.',
+  swarm:'Floods the map with cheap units and never retreats.', hunter:'Picks off valuable and damaged units.',
+  methodical:'Holds a line near home until it has a big balanced army, then advances as one block; pulls hurt units back to repair.',
+  opportunist:'Captures everything it can, finishes off damaged units and avoids fair fights.',
+  sniper:'Buys artillery and rockets, trades from range, keeps out of reach and retreats hurt units.',
+  reckless:'No fear and no plan: charges in, takes any trade, fires its power at once, never retreats.',
+  fortress:'Heavy armour kept close to home; counterpunches hard at anything that comes near, breaks out late or when far ahead.',
+  blitz:'Fast units and aircraft, power at once, presses forward every turn.'};
+/* Conquest: the enemy leader's temperament, as [attacking, defending] (the defender is the map's turtle). */
+FLAV.LEAD = {vanguard:['reckless', 'fortress'], architect:['methodical', 'fortress'], ghost:['opportunist', 'sniper'], skybreaker:['blitz', 'sniper'], oracle:['sniper', 'methodical'],
+  warden:['methodical', 'fortress'], hydra:['blitz', 'fortress'], mirror:['opportunist', 'sniper'], scourge:['reckless', 'sniper'], tally:['methodical', 'fortress'], vesper:['blitz', 'opportunist'], overmind:['methodical', 'fortress']};
+FLAV.leadProf = team => {
+  if (!G || !G.L || G.L.kind !== 'conquest') return null;
+  const m = FLAV.LEAD[G.teams[team] && G.teams[team].co]; return m ? (G.L.ai === 'turtle' ? m[1] : m[0]) : null;
+};
+/* Build styles: how strongly each one bends the counter-pick, and how well a unit fits it (0-1). */
+FLAV.BS = {counter:0, defence:.5, economy:.5, indirect:.6, cheap:.5, balanced:.7, artillery:.8, heavy:.7, fast:.8};
+FLAV.MIX = {front:.42, ind:.22, aa:.13, foot:.18, scout:.05};
+FLAV.grp = d => d.tags.includes('ind') ? 'ind' : /^(AA|MISSILE|FIGHTER)$/.test(d.cls) ? 'aa' : d.cls === 'INF' || d.tags.includes('cap') ? 'foot' : d.cls === 'RECON' ? 'scout' : 'front';
+FLAV.FIT = {
+  defence:d => d.tags.includes('ind') ? .9 : /^(AA|MISSILE)$/.test(d.cls) ? .8 : /^(TANK|WALKER|HEAVY)$/.test(d.cls) ? .7 : d.cls === 'MECH' ? .6 : d.cls === 'INF' ? .4 : .2,
+  economy:(d, x) => d.tags.includes('cap') ? 1 : x.c <= 4000 ? .6 : .25,
+  indirect:(d, x) => d.tags.includes('ind') ? ((x.sh.ind || 0) > .5 ? .5 : 1) : .3,
+  artillery:(d, x) => d.tags.includes('ind') ? ((x.sh.ind || 0) > .6 ? .55 : 1) : /^(TANK|WALKER|MECH)$/.test(d.cls) ? .5 : .15,
+  cheap:(d, x) => 1 - x.c / x.max,
+  heavy:(d, x) => x.c / x.max,
+  fast:(d, x) => (d.mt === 'air' ? .9 : Math.max(0, Math.min(1, (d.mv - 2) / 5))) * .65 + .35 * x.c / x.max,   // fast, but with a punch
+  balanced:(d, x) => { const g = FLAV.grp(d); return Math.max(0, Math.min(1, .4 + (FLAV.MIX[g] - (x.sh[g] || 0)) * 3)); }
+};
+/* Re-pick a factory's purchase within the profile's style, still weighing the counter value. */
+FLAV.restyle = (team, src, d, st) => {
+  const fit = FLAV.FIT[st], str = FLAV.BS[st] || 0; if (!fit || !str) return d;
+  const T = G.teams[team], c0 = unitCost(team, d), lim = Math.min(Math.max(T.funds - (T.reserve || 0), c0), Math.max(c0 * 1.6, c0 + 2500));
+  const mine = G.units.filter(u => u.team === team), owned = {}, sh = {};
+  for (const u of mine) { owned[u.id] = (owned[u.id] || 0) + 1; if (u.d.cls !== 'NONE') { const g = FLAV.grp(u.d); sh[g] = (sh[g] || 0) + 1; } }
+  const armed = mine.filter(u => u.d.cls !== 'NONE').length || 1; for (const g in sh) sh[g] /= armed;
+  const opts = prodList(team, src).filter(x => x.cls !== 'NONE' && !prodLock(team, src, x) && unitCost(team, x) <= lim && (x === d || (owned[x.id] || 0) < 6)
+    && (!src.isStruct || exitTile(src.x, src.y, x)));
+  if (opts.length < 2) return d;
+  const foes = G.units.filter(e => e.team && !allied(e.team, team) && visibleTo(e, team) && e.d.cls !== 'NONE'), max = Math.max(...opts.map(x => unitCost(team, x)));
+  let best = d, bs = -1e9;
+  for (const x of opts) {
+    const c = unitCost(team, x); let eff = 0, vul = 0, w = 0;
+    for (const e of foes) { const ec = e.d.cost || 20000; w += ec; eff += ec * bestPct(x, e.d); vul += ec * bestPct(e.d, x); }
+    const s = fit(x, {c, max, sh}) * 100 * str + (w ? (eff - .6 * vul) / w : 0) * .5 * (1 - str * .5) + (x === d ? 12 : 0) + Math.random() * 6;
+    if (s > bs) { bs = s; best = x; }
+  }
+  return best;
+};
+FLAV.core = team => {                                     // "home": the HQ and construction yards, else every factory
+  const c = Object.values(G.props).filter(p => p.owner === team && terr(p.x, p.y).prop.special === 'hq').concat(G.structs.filter(s => s.team === team && s.type === 'yard'));
+  return (c.length ? c : baseSpots(team)).map(s => [s.x, s.y]);
+};
+FLAV.lr = (u, p) => !p.leash || u.d.cls === 'NONE' && !hasTag(u, 'cap') ? 0 : hasTag(u, 'cap') ? p.capR || 0 : p.leash;   // leash radius: armed units, capturers (their own, wider)
+FLAV.spots = (team, ctx) => ctx.flvB || (ctx.flvB = FLAV.core(team));
+FLAV.home = (team, ctx, x, y) => { let m = Infinity; for (const [a, b] of FLAV.spots(team, ctx)) m = Math.min(m, mdist(a, b, x, y)); return m; };
+/* Leashed profiles hold near home until released (army size, a clear edge, or the day); they re-leash after heavy losses. */
+FLAV.leashOn = (team, ctx) => {
+  if (ctx.flvL !== undefined) return ctx.flvL;
+  const p = ctx.prof; if (!p.leash || !FLAV.spots(team, ctx).length) return (ctx.flvL = false);
+  if (FLAV.relG !== G) { FLAV.relG = G; FLAV.rel = {}; }
+  const R = p.release || {}, mine = G.units.filter(u => u.team === team && u.d.cls !== 'NONE' && !hasTag(u, 'boss')), n = mine.length;
+  const foes = G.units.filter(u => u.team && !allied(u.team, team) && u.d.cls !== 'NONE' && visibleTo(u, team));
+  let free = FLAV.rel[team] || false;
+  if (G.day >= (R.day || 99) || (p.mass && n >= p.mass) || (R.edge && foes.length && armyValue(mine) >= R.edge * armyValue(foes))) free = true;
+  else if (free && p.mass && n < p.mass * .6) free = false;
+  FLAV.rel[team] = free;
+  return (ctx.flvL = !free);
+};
+{
+  const _up = aiUsePower; aiUsePower = async function (team, ctx) {   // first call of each AI turn: settle the profile
+    if (G && ctx && !ctx.flv) {
+      ctx.flv = 1; const k = FLAV.leadProf(team), P = k && NP.AI_PROFILES[k];
+      if (P) { ctx.prof = P; const a = Math.min(1, P.aggr * G.diff.aggr); ctx.rw = (G.diffKey || SET.diff) === 'recruit' ? .15 + .6 * (1 - a) : .1 + .45 * (1 - a); }
+      if (ctx.prof && ctx.prof.fear) ctx.rw *= ctx.prof.fear;
+    }
+    return _up.apply(this, arguments);
+  };
+  const _av = attackValue; attackValue = function (u, t, x, y, ctx) {
+    let v = _av.apply(this, arguments);
+    const p = ctx && ctx.prof; if (!p || !G || v < -1e8) return v;
+    const tc = t.d.cost || 30000, hurt = Math.max(0, (t.d.hp - t.hp) / t.d.hp);
+    if (p.capW && hasTag(u, 'cap')) v /= p.capW;                                      // capturers keep capturing
+    if (p.finisher) { v += hurt * tc * .4 * p.finisher; if (!hurt) v *= .8; }
+    if (p.ranged) { if (hasTag(u, 'ind')) v = v * 1.25 + 400; else if (!t.isStruct && canCounter(t, u)) v *= .7; }
+    if (p.retreatHP > 30 && u.hp <= p.retreatHP && !hasTag(u, 'boss')) v *= .6;
+    if (p.counter && FLAV.home(u.team, ctx, t.x, t.y) <= (p.leash || 6) + 2) v += p.counter;   // the counterpunch
+    if (p.push && v > 0) v += p.push;
+    if (p.noise) v += (Math.random() - .5) * 2 * p.noise;
+    return v;
+  };
+  const _ap = aiApproach; aiApproach = function (u, reach, ctx, riskOf) {
+    const p = ctx && ctx.prof; if (!p || !G || hasTag(u, 'boss')) return _ap.apply(this, arguments);
+    const P = typeof planOf === 'function' ? planOf(u.team, ctx) : {};
+    if (P.vip === u) return _ap.apply(this, arguments);
+    if (p.retreatHP > 30 && u.hp <= p.retreatHP && u.hp > 30 && u.d.cls !== 'NONE') {   // pull back to repair before the engine's 30 HP rule
+      const goals = Object.values(G.props).filter(q => q.owner === u.team && servicesUnit(q, u)).map(q => key(q.x, q.y))
+        .concat(G.structs.filter(s => s.team === u.team && s.type === 'repair' && structActive(s) && !isAirU(u)).map(s => key(s.x, s.y)));
+      const b = goals.length && goalApproach(u, reach, ctx, riskOf, goals, 'flvheal:' + u.d.id, 14); if (b) return b;
+    }
+    const d = _ap.apply(this, arguments), R = FLAV.lr(u, p);
+    if (!R || !d || P.push || P.take || P.hold || P.guard || !FLAV.leashOn(u.team, ctx) || FLAV.home(u.team, ctx, d.x, d.y) <= R) return d;
+    let best = null, bs = Infinity;                                                   // the closest tile to where it wanted to go, inside the line
+    for (const [k] of reach) { const x = k % G.W, y = (k / G.W) | 0; if (occupied(x, y, u) || FLAV.home(u.team, ctx, x, y) > R) continue;
+      const v = mdist(x, y, d.x, d.y) + riskOf(x, y) / u.d.hp * 8 * ctx.rw; if (v < bs) { bs = v; best = {x, y}; } }
+    return best || goalApproach(u, reach, ctx, riskOf, FLAV.spots(u.team, ctx).map(([x, y]) => key(x, y)), 'flvhome', 8) || d;
+  };
+  /* A leashed unit's attack and capture moves stay inside the line too (it still paths through tiles beyond it). */
+  const _act = aiAct; aiAct = async function (u, ctx) {
+    const p = ctx && ctx.prof, R = G && p && u && !hasTag(u, 'boss') ? FLAV.lr(u, p) : 0;
+    FLAV.cur = R && FLAV.leashOn(u.team, ctx) && FLAV.home(u.team, ctx, u.x, u.y) <= R + 2 ? {u, ctx, R:R + 2} : null;
+    try { return await _act.apply(this, arguments); } finally { FLAV.cur = null; }
+  };
+  const _rc = reachable; reachable = function (u) {
+    const r = _rc.apply(this, arguments), C = FLAV.cur; if (!C || u !== C.u || !G) return r;
+    const skip = new Set(); for (const [k] of r) if (FLAV.home(u.team, C.ctx, k % G.W, (k / G.W) | 0) > C.R) skip.add(k);
+    if (!skip.size) return r;
+    if (r.skip) for (const k of r.skip) skip.add(k);
+    return new AixReach(Map.prototype.entries.call(r), skip);   // every tile kept underneath: paths still run through hidden ones
+  };
+  const _mv = aiMoveTo; aiMoveTo = async function () { FLAV.cur = null; return _mv.apply(this, arguments); };
+  const _ab = aiBuild; aiBuild = function (team, ctx) {
+    const st = ctx && ctx.prof && ctx.prof.build;
+    FLAV.bt = st && FLAV.BS[st] ? {team, st} : null;
+    try { return _ab.apply(this, arguments); } finally { FLAV.bt = null; }
+  };
+  const _pr = produce; produce = function (team, src, d) {
+    const B = FLAV.bt;
+    if (B && B.team === team && d && d.cls !== 'NONE' && !hasTag({d}, 'deploy') && !(src.isStruct && src.def.makes === 'refinery')) {
+      try { d = FLAV.restyle(team, src, d, B.st) || d; } catch (e) { console.warn('FLAV', e); }
+    }
+    return _pr.call(this, team, src, d);
+  };
+}
+/* Custom Battle and the Map Maker: the new styles, and what the chosen style does. */
+FLAV.aiSelect = cur => {
+  const s = document.querySelector('#mbox select[data-k="ai"]'); if (!s) return;
+  for (const k of FLAV.NEW) { const o = s.querySelector(`option[value="${k}"]`); if (!o) s.insertAdjacentHTML('beforeend', `<option value="${k}">${esc(NP.AI_PROFILES[k].label)}</option>`); }
+  if (cur && NP.AI_PROFILES[cur] && cur !== 'boss') s.value = cur;
+  const row = s.closest('.opt'); if (!row) return;
+  let el = row.nextElementSibling; if (!el || !el.classList.contains('flvd')) { row.insertAdjacentHTML('afterend', '<div class="opt dim flvd" style="font-size:12px;margin-top:-4px"></div>'); el = row.nextElementSibling; }
+  const upd = () => { el.textContent = FLAV.DESC[s.value] || ''; };
+  upd(); s.addEventListener('change', upd);
+};
+{
+  const _cb = showCustomBattle; showCustomBattle = function (...a) { const r = _cb.apply(this, a); try { FLAV.aiSelect(GEN_OPTS.ai); } catch (e) { console.warn('FLAV', e); } return r; };
+  const _es = edSettings; edSettings = function (...a) { const r = _es.apply(this, a); try { FLAV.aiSelect(ED.L && ED.L.ai); } catch (e) { console.warn('FLAV', e); } return r; };
+}
+/* end:p62_flavor.js */
+/* ============================== FACTION IDENTITY (p60) ===================== */
+/* C&C's late-game power plant and faction identity without breaking the mirror:
+     Fusion Core (Resistance) / Singularity Core (Overmind): +25 power for ¢6,000, needs a Tech Lab and a
+       Power Core; the AI builds one instead of a fourth Power Core once it has a Tech Lab.
+     Resistance: Scrapper (field welder, mends vehicles), Kite (spotter drone), STREET NETWORK
+       (infantry see further and dig in on city blocks and HQs).
+     Overmind:  Gleaner (harvester-walker, strips scrap for credits), Swarm Node (prints Husk Drones),
+       NANITE MESH (ground machines out of contact knit 5 HP back each turn).
+   Unique units come in cost-matched pairs (Scrapper/Gleaner ¢2,500, Kite/Swarm Node ¢3,500) so a
+   mirrored map stays even; the AI buys at most two of each, by the same army-size rule on both sides. */
+const FAC2 = {
+  hide:null,
+  core:team => TEAMS[team] && TEAMS[team].fac === 'O' ? 'singularity' : 'fusion',
+  SPEC:{R:[['r_scrap', 5, 10], ['r_kite', 6, 12]], O:[['o_glean', 5, 10], ['o_node', 6, 12]]},   // id, army size for the 1st, for the 2nd
+  TRAIT:{R:['STREET NETWORK', 'Resistance infantry on city blocks, HQs and ruins see 1 tile further; on city blocks and HQs they also get +1 terrain star.'],
+         O:['NANITE MESH', 'Overmind ground machines (tracks, wheels, hover, walkers) knit 5 HP back at the start of each turn when no enemy is within 2 tiles.']}
+};
+FAC2.SPECS = new Set(Object.values(FAC2.SPEC).flat().map(s => s[0]));
+
+/* ---- the power plants ---- */
+Object.assign(NP.STRUCTURES, {
+  fusion:     {n:'Fusion Core', fac:'R', cost:6000, time:2, hp:250, pow:25, req:['techlab', 'power'],
+               lore:'A salvaged tokamak in a scrap-plate jacket, rebuilt from the old Tsukishima grid. +25 power, but lose it and the lights go out.'},
+  singularity:{n:'Singularity Core', fac:'O', cost:6000, time:2, hp:250, pow:25, req:['techlab', 'power'],
+               lore:'A pinned micro-singularity humming inside a black-glass obelisk. +25 power. The Overmind does not explain how it is fed.'}
+});
+Object.assign(SSPR, {
+  fusion:[[0, 14, 16, 2, 's'], [1, 9, 14, 6, 'd'], [1, 3, 4, 8, 'm'], [11, 3, 4, 8, 'm'], [1, 2, 4, 1, 's'], [11, 2, 4, 1, 's'], [2, 4, 2, 1, 'k'], [12, 4, 2, 1, 'k'],
+          [5, 5, 6, 7, 'd'], [6, 6, 4, 4, 'g'], [7, 7, 2, 2, 'w'], [4, 8, 8, 1, 'a'], [5, 12, 6, 1, 's'], [2, 11, 2, 2, 'a'], [12, 11, 2, 2, 'a']],
+  singularity:[[2, 13, 12, 2, 'd'], [2, 4, 2, 9, 's'], [12, 4, 2, 9, 's'], [2, 3, 2, 1, 'g'], [12, 3, 2, 1, 'g'], [6, 1, 4, 12, 'd'], [7, 0, 2, 1, 'g'],
+          [4, 5, 8, 5, 'm'], [5, 6, 6, 3, 'k'], [6, 6, 4, 3, 'g'], [7, 7, 2, 1, 'w'], [5, 13, 6, 1, 'g'], [4, 11, 1, 2, 'm'], [11, 11, 1, 2, 'm']]
+});
+for (const L of [BUILD_ALL, typeof ACT2_BUILD !== 'undefined' ? ACT2_BUILD : []]) for (const t of ['fusion', 'singularity']) if (!L.includes(t)) L.push(t);
+for (const t of ['fusion', 'singularity']) if (!ED_TEAM_STRUCTS.includes(t)) ED_TEAM_STRUCTS.push(t);
+FAC2.addCores = L => { if (L && Array.isArray(L.build) && L.build.includes('techlab') && L.build.includes('power')) for (const t of ['fusion', 'singularity']) if (!L.build.includes(t)) L.build.push(t); return L; };
+for (const L of NP.LEVELS) FAC2.addCores(L);
+{ const _reg = registerLevel; registerLevel = function (L) { FAC2.addCores(L); return _reg.apply(this, arguments); }; }
+/* AI: with a Tech Lab and three Power Cores, the next power plant is a core (and it saves up for it). */
+{
+  const _ab = aiBase; aiBase = function (team) {
+    if (!G || !G.L.build) return _ab.apply(this, arguments);
+    const ft = FAC2.core(team), T = G.teams[team], L = G.L, b0 = L.build;
+    if (!b0.includes(ft) || !structAllowed(ft, team) || !hasBuilt(team, 'techlab') || G.structs.filter(s => s.team === team && s.type === 'power').length < 3) return _ab.apply(this, arguments);
+    const run = list => { L.build = list; try { return _ab(team); } finally { L.build = b0; } };
+    const pw = power(team), pending = G.structs.some(s => s.team === team && !s.built && s.def.pow > 0);
+    if (pw.use + 2 > pw.prod && !pending && hasYard(team)) {
+      const lock = structLock(team, ft);
+      if (!lock) { const at = aiPlaceSpot(team, ft); if (at) placeStruct(team, ft, at[0], at[1]); }
+      else if (lock.startsWith('need ¢')) { run([]); T.reserve = structCost(team, ft); return; }   // repairs only: the money is for the core
+    }
+    return run(b0.filter(t => t !== 'power'));
+  };
+}
+
+/* ---- the units ---- */
+Object.assign(NP.DMG, {
+  //            INF MEC SNP SUP REC APC TNK WLK HVY ART RKT AA  MSL GUN TCP FTR BMB BSH CRU SUB LND BOT BOS STR
+  KITE:  {s:[ 45, 40, 40, 35, 20, 18,  5,  3,  1, 25, 30,  4, 25,  8, 25,  0,  0,  0,  0,  0,  0, 15,  1,  4]},   // drone chin-gun
+  GLEAN: {s:[ 60, 50, 55, 45, 22, 22,  8,  6,  2, 32, 38,  8, 32,  0,  0,  0,  0,  0,  0,  0,  0, 15,  1, 10]}    // stripping saws
+});
+const FAC2_UNITS = [
+  {id:'r_scrap', n:'Scrapper', f:'R', cls:'INF', arm:'INF', cost:2500, mv:3, mt:'foot', vis:2, tags:['bio', 'mend'], req:'barracks', tier:1,
+   lore:'Dockyard welders from the Minato stacks with a plasma torch and a sack of plate. At the start of each turn it welds one adjacent friendly machine back 10 HP, free.'},
+  {id:'r_kite', n:'Kite Drone', f:'R', cls:'KITE', arm:'GUNSHIP', cost:3500, mv:7, mt:'air', vis:5, fuel:40, burn:2, tags:['bot', 'spot'], req:'factory', tier:2,
+   lore:'A paper-light quadcopter with a stolen traffic-camera eye. Sees 5 tiles; Resistance artillery and rockets hit anything within 2 tiles of a Kite 15% harder.'},
+  {id:'o_glean', n:'Gleaner', f:'O', cls:'GLEAN', arm:'RECON', cost:2500, mv:4, mt:'walker', vis:2, tags:['bot', 'glean'], req:'factory', tier:1,
+   lore:'A harvester on stilts. At the start of each turn it strips the richest scrap pile on or next to it into credits. Nothing in Shin-Pacifica goes to waste any more.'},
+  {id:'o_node', n:'Swarm Node', f:'O', cls:'INF', arm:'APC', cost:3500, mv:3, mt:'walker', vis:2, tags:['bot', 'brood'], req:'factory', tier:2,
+   lore:'A walking print-vat. Every other turn it extrudes a half-finished Husk Drone (5 HP) beside itself; it keeps at most two alive.'}
+].map(o => Object.assign({rng:[1, 1], ammo:0, fuel:99, burn:0, hp:100}, o));
+for (const u of FAC2_UNITS) if (!NP.UNIT[u.id]) { NP.UNITS.push(u); NP.UNIT[u.id] = u; }
+Object.assign(R2O, {r_scrap:'o_glean', r_kite:'o_node'}); Object.assign(O2R, {o_glean:'r_scrap', o_node:'r_kite'});
+Object.assign(SPR, {
+  scrap:{mz:[13, 7], rows:['', '.....dddd', '....dmmmmd', '....bvvvvb', '.....bbbb', '..ssdmmmmd', '..sSdMmmmdkk', '..ssdmmmmdssa', '..ssdmmmmd..g',
+    '....daaaad', '....dd..dd', '....dd..dd', '....dd..dd', '....kk..kk', '...kkk..kkk'],
+    alt:{8:'..ssdmmmmd.g.g', 11:'...dd...dd', 12:'...dd....dd', 13:'..kk.....kk', 14:'.kkk....kkk'}},
+  kite:{mz:[12, 8], idle:true, rows:['', '', 'SSSS......SSSS', '..s........s', '..sddddddddds', '...dMMMMMMMd', '..dmmmmvvvmmd', '...dmmmwvwmd', '....ddddddd', '.....s...s', '....g.....g'],
+    alt:{2:'..SSSS..SSSS', 10:'.....g...g'}},
+  glean:{mz:[14, 8], rows:['', '', '......dddd', '.....dmmmmd', '....dmMMmvd', '..ddmmmmmmdSS', '.daaddddddd.SSs', '.dmmmmmmmd...s', '..ddddddd', '...s...s', '...d...d', '..dd...dd', '..s.....s', '.kk.....kk'],
+    alt:{6:'.daaddddddd.SS', 7:'.dmmmmmmmd..Ss', 10:'....d.d', 11:'...dd.dd', 12:'...s...s', 13:'..kk...kk'}},
+  node:{mz:[13, 7], rows:['', '', '.....ddddd', '....dMMMMMd', '...dmmgggmmd', '..dmmgwwwgmmd', '..dmmgwwwgmmdS', '..dmmmgggmmmdS', '..ddddddddddd',
+    '...s.s...s.s', '..s..s...s..s', '..s...s.s...s', '.k...k.k...k'],
+    alt:{4:'...dmmgwgmmd', 6:'..dmmgwgwgmmdS', 9:'...s..s.s..s', 10:'..s..s...s..s', 11:'.s...s...s...s', 12:'.k...k...k...k'}}
+});
+Object.assign(ID_SHAPE, {r_scrap:'scrap', r_kite:'kite', o_glean:'glean', o_node:'node'});
+if (typeof SPR2 !== 'undefined') { SPR2.FOOT.add('scrap'); SPR2.BREATHE.scrap = 20; SPR2.ROTOR.add('kite'); SPR2.ANT.glean = [.3, 6]; }
+
+/* ---- rules ---- */
+const fac2Vehicle = u => !u.isStruct && !hasTag(u, 'boss') && /^(tracks|wheels|hover|walker)$/.test(u.d.mt);
+hook('bonus', (u, k) => {                                  // STREET NETWORK
+  if (u.isStruct || !u.d || u.d.f !== 'R' || !isFootU(u) || !G || !inB(u.x, u.y)) return 0;
+  const ch = G.map[u.y][u.x];
+  if (k === 'vis') return 'CHu'.includes(ch) ? 1 : 0;
+  if (k === 'stars') return 'CH'.includes(ch) ? 1 : 0;
+  return 0;
+});
+hook('turn', team => {
+  for (const u of G.units.filter(u => u.team === team)) {
+    if (u.d.f === 'O' && fac2Vehicle(u) && u.hp < u.d.hp && !G.units.some(e => e.team && !allied(e.team, team) && mdist(e.x, e.y, u.x, u.y) <= 2)) { const h = Math.min(5, u.d.hp - u.hp); u.hp += h; if (allied(team, ME) || visibleTo(u, ME)) floatText(u.x, u.y, '+' + h, '#ff6a7a'); }   // NANITE MESH
+    if (u.id === 'r_scrap' && !u.stun) {                    // weld the most valuable damaged machine next to it
+      const t = adjUnits(u.x, u.y).filter(a => a.team === team && !a.isStruct && !isFootU(a) && a.hp < a.d.hp && !hasTag(a, 'boss'))
+        .sort((a, b) => (b.d.cost || 0) * (b.d.hp - b.hp) - (a.d.cost || 0) * (a.d.hp - a.hp))[0];
+      if (t) { const h = Math.min(10, t.d.hp - t.hp); t.hp += h; floatText(t.x, t.y, 'WELD +' + h, '#ffb02e'); fxBurst(t.x * 16 + 8, t.y * 16 + 8, 6, ['#ffb02e', '#ffffff']); }
+    }
+    if (u.id === 'o_glean' && !u.stun && G.scrap) {       // strip one scrap pile
+      const ks = scrapNear(u.x, u.y, 1).sort((a, b) => G.scrap[b].v - G.scrap[a].v);
+      if (ks.length) { doField(u, {act:'salvage', k:ks[0]}); fxBurst(u.x * 16 + 8, u.y * 16 + 10, 6, ['#ffd34a', '#8d97ab']); }
+    }
+    if (u.id === 'o_node' && !u.stun) {                     // print a Husk Drone every other turn, two alive at most
+      u.f2c = (u.f2c || 0) + 1;
+      if (u.f2c % 2 || G.units.filter(h => h.f2by === u.uid).length >= 2 || countUnits(team) >= unitCap()) continue;
+      const at = exitTile(u.x, u.y, NP.UNIT.o_inf); if (!at) continue;
+      const h = spawn('o_inf', at[0], at[1], team, 50); h.done = true; h.f2by = u.uid; h.face = u.face;
+      floatText(u.x, u.y, 'PRINTED', '#ff3b3b'); fxRing(at[0], at[1], TEAMS[team].ui);
+    }
+  }
+});
+hook('damage', (u, dmg, by) => {                           // Kite spotting for indirect fire
+  if (!by || by.isStruct || u.isStruct || dmg <= 0 || !hasTag(by, 'ind') || !G.units.some(k => k.id === 'r_kite' && allied(k.team, by.team) && mdist(k.x, k.y, u.x, u.y) <= 2)) return dmg;
+  floatText(u.x, u.y, 'SPOTTED', '#9af6ff'); return Math.round(dmg * 1.15);
+});
+hook('save', () => ({fac2:G.units.map(u => [u.f2c || 0, u.f2by ? G.units.findIndex(n => n.uid === u.f2by) : -1])}));
+hook('load', s => { (s.fac2 || []).forEach(([c, b], i) => { const u = G.units[i]; if (!u) return; u.f2c = c; if (b >= 0 && G.units[b]) u.f2by = G.units[b].uid; }); });
+
+/* ---- AI: buys its specialists by one rule on both sides, and uses them ---- */
+FAC2.aiBuy = team => {
+  if (G.campaign && !allied(team, ME) && countUnits(team) >= (ENEMY_CAP[G.diffKey || SET.diff] || 24)) return;
+  const T = G.teams[team], list = FAC2.SPEC[TEAMS[team].fac]; if (!list || G.day < 2) return;
+  const army = G.units.filter(u => u.team === team && u.d.cls !== 'NONE').length;
+  for (const [id, a1, a2] of list) {
+    const d = NP.UNIT[id], have = G.units.filter(u => u.team === team && u.id === id).length, bought = (T.f2b = T.f2b || {})[id] || 0;
+    if (have >= (army >= a1) + (army >= a2) || bought >= 3 || unitCost(team, d) > T.funds - T.reserve - 1000) continue;
+    const srcs = Object.values(G.props).filter(p => p.owner === team && terr(p.x, p.y).prop.makes && !occupied(p.x, p.y))
+      .concat(G.structs.filter(s => s.team === team && s.def.makes)).filter(p => prodList(team, p).includes(d) && !prodLock(team, p, d));
+    if (srcs.length) { produce(team, srcs[(Math.random() * srcs.length) | 0], d); T.f2b[id] = bought + 1; return; }   // one a turn, three a game
+  }
+};
+{
+  const _pl = prodList; prodList = function (team) { const l = _pl.apply(this, arguments); return FAC2.hide === team ? l.filter(d => !FAC2.SPECS.has(d.id)) : l; };
+  const _ab = aiBuild; aiBuild = function (team, ctx) {
+    if (G && ctx) try { FAC2.aiBuy(team); } catch (e) { console.warn('FAC2', e); }
+    FAC2.hide = team; try { return _ab.apply(this, arguments); } finally { FAC2.hide = null; }
+  };
+  const _ap = aiApproach; aiApproach = function (u, reach, ctx, riskOf) {
+    if (G && ctx && u && (u.id === 'r_scrap' || u.id === 'o_glean')) {
+      let goals = [], nm = '';
+      if (u.id === 'r_scrap') { const hurt = G.units.filter(v => v.team === u.team && v !== u && !isFootU(v) && !isAirU(v) && v.hp <= v.d.hp * .8 && mdist(v.x, v.y, u.x, u.y) <= 12);
+        goals = hurt.flatMap(v => ring(v.x, v.y, 1)); nm = 'fac2mend:' + hurt.map(v => v.uid + '@' + key(v.x, v.y)).join(','); }
+      else { const ks = Object.keys(G.scrap || {}).map(Number).filter(k => mdist(k % G.W, (k / G.W) | 0, u.x, u.y) <= 12);
+        goals = ks.flatMap(k => [k].concat(ring(k % G.W, (k / G.W) | 0, 1))); nm = 'fac2scrap:' + ks.join(','); }
+      const b = goals.length && goalApproach(u, reach, ctx, riskOf, goals, nm, 10);
+      if (b) return b;
+    }
+    return _ap.apply(this, arguments);
+  };
+}
+
+/* ---- Intel: each faction's trait heads its unit list ---- */
+{
+  const _si = showIntel; showIntel = function (back, tab = 'R') {
+    const r = _si.apply(this, arguments), t = FAC2.TRAIT[tab], list = document.querySelector('#mbox .blist');
+    if (t && list) list.insertAdjacentHTML('afterbegin', `<div class="brow" style="cursor:default;grid-template-columns:1fr;border-color:${tab === 'R' ? '#ff3fb4' : '#ff3b3b'}"><span><b>FACTION TRAIT · ${esc(t[0])}</b><br><span class="bs">${esc(t[1])}</span></span></div>`);
+    return r;
+  };
+}
+/* end:p60_factions.js */
+/* ===== LATE-CAMPAIGN TUNING (Rei's veteran playtest, v0.6) =====
+   Rei played the late missions by hand on Veteran and won 1 of 9. The causes were boss toughness,
+   weather that never lifts, surprise spawns and pars below the travel time. Boss HP, the 2-5 / 3-5 /
+   4-10 map fixes and the Leviathan's dive rhythm live in the level data (engine, p18, p19);
+   the rules below are the ones that need code. */
+const REI = {
+  par:{'3-1':30, '3-5':26, '5-5':27},   // 1-10 → 26 and 2-5 → 20 are set in the level data
+  /* weather that lifts: [mission, from day, from weather, to weather, banner, tip] */
+  wx:[['5-10', 7, 'storm', 'rain', 'THE STORM BREAKS: AIRCRAFT CAN FLY', 'The storm over the core breaks on day 7. From then on your bomber and VTOL can fly: the bomber is your best weapon against the pylons and the core.'],
+      ['3-1', 9, 'snow', 'clear', 'THE SNOW STOPS', 'The snow stops on day 9. Until then it slows your infantry and tanks, but not MIRROR\'s hover and walker units.']],
+  recruitBoss:.6                         // Recruit: bosses start at 60% HP
+};
+for (const [id, p] of Object.entries(REI.par)) { const L = NP.LEVELS.find(l => l.id === id); if (L) L.par = p; }
+for (const [id, , , , , tip] of REI.wx) { const L = NP.LEVELS.find(l => l.id === id); if (L) L.tips = (L.tips || []).concat([{on:'start', text:tip}]); }
+
+/* WARDEN-9's Bastille Engine fires at 1-3 but only answers fire within 2 tiles, so mortars at 3 are safe */
+{
+  const _cc = canCounter; canCounter = function (t, a) {
+    if (t && t.id === 'b_warden' && mdist(t.x, t.y, a.x, a.y) > 2) return false;
+    return _cc.call(this, t, a);
+  };
+}
+hook('damage', (u, dmg, by) => {
+  if (by && by.id === 'b_mirror') { by.reiShot = G.day; return Math.round(dmg * .65); }   // the Prism Walker hits 35% softer…
+  return dmg;
+});
+hook('reveal', (t, team) => !!(t.id === 'b_mirror' && t.reiShot && G.day - t.reiShot <= 1 && !allied(t.team, team)));   // …and its muzzle flash shows it at night until the next day
+hook('turn', () => {
+  if (!G || !G.L) return;
+  for (const [id, day, from, to, banner] of REI.wx) if (G.L.id === id && G.day >= day && G.wx === from) {
+    G.wx = to; G.wxChange = false;
+    try { say(banner, '#9af6ff'); } catch (e) {}
+    try { updateHUD(); } catch (e) {}
+  }
+});
+hook('start', resumed => {
+  if (resumed || !G || G.editor || (G.diffKey || SET.diff) !== 'recruit') return;
+  for (const b of G.units) if (hasTag(b, 'boss') && !allied(b.team, ME)) b.hp = Math.max(1, Math.round(b.hp * REI.recruitBoss));
+});
+/* end:p63_rei.js */
+/* ===== SOUND OF WAR (v0.6) =====
+   Every unit gets its own gun, its own feet or engine, and its own death; plus armour ricochets,
+   incoming artillery and a distant-war ambience. All synthesised live with Web Audio (no samples).
+   Spliced last, so these wrappers sit outside p37 (arsenal) and p46 (voices); anything not
+   listed here falls through to their sounds.
+     SND.V        weapon voices        SND.ID      unit id → [primary voice, secondary voice]
+     SND.FEET     how each troop type walks         SND.DIE    extra death layers
+     SND.BOOM     explosion flavours   SND.amb     the war going on beyond the map edge */
+const SND = {};
+SND.j = (a = .1) => 1 - a + Math.random() * a * 2;                                  // pitch jitter: no two shots identical
+SND.bus = px => { const p = arsPan(px); return [arsBus(punchBus(), p), arsBus(AU.sfxBus, p)]; };
+SND.brass = (t, D, n = 2) => { for (let i = 0; i < n; i++) tone('sine', 3800 + Math.random() * 1600, t + .25 + Math.random() * .4, .05, .018, D, null, .001); };   // spent casings on concrete
+SND.mech = (t, D, v = .07) => { noise(t, .03, v, 'bandpass', 2400, D, null, 6); tone('square', 900, t + .01, .02, v * .5, D); noise(t + .09, .03, v * .8, 'bandpass', 1800, D, null, 6); };   // bolt / breech clack
+SND.whine = (t, dur, f0, f1, vol, D) => { tone('sine', f0, t, dur, vol, D, f1, .02); tone('sine', f0 * 1.5, t, dur, vol * .3, D, f1 * 1.5, .02); };
+/* the space-opera blaster: a struck steel wire. Partials fall at different speeds (dispersion), so the bolt
+   "pews" downward with a springy twang. hi/lo set the colour; ring adds the cable's metallic tail */
+SND.blaster = (t, P, D, hi = 2400, lo = 140, len = .16, vol = .14, ring = .5) => {
+  const j = SND.j(.07);
+  [[1, 1, 'sawtooth'], [1.51, .55, 'square'], [2.03, .35, 'sine'], [3.1, .2, 'sine']].forEach(([m, a, ty], i) =>
+    tone(ty, hi * m * j, t, len * (1 + i * .35), vol * a, P, lo * m * (1 + i * .5), .001));
+  thump(t, 180, 60, .05, .35, P); noise(t, .03, .12, 'highpass', 5000, P);
+  if (ring) tone('sine', 900 * j, t + .01, len * 2.5, .03 * ring, D, 380, .002);
+};
+/* ---------------- weapon voices ---------------- */
+SND.V = {
+  /* SYNC RULE: every voice puts its first report at t, the frame the muzzle flashes and the projectile leaves, and a burst
+     finishes inside the projectile's flight (SHOT_DUR: 0.14-0.55 s). Echoes, casings and reloads are tails after the shot. */
+  // Resistance small arms
+  rifle(t, P, D) { for (let i = 0; i < 3; i++) { const s = t + i * .07 + (i ? Math.random() * .01 : 0), j = SND.j();
+      crack(s, .7, P, 3000 * j); thump(s, 300 * j, 90, .06, .6, P); noise(s, .08, .25, 'bandpass', 1500 * j, P, 700, 1.4); }
+    sfxVerb(t, .6, .07, 3200); SND.brass(t, D, 3); },
+  smg(t, P, D) { for (let i = 0; i < 6; i++) { const s = t + i * .04; crack(s, .45, P, 3400); thump(s, 360, 140, .04, .4, P); } sfxVerb(t, .5, .05, 3600); SND.brass(t, D, 4); },
+  nailer(t, P, D) { for (let i = 0; i < 4; i++) { const s = t + i * .06;                              // Scrapper: pneumatic rivet gun
+      noise(s, .05, .3, 'bandpass', 900, P, 2600, 2); tone('square', 1300, s, .03, .08, P, 600); metalRing(s + .02, 1400, .12, .025, D); } },
+  smart(t, P, D) { for (let i = 0; i < 3; i++) { const s = t + i * .08; crack(s, .6, P, 3600); thump(s, 260, 100, .05, .5, P);
+      tone('sawtooth', 1800, s, .06, .05, D, 3200); tone('sine', 2400, s + .04, .03, .03, D); } },           // ORACLE frame: shot with a target-chirp tail
+  antimat(t, P, D) { crack(t, 1, P, 1800); thump(t, 200, 40, .3, 1.1, P); noise(t, .1, .5, 'bandpass', 1200, P, 300, 1);   // sniper: the crack, a long echo down the street, bolt cycle
+    for (let i = 1; i < 4; i++) noise(t + i * .28, .25, .12 / i, 'lowpass', 1800 / i, D, 200); sfxVerb(t, 1.4, .18, 2200); SND.mech(t + .8, D, .09); },
+  // armour
+  tankgun(t, P, D) { const j = SND.j(.08), s = t;                                                     // Resistance rail-tank: a brutal main-gun crack, barrel ring, capacitor recharge, breech reload
+    crack(s, 1, P, 700 * j); crack(s + .004, .8, P, 3000); thump(s, 120 * j, 26, 1, 1.8, P); thump(s + .02, 60, 24, 1.2, 1, P);
+    noise(s, .35, .7, 'bandpass', 500 * j, P, 140, .8); boomTail(s, 1.4, .6, P, 2200); tone('sine', 44 * j, s, 1.3, .55, D, 24, .003);
+    metalRing(s + .02, 240 * j, .9, .05, D); noise(s, .3, .12, 'highpass', 5000, D, 9000);                    // supersonic tear
+    sfxVerb(s, 2, .25, 1300); tone('sine', 300, s + .6, .5, .03, D, 2200, .1); SND.mech(s + .9, D, .12); metalRing(s + 1, 520, .3, .04, D); },
+  heavygun(t, P, D) { SND.V.tankgun(t, P, D); const s = t + .1; crack(s, .9, P, 800); thump(s, 100, 24, .9, 1.5, P); boomTail(s, 1.1, .45, P, 2000); },   // twin barrels
+  autocannon(t, P, D) { for (let i = 0; i < 2; i++) { const s = t + i * .1, j = SND.j();              // walker 40 mm: thump-thump
+      crack(s, .7, P, 1500 * j); thump(s, 170 * j, 45, .25, 1, P); noise(s, .12, .3, 'bandpass', 800, P, 300, 1); metalRing(s + .03, 700, .15, .02, D); } sfxVerb(t, 1, .12, 1800); },
+  howitzer(t, P, D) { const j = SND.j(.06); crack(t, 1, P, 600 * j); thump(t, 80 * j, 18, 1.6, 1.9, P); thump(t + .03, 45, 18, 1.6, 1.1, P);   // the whole street jumps
+    boomTail(t, 2.4, .75, P, 1800); tone('sine', 32, t, 2, .5, D, 20, .003); noise(t + .1, 1.5, .1, 'lowpass', 600, D, 80);
+    for (let i = 0; i < 3; i++) boomTail(t + .3 + i * .35, .8, .12 / (i + 1), D, 900); sfxVerb(t, 2.6, .3, 1000); SND.mech(t + 1.4, D, .1); },
+  quadflak(t, P, D) { for (let i = 0; i < 6; i++) { const s = t + i * .045 + (i % 2) * .006, j = SND.j();   // quad pom-pom: the burst leaves; the bursts up high are the impact's job
+      crack(s, .5, P, 1800 * j); thump(s, 230 * j, 70, .09, .6, P); } },
+  missile(t, P, D) { thump(t, 110, 50, .2, .7, P); crack(t, .5, P, 1500); noise(t, .9, .45, 'bandpass', 600, P, 3000, 2); noise(t, 1.1, .15, 'highpass', 2500, D, 6000); sfxVerb(t, 1.2, .12, 2400); },   // ignition and a roaring departure
+  ripple(t, P, D) { for (let i = 0; i < 4; i++) { const s = t + i * .08, j = SND.j();                 // Starfall rocket truck: a stuttering ripple
+      noise(s, .5, .28, 'bandpass', 700 * j, P, 3200, 2.5); thump(s, 140, 50, .1, .45, P); crack(s, .3, P, 1800); } sfxVerb(t, 1.6, .2, 2000); },
+  pods(t, P, D) { for (let i = 0; i < 3; i++) { const s = t + i * .07; noise(s, .4, .25, 'bandpass', 900, P, 3600, 2.5); thump(s, 150, 60, .08, .4, P); crack(s, .3, P, 2000); } },   // gunship: rocket pods
+  bigguns(t, P, D) { for (let i = 0; i < 3; i++) { const s = t + i * .12, j = SND.j();                 // battleship broadside
+      crack(s, 1, P, 600 * j); thump(s, 70 * j, 16, 1.5, 1.8, P); boomTail(s, 2, .6, P, 1500); tone('sine', 30, s, 1.8, .45, D, 18, .003); } sfxVerb(t, 3, .35, 900); },
+  deckgun(t, P, D) { for (let i = 0; i < 2; i++) { const s = t + i * .1; crack(s, .8, P, 1100); thump(s, 140, 35, .5, 1.2, P); boomTail(s, .9, .4, P, 2000); } sfxVerb(t, 1.4, .2, 1400); },
+  prism(t, P, D) { const j = SND.j(.05), s = t;                                                         // prism lancer: the beam snaps out on a bright chord
+    tone('sawtooth', 2600, s, .35, .12, P, 700); tone('square', 1300, s, .35, .06, P, 350); noise(s, .3, .15, 'highpass', 5000, P);
+    [523, 659, 784, 1047].forEach((f, i) => tone('sine', f * 2 * j, s + i * .02, .3, .05, D, f * 4 * j)); tone('sine', 4186, s, .6, .04, D, 4100); sfxVerb(s, .9, .1, 5000); },
+  // Overmind: plasma, saws, gravity
+  pulse(t, P, D) { for (let i = 0; i < 3; i++) SND.blaster(t + i * .08, P, D, 2600, 160, .15, .13, .4); sfxVerb(t, .6, .06, 4000); },   // drone soldier: three blaster bolts
+  repeater(t, P, D) { for (let i = 0; i < 5; i++) SND.blaster(t + i * .05, P, D, 1900, 120, .1, .1, i % 2 ? 0 : .3); },                // rapid repeating blaster
+  turbo(t, P, D) { for (let i = 0; i < 2; i++) { const s = t + i * .1;                                    // heavy twin turbo-blaster: low, fat, with a cannon thud under it
+      SND.blaster(s, P, D, 1100, 60, .32, .2, 1); thump(s, 110, 30, .4, 1.1, P); boomTail(s, .6, .25, P, 1800); } sfxVerb(t, 1.2, .14, 2500); },
+  ionbolt(t, P, D) { const s = t; SND.blaster(s, P, D, 1400, 70, .4, .22, 1); crack(s, .8, P, 900); thump(s, 90, 20, .8, 1.5, P);    // grav tank: a huge blaster slug, the bass sucked out under it
+    tone('sine', 180, s, .25, .4, P, 30, .01); boomTail(s, 1, .4, P, 2200); sfxVerb(s, 1.4, .18, 2200); },
+  sawspit(t, P, D) { const o = arsOsc('sawtooth', 600, t, t + .4), g = arsHold(t, .4, .14, .01, .08), bp = arsFilt('bandpass', 1800, 3);   // crawler: buzz-saw whine and a needle spray
+    o.frequency.exponentialRampToValueAtTime(1100, t + .2); o.connect(bp); bp.connect(g); g.connect(P);
+    for (let i = 0; i < 8; i++) noise(t + i * .03, .02, .2, 'highpass', 5000, P); },
+  gravgun(t, P, D) { const j = SND.j(.08), s = t;                                                       // heavy grav cannon: a plasma slug with the bass dropping out under it
+    crack(s, .9, P, 900); thump(s, 90, 20, .9, 1.6, P); tone('square', 600, s, .25, .1, P, 80); tone('sine', 180 * j, s, .3, .4, P, 30, .01); tone('sawtooth', 90 * j, s, .3, .12, P, 25, .01);
+    noise(s, .5, .4, 'bandpass', 900, P, 200, 2); boomTail(s, 1.1, .45, P, 2400); for (let i = 0; i < 6; i++) noise(s + .05 + i * .04, .03, .1, 'highpass', 6000, D); sfxVerb(s, 1.5, .2, 2000); },
+  phase(t, P, D) { const s = t; crack(s, .9, P, 1200); thump(s, 110, 30, .6, 1.3, P); tone('sawtooth', 2400, s, .2, .08, P, 200);   // phantom: the shot, then the cloak folding back in with a reversed swell
+    const n = arsNoise(s + .05, s + .45), lp = arsFilt('lowpass', 5000, 6), g = arsHold(s + .05, .4, .15, .02, .3); lp.frequency.exponentialRampToValueAtTime(200, s + .45); n.connect(lp); lp.connect(g); g.connect(D); sfxVerb(s, 1, .15, 3000); },
+  plasmaMortar(t, P, D) { tone('sine', 70, t, .5, .8, P, 140, .01); tone('square', 140, t, .5, .1, P, 280);   // grav artillery: a deep "thoom" that rises as it leaves
+    noise(t, .6, .3, 'bandpass', 400, P, 1600, 2); thump(t, 90, 30, .6, 1.4, P); sfxVerb(t, 1.8, .2, 1200); },
+  plasmaRipple(t, P, D) { for (let i = 0; i < 4; i++) { const s = t + i * .07; tone('square', 900, s, .3, .08, P, 3000); noise(s, .4, .2, 'bandpass', 1000, P, 4000, 3); thump(s, 120, 50, .08, .4, P); } },
+  stinger(t, P, D) { const o = arsOsc('sawtooth', 150, t, t + .35), g = arsHold(t, .35, .1, .02, .1); arsAM(g, t, t + .35, 38, .08, 'square'); o.connect(g); g.connect(P);   // insect gunship
+    for (let i = 0; i < 4; i++) SND.blaster(t + i * .055, P, D, 3000, 300, .08, .09, 0); },
+  shrieker(t, P, D) { tone('sawtooth', 600, t, .6, .12, P, 4000, .02); tone('square', 610, t, .6, .06, P, 4100, .02); noise(t, .7, .3, 'bandpass', 1500, P, 5000, 3); sfxVerb(t, 1, .12, 3000); },   // Overmind jet missile
+  acid(t, P, D) { thump(t, 160, 50, .3, .9, P); noise(t, .6, .25, 'lowpass', 500, P, 1600, 2);                    // bio-torpedo / acid cannon
+    for (let i = 0; i < 8; i++) { const f = 400 + Math.random() * 900; tone('sine', f, t + .05 + Math.random() * .4, .06, .05, D, f * 2, .003); } },
+  echo(t, P, D) { for (let i = 0; i < 4; i++) { const s = t + i * .12, v = .12 / (i + 1);              // echo lance: the same beam, repeating into the distance
+      tone('sawtooth', 3000, s, .2, v, i ? D : P, 600); tone('sine', 1500, s, .2, v * .6, i ? D : P, 900); } },
+  glare(t, P, D) { tone('square', 150, t, .5, .16, P, 120); tone('sawtooth', 157, t, .5, .14, P, 110); tone('sine', 6000, t, .3, .04, D, 3000);   // Overmind lance: a bass hum-beam
+    noise(t, .45, .16, 'bandpass', 900, P, 2600, 3); sfxVerb(t, .8, .1, 2500); }
+};
+/* unit → [primary, secondary]; null falls through to the arsenal's voice (bazooka, arc caster, spider spit, bombers, bosses keep theirs) */
+SND.ID = {
+  r_inf:['rifle', 'rifle'], r_mech:[null, 'rifle'], r_snipe:['antimat', 'smg'], r_bike:['smg', 'smg'], r_scrap:['nailer', 'nailer'], a_frame:['smart', 'smart'],
+  r_tank:['tankgun', 'smg'], r_heavy:['heavygun', 'autocannon'], r_walk:['autocannon', 'smg'], r_arty:['howitzer', 'smg'], r_rkt:['ripple', 'smg'],
+  r_aa:['quadflak', 'quadflak'], r_sam:['missile', 'smg'], r_heli:['pods', 'smg'], r_vtol:['missile', 'smg'], r_bs:['bigguns', 'deckgun'], r_cru:[null, 'deckgun'],
+  r_skiff:['missile', 'smg'], r_prism:['prism', 'smg'], r_halo:['prism', 'smg'],
+  o_inf:['pulse', 'pulse'], o_crawl:['sawspit', 'sawspit'], o_tank:['ionbolt', 'repeater'], o_phantom:['phase', 'repeater'], o_heavy:['gravgun', 'turbo'],
+  o_arty:['plasmaMortar', 'repeater'], o_rkt:['plasmaRipple', 'repeater'], o_sam:['shrieker', 'repeater'], o_heli:['stinger', 'repeater'], o_jet:['repeater', 'shrieker'],
+  o_bs:['turbo', 'acid'], o_cru:['acid', 'turbo'], o_sub:['acid', 'acid'], o_skiff:['repeater', 'pulse'], o_apc:['repeater', 'repeater'],
+  o_lance:['glare', 'pulse'], o_glare:['glare', 'pulse'], o_echo:['echo', 'pulse']
+};
+SND.WEAPON = new Set(['mg', 'rail', 'shell', 'rocket', 'arc', 'flak', 'torpedo', 'laser', 'bolt']);
+/* ---------------- incoming artillery: a falling whistle that lands with the shell ---------------- */
+SND.incoming = (t, dur, px, ov) => { const [, D] = SND.bus(px), s = t + Math.max(.1, dur * .35), d = Math.max(.25, dur * .65);
+  if (ov) { tone('sine', 900, s, d, .05, D, 160, .05); tone('square', 450, s, d, .015, D, 80, .05); }            // a dropping plasma moan
+  else { tone('sine', 2600, s, d, .06, D, 700, .08); tone('sine', 2650, s, d, .03, D, 720, .08); noise(s, d, .03, 'bandpass', 3000, D, 900, 4); } };
+/* ---------------- ricochets and armour clangs ---------------- */
+SND.ARMOUR = new Set(['TANK', 'HEAVY', 'WALKER', 'BOSS', 'APC', 'AA', 'ARTY', 'ROCKET', 'MISSILE', 'LASER', 'BATTLESHIP', 'CRUISER']);
+SND.rico = (t, D, n) => { for (let i = 0; i < n; i++) { const s = t + i * .06 + Math.random() * .05, f = 2200 + Math.random() * 2400;
+    tone('sine', f, s, .25 + Math.random() * .2, .05, D, f * (.3 + Math.random() * .2), .002); noise(s, .02, .08, 'bandpass', 5000, D, null, 8); metalRing(s, 900 + Math.random() * 900, .12, .02, D); } };
+SND.clang = (t, P, D) => { metalRing(t, 160 + Math.random() * 80, 1.1, .12, D); crack(t, .6, P, 2500); thump(t, 300, 120, .1, .5, P); SND.rico(t + .05, D, 1); };   // a shell skidding off thick plate
+/* ---------------- footsteps: every troop type walks differently ---------------- */
+SND.ground = u => { const ch = G && G.map[u.y] && G.map[u.y][u.x]; if (!ch) return 'dirt';
+  if (WATER.includes(ch) || ch === 't') return 'wet'; if (G.wx === 'snow' || (G.L && G.L.cold)) return 'snow'; if ('ruxM#HCFAPTLY=c'.includes(ch)) return 'hard'; return 'dirt'; };
+SND.footfall = (s, g, v, D, heavy) => {
+  if (g === 'wet') { noise(s, .1, v * 1.4, 'bandpass', 1100, D, 500, 1.5); tone('sine', 500 + Math.random() * 300, s + .03, .05, v * .3, D, 1200, .003); }
+  else if (g === 'snow') { noise(s, .09, v * 1.2, 'bandpass', 3200, D, 1800, 1.2); noise(s + .03, .05, v * .6, 'highpass', 5000, D); }
+  else if (g === 'hard') { thump(s, heavy ? 150 : 210, 70, .05, v * 3, D); noise(s, .04, v * 1.2, 'highpass', 2600, D); }
+  else { thump(s, heavy ? 120 : 160, 60, .06, v * 2.4, D); noise(s, .07, v, 'bandpass', 1300, D, 600, 1.2); } };
+SND.FEET = {
+  squad(u, t, D, D2, steps, dur, o = {}) {                             // a fireteam: several pairs of boots slightly out of step, gear rattling
+    const g = SND.ground(u), men = o.men || 3, rate = o.rate || 2.6, n = Math.max(2, Math.round(dur * rate * 2));
+    for (let m = 0; m < men; m++) { const off = Math.random() * .12; for (let i = 0; i < n; i++) { const s = t + off + i * dur / n + Math.random() * .025; SND.footfall(s, g, (o.v || .05) * SND.j(.25), D, o.heavy); } }
+    for (let i = 0; i < Math.ceil(dur * 4); i++) { const s = t + Math.random() * dur; noise(s, .025, .03, 'bandpass', 3500 + Math.random() * 2500, D2, null, 5); }   // webbing, magazines, canteens
+    if (o.radio && Math.random() < .35) { const s = t + Math.random() * dur * .6; noise(s, .25, .03, 'bandpass', 1800, D2, null, 3); tone('square', 1400, s + .25, .04, .02, D2); } },
+  mech(u, t, D, D2, steps, dur) { SND.FEET.squad(u, t, D, D2, steps, dur, {men:2, rate:2, v:.07, heavy:true});              // exo-suits: heavy boots and servo whine each stride
+    for (let i = 0; i < Math.max(2, steps * 2); i++) tone('sine', 700, t + i * dur / Math.max(2, steps * 2), .1, .012, D2, 1100, .02); },
+  sniper(u, t, D, D2, steps, dur) { SND.FEET.squad(u, t, D, D2, steps, dur, {men:1, rate:1.6, v:.025}); },                      // creeping
+  eng(u, t, D, D2, steps, dur) { SND.FEET.squad(u, t, D, D2, steps, dur, {men:2, v:.045}); for (let i = 0; i < 2; i++) metalRing(t + Math.random() * dur, 1200 + Math.random() * 600, .15, .015, D2); },   // tools clinking
+  scrap(u, t, D, D2, steps, dur) { SND.FEET.squad(u, t, D, D2, steps, dur, {men:2, v:.05}); for (let i = 0; i < 4; i++) noise(t + Math.random() * dur, .04, .05, 'bandpass', 2200, D2, null, 9); },   // chains
+  civ(u, t, D, D2, steps, dur) { SND.FEET.squad(u, t, D, D2, steps, dur, {men:2, rate:3.2, v:.03}); },                         // hurried, uneven
+  march(u, t, D, D2, steps, dur) { const g = SND.ground(u), n = Math.max(2, Math.round(dur * 4));                            // Overmind drones: four bodies in perfect lock-step
+    for (let i = 0; i < n; i++) { const s = t + i * dur / n; SND.footfall(s, g, .08, D, true); metalRing(s + .01, 330, .12, .02, D2); noise(s + .02, .06, .03, 'highpass', 4500, D2); }
+    if (Math.random() < .3) tone('square', 880, t + .1, .03, .015, D2); },
+  revenant(u, t, D, D2, steps, dur) { const n = Math.max(2, Math.round(dur * 2.2));                                          // revenant: one leg drags
+    for (let i = 0; i < n; i++) { const s = t + i * dur / n; SND.footfall(s, SND.ground(u), .07, D, true); noise(s + .12, .2, .05, 'bandpass', 900, D2, 400, 2); } tone('sawtooth', 70, t, dur, .015, D2, 60, .2); },
+  node(u, t, D, D2, steps, dur) { for (let i = 0; i < dur * 20; i++) noise(t + i / 20, .012, .05, 'bandpass', 4200, D, null, 6); tone('sine', 300, t, dur, .015, D2, 600, .1); },
+  frame(u, t, D, D2, steps, dur) { const n = Math.max(2, Math.round(dur * 2.5));                                             // ORACLE's frames: light, precise, a soft chime
+    for (let i = 0; i < n; i++) { const s = t + i * dur / n; SND.footfall(s, SND.ground(u), .06, D, false); tone('sine', 1800, s + .02, .08, .008, D2, 2200, .01); } }
+};
+SND.FEET_OF = {r_inf:'squad', r_mech:'mech', r_snipe:'sniper', r_eng:'eng', r_scrap:'scrap', c_civ:'civ', c_civ2:'civ', o_inf:'march', o_mech:'march', o_rev:'revenant', o_node:'node', a_frame:'frame'};
+/* tanks and heavies: a revving start and a louder track clatter on top of the arsenal's engine */
+SND.rev = (u, t, dur, D) => { const heavy = ['HEAVY', 'BOSS'].includes(u.d.cls), f = heavy ? 38 : 50, o = arsOsc('sawtooth', f, t, t + .7), lp = arsFilt('lowpass', 260, 2), g = arsHold(t, .7, heavy ? .3 : .24, .05, .3);
+  o.frequency.linearRampToValueAtTime(f * 2.2, t + .25); o.frequency.linearRampToValueAtTime(f * 1.4, t + .7); o.connect(lp); lp.connect(g); g.connect(D); noise(t, .25, .06, 'lowpass', 400, D);
+  const n = Math.max(4, dur * 10); for (let i = 0; i < n; i++) { const s = t + .15 + i * dur / n; noise(s, .025, .06, 'bandpass', 2400 + Math.random() * 1200, D, null, 5); metalRing(s, 260, .05, .008, D); } };
+/* ---------------- deaths ---------------- */
+SND.DIE = {
+  bodyfall(t, P, D) { thump(t + .35, 110, 50, .15, .6, P); noise(t + .35, .12, .15, 'lowpass', 600, D); for (let i = 0; i < 3; i++) metalRing(t + .42 + i * .07, 1500 + Math.random() * 900, .1, .02, D); },   // and their rifle clatters down
+  powerdown(t, P, D) { tone('sawtooth', 900, t, .9, .07, D, 40, .01); tone('square', 450, t + .05, .8, .03, D, 30, .01); for (let i = 0; i < 6; i++) noise(t + Math.random() * .6, .03, .1, 'highpass', 5000, D);
+    thump(t + .5, 140, 50, .2, .7, P); metalRing(t + .55, 300, .5, .05, D); },
+  burn(t, D, n = 18) { for (let i = 0; i < n; i++) noise(t + Math.random() * 2.2, .02, .05, 'bandpass', 1500 + Math.random() * 2500, D, null, 3); noise(t, 2.2, .06, 'lowpass', 500, D, 200, .6); },   // crackling fire
+  vehicle(t, P, D, heavy, u) {                    // vehicles go out many different ways: the drive and side narrow the choice, then it's random
+    const mt = u ? u.d.mt : 'tracks', pool = ['groan', 'cookoff', 'fireball'];
+    if (heavy || mt === 'tracks') pool.push('turret', 'turret'); if (mt === 'wheels') pool.push('tyres', 'tyres'); if (mt === 'hover') pool.push('crash', 'crash');
+    if (mt === 'walker') pool.push('topple', 'topple'); if (u && u.d.f === 'O') pool.push('core', 'core');
+    SND.WRECK[pool[(Math.random() * pool.length) | 0]](t, P, D, heavy); },
+  aircraft(t, P, D) { tone('sine', 1800, t, .7, .07, D, 300, .02); noise(t, .7, .15, 'bandpass', 1500, D, 300, 2); const s = t + .7; crack(s, .9, P, 700); thump(s, 75, 18, 1.2, 1.6, P); boomTail(s, 1.6, .55, P, 2000); },
+  ship(t, P, D) { tone('sawtooth', 55, t + .3, 2.4, .12, D, 32, .5); metalRing(t + .5, 90, 2, .14, D); noise(t + .3, 2, .12, 'lowpass', 400, D, 120, .7);                // the hull groans and goes under
+    for (let i = 0; i < 16; i++) { const f = 200 + Math.random() * 500; tone('sine', f, t + .8 + Math.random() * 2.2, .08, .05, D, f * 2.2, .003); } }
+};
+SND.WRECK = {
+  groan(t, P, D, h) { thump(t + .1, 80, 25, .8, 1, P); boomTail(t + .1, 1, .3, P, 1500); tone('sawtooth', h ? 70 : 110, t + .2, 1.4, .1, D, 30, .3); metalRing(t + .4, h ? 110 : 170, 1.4, .1, D); SND.DIE.burn(t + .6, D); },          // the hull sags and burns
+  turret(t, P, D) { const s = t + .45 + Math.random() * .3;                                                  // the turret blows off and lands with a clang
+    crack(s, .9, P, 700); thump(s, 70, 18, 1, 1.6, P); boomTail(s, 1.5, .55, P, 1800); tone('sine', 300, s + .1, .9, .03, D, 120, .05);
+    metalRing(s + 1.1, 130, 1.3, .08, D); thump(s + 1.1, 120, 40, .2, .7, P); SND.DIE.burn(s + .3, D); },
+  cookoff(t, P, D) { const n = 5 + (Math.random() * 5 | 0); for (let i = 0; i < n; i++) { const s = t + .4 + i * (.12 + Math.random() * .25);   // the ammunition goes up, round after round
+      crack(s, .5, P, 1600); thump(s, 170 + Math.random() * 80, 50, .15, .5, P); noise(s, .2, .1, 'highpass', 3000, D); } SND.DIE.burn(t + .5, D, 10); },
+  fireball(t, P, D) { noise(t + .15, 1.6, .35, 'bandpass', 250, P, 1200, 1); noise(t + .3, 2.4, .12, 'lowpass', 600, D, 150, .7); tone('sine', 40, t + .15, 2, .3, D, 25, .2); SND.DIE.burn(t + .8, D, 24); },   // fuel: a rolling roar
+  tyres(t, P, D) { for (let i = 0; i < 4; i++) { const s = t + .5 + Math.random() * 1.6; crack(s, .4, P, 900); noise(s, .3, .1, 'bandpass', 1200, D, 300, 2); }          // tyres pop one by one, the horn stuck on
+    tone('sawtooth', 415, t + .3, 1.6, .03, D, 400, .05); tone('sawtooth', 523, t + .3, 1.6, .02, D, 505, .05); SND.DIE.burn(t + .4, D); },
+  crash(t, P, D) { noise(t + .1, .9, .25, 'bandpass', 1800, D, 400, 2); for (let i = 0; i < 8; i++) metalRing(t + .1 + i * .1, 300 + Math.random() * 500, .2, .03, D);   // hover field fails: it drops and scrapes
+    thump(t + 1, 90, 30, .5, 1.1, P); SND.DIE.burn(t + 1, D, 10); },
+  topple(t, P, D) { tone('sawtooth', 500, t, .8, .05, D, 60, .02); for (let i = 0; i < 4; i++) { thump(t + .5 + i * .18, 110 - i * 15, 40, .3, .8, P); metalRing(t + .5 + i * .18, 200 + i * 60, .5, .04, D); } },   // a walker's legs give way
+  core(t, P, D) { tone('sine', 2000, t, .5, .06, D, 6000, .02); tone('square', 1000, t, .5, .03, D, 3000, .02);   // Overmind reactor: a rising whine, then a violet discharge
+    const s = t + .5; SND.BOOM.plasma(s, P, D); crack(s, .9, P, 900); thump(s, 60, 18, 1, 1.5, P); boomTail(s, 1.4, .5, P, 2600); for (let i = 0; i < 12; i++) noise(s + .2 + Math.random() * 1.5, .02, .06, 'highpass', 5000, D); }
+};
+/* ---------------- explosion flavours on top of the arsenal's blast ---------------- */
+SND.BOOM = {
+  fireball(t, P, D) { noise(t, .9, .3, 'bandpass', 300, P, 1400, 1.2); noise(t + .1, 1.4, .1, 'lowpass', 700, D, 150); },                       // fuel: a rolling whoomph
+  plasma(t, P, D) { tone('sine', 60, t - .02, .12, .4, P, 400, .05); for (let i = 0; i < 10; i++) noise(t + Math.random() * .5, .02, .12, 'highpass', 4000 + Math.random() * 4000, D);   // implosive suck, crackling arcs
+    tone('square', 220, t, .5, .05, D, 40); },
+  concussion(t, P, D) { tone('sine', 3200, t + .05, 1.2, .025, D, 3000, .01); thump(t, 50, 20, .6, .8, P); },                                    // the ringing in your ears
+  shellhit(t, P, D) { crack(t, 1, P, 600); thump(t, 70, 16, 1.4, 1.8, P); thump(t + .02, 40, 16, 1.4, 1, P); boomTail(t, 2, .7, P, 2000);   // a heavy shell landing: the crump
+    tone('sine', 30, t, 1.8, .5, D, 18, .003); noise(t, .3, .5, 'bandpass', 450, P, 150, .8); sfxVerb(t, 2.4, .3, 1000); },
+  dirt(t, P, D) { for (let i = 0; i < 14; i++) noise(t + .2 + Math.random() * 1.1, .05, .06, 'lowpass', 900 + Math.random() * 800, D, null, 1); }    // soil raining back down
+};
+/* ---------------- the war beyond the map edge ---------------- */
+SND.amb = {last:0, bus:null};
+SND.ambBus = () => { if (SND.amb.bus) return SND.amb.bus; const c = AU.ctx, lp = arsFilt('lowpass', 1100, .5), g = c.createGain(); g.gain.value = .55; lp.connect(g); g.connect(AU.sfxBus);
+  const sv = c.createGain(); sv.gain.value = .6; lp.connect(sv); sv.connect(AU.sfxVerb); return SND.amb.bus = lp; };
+SND.FAR = {
+  boom(t, d) { thump(t, 60 + Math.random() * 30, 20, 1.6, .16, d); boomTail(t, 2.2, .09, d, 500); },
+  volley(t, d) { for (let i = 0; i < 3 + (Math.random() * 4 | 0); i++) SND.FAR.boom(t + i * (.4 + Math.random() * .6), d); },
+  mg(t, d) { const n = 6 + (Math.random() * 14 | 0), gap = .06 + Math.random() * .05; for (let i = 0; i < n; i++) noise(t + i * gap, .03, .35, 'bandpass', 900, d, null, 1.5); },
+  rifles(t, d) { for (let i = 0; i < 6; i++) noise(t + Math.random() * 2, .03, .35, 'bandpass', 1100, d, null, 1.5); },
+  siren(t, d) { const o = arsOsc('sine', 420, t, t + 6), g = arsHold(t, 6, .035, 1.2, 1.5), m = arsOsc('sine', .25, t, t + 6), mg = AU.ctx.createGain(); mg.gain.value = 160; m.connect(mg); mg.connect(o.frequency); o.connect(g); g.connect(d); },
+  flyby(t, d) { const n = arsNoise(t, t + 4), bp = arsFilt('bandpass', 400, .8), g = arsHold(t, 4, .1, 1.8, 1.8); bp.frequency.linearRampToValueAtTime(1600, t + 2); bp.frequency.linearRampToValueAtTime(300, t + 4); n.connect(bp); bp.connect(g); g.connect(d); },
+  radio(t) { const D = AU.sfxBus; noise(t, .5, .012, 'bandpass', 1900, D, null, 4); for (let i = 0; i < 6; i++) tone('square', 500 + Math.random() * 700, t + .1 + i * .06, .05, .006, D); tone('sine', 1200, t + .55, .05, .01, D); },
+  grav(t, d) { tone('sine', 50, t, 3, .12, d, 38, .8); tone('sawtooth', 51, t, 3, .02, d, 39, .8); }                                            // an Overmind walker somewhere out there
+};
+SND.ambTick = () => {
+  if (!AU.ctx || SET.mute || SET.warAmb === false || !G || G.editor || G.over || MODAL) return;
+  const now = AU.ctx.currentTime; if (now - SND.amb.last < 2.2) return;
+  const quiet = G.tod === 'day' && G.day <= 1 ? .5 : 1, boss = G.L && G.L.boss ? 1.3 : 1;
+  if (Math.random() > .4 * quiet * boss) return;
+  SND.amb.last = now; const t = now + .05, pn = AU.ctx.createStereoPanner(); pn.pan.value = Math.random() * 1.6 - .8; pn.connect(SND.ambBus());
+  const urban = G.L && ((G.L.genOpts && G.L.genOpts.theme === 'urban') || G.L.theme === 'urban'), r = Math.random();
+  if (r < .26) SND.FAR.boom(t, pn); else if (r < .4) SND.FAR.volley(t, pn); else if (r < .62) SND.FAR.mg(t, pn); else if (r < .74) SND.FAR.rifles(t, pn);
+  else if (r < .82) SND.FAR.flyby(t, pn); else if (r < .9) SND.FAR.radio(t); else if (r < .95 && urban) SND.FAR.siren(t, pn); else SND.FAR.grav(t, pn);
+};
+setInterval(() => { try { SND.ambTick(); } catch (e) { /* ambience only */ } }, 1100);
+/* ---------------- hooks ---------------- */
+{
+  const _sfx = sfx; sfx = function (name) {
+    if (!AU.ctx || SET.mute) return;
+    try {
+      const a = ARS.shooter;
+      if (a && !a.isStruct && SND.WEAPON.has(name) && !(typeof VOX !== 'undefined' && VOX.sw)) {
+        const ids = SND.ID[a.d.id], v = ids && ids[ARS.slot === 's' ? 1 : 0];
+        const t = AU.ctx.currentTime + .01;
+        if (v && SND.V[v]) { if (AU.last['s64_' + name] && t - AU.last['s64_' + name] < .04) return; AU.last['s64_' + name] = t;
+          const [P, D] = SND.bus(ARS.px); SND.V[v](t, P, D); return; }
+      }
+    } catch (e) { /* fall through to the stock sound */ }
+    return _sfx(name);
+  };
+  const _shot = fxShot; fxShot = function (a, tg, slot = 'p') {
+    try { if (AU.ctx && !SET.mute && a && !a.isStruct && hasTag(a, 'ind') && slot === 'p') {                // artillery: hear it coming
+      const k = projKind(a, slot), dur = typeof SHOT_DUR !== 'undefined' && SHOT_DUR[k] || .6; SND.incoming(AU.ctx.currentTime + .02, dur, tg.x * 16 + 8, a.d.f === 'O'); } } catch (e) { /* sound only */ }
+    return _shot(a, tg, slot);
+  };
+  const _imp = impactFX; impactFX = function (f) {
+    const r = _imp(f);
+    try { if (AU.ctx && !SET.mute && G) {
+      const x = Math.floor(f.tx / 16), y = Math.floor(f.ty / 16), u = inB(x, y) && unitAt(x, y), t = AU.ctx.currentTime + .01, [P, D] = SND.bus(f.tx);
+      if (f.kind === 'flak') for (let i = 0; i < 4; i++) { const s = t + i * .06 + Math.random() * .03; noise(s, .2, .22, 'bandpass', 700, D, 200, 1.5); crack(s, .3, P, 2000); }   // flak bursts where the shells arrive
+      if (u && !hasTag(u, 'bio') && SND.ARMOUR.has(u.d.cls)) {
+        if (f.kind === 'mg' || f.kind === 'flak') SND.rico(t, D, 2 + (Math.random() * 2 | 0));              // bullets off armour
+        else if ((f.kind === 'rail' || f.kind === 'shell') && Math.random() < .5) SND.clang(t, P, D);
+      }
+      if (['shell', 'arc', 'rocket', 'bombs', 'torpedo', 'beam'].includes(f.kind)) {
+        const wet = WATER.includes((G.map[y] || '')[x]), ov = !!f.col && Object.values(TEAMS).some(T => T && T.fac === 'O' && T.g === f.col);
+        if (f.kind === 'arc') { if (ov) SND.BOOM.plasma(t, P, D); SND.BOOM.shellhit(t, P, D); SND.BOOM.concussion(t, P, D); if (!wet) SND.BOOM.dirt(t, P, D); }   // artillery lands
+        else if (ov) SND.BOOM.plasma(t, P, D);
+        else if (!wet) SND.BOOM[Math.random() < .5 ? 'dirt' : 'fireball'](t, P, D);
+        if (f.kind === 'bombs') SND.BOOM.concussion(t, P, D);
+      }
+    } } catch (e) { /* sound only */ }
+    return r;
+  };
+  const _move = moveSfx; moveSfx = function (u, steps, dur) {
+    try { if (AU.ctx && !SET.mute && u && steps >= 1) {
+      const t = AU.ctx.currentTime + .01, p = arsPan(u.x * 16 + 8), D = arsBus(punchBus(), p), D2 = arsBus(AU.sfxBus, p), d = Math.min(1.8, Math.max(.3, dur));
+      const f = SND.FEET_OF[u.d.id] || (isFootU(u) ? (hasTag(u, 'bio') ? 'squad' : 'march') : null);
+      if (f) { SND.FEET[f](u, t, D, D2, steps, d, u.d.id === 'r_inf' ? {radio:true} : undefined); return; }
+      if (u.d.mt === 'tracks' && u.d.cls !== 'NONE') SND.rev(u, t, d, D2);
+    } } catch (e) { /* sound only */ }
+    return _move(u, steps, dur);
+  };
+  const _death = deathFX; deathFX = function (u, by) {
+    try { if (AU.ctx && !SET.mute && u && !(typeof DTH !== 'undefined' && DTH.owned)) {             // an animated death (p65) plays its own sounds in step with its frames
+      const t = AU.ctx.currentTime + .01, [P, D] = SND.bus(u.x * 16 + 8), bio = hasTag(u, 'bio');
+      if (isAirU(u)) SND.DIE.aircraft(t, P, D);
+      else if (isNavalU(u)) SND.DIE.ship(t, P, D);
+      else if (isFootU(u)) { if (bio) SND.DIE.bodyfall(t, P, D); else SND.DIE.powerdown(t, P, D); }
+      else SND.DIE.vehicle(t, P, D, ['HEAVY', 'BOSS', 'TANK'].includes(u.d.cls), u);
+    } } catch (e) { /* sound only */ }
+    return _death(u, by);
+  };
+  // Settings → Sound: War ambience on/off
+  const _ss = showSettings; showSettings = function (...a) { const r = _ss.apply(this, a);
+    try { if (!document.querySelector('#mbox [data-k="warAmb"]')) {
+      const html = `<div class="opt">War ambience <select data-k="warAmb"><option value="1" ${SET.warAmb !== false ? 'selected' : ''}>On</option><option value="0" ${SET.warAmb === false ? 'selected' : ''}>Off</option></select></div>`;
+      const grp = [...document.querySelectorAll('#mbox details.setgrp')].find(d => /Sound/.test(d.querySelector('summary').textContent));
+      if (grp) grp.insertAdjacentHTML('beforeend', html); else { const rows = document.querySelectorAll('#mbox .opt'); if (rows.length) rows[rows.length - 1].insertAdjacentHTML('afterend', html); }
+    } } catch (e) {}
+    return r; };
+  const _ap = applySetting; applySetting = function (el) { if (el && el.dataset && el.dataset.k === 'warAmb') { SET.warAmb = el.value === '1'; saveSet(); return; } return _ap(el); };
+}
+/* end:p64_soundfx.js */
+/* ===== VARIED DEATHS (v0.6) =====
+   Troops used to die one way (topple sideways) and vehicles another (the same fireball and wreck).
+   Now the death fits the unit and the weapon, with a random pick among the fitting ones:
+     troops     topple · blown back · crumple to the knees · spin and drop · stagger and collapse ·
+                burn (lasers, Resistance energy) · disintegrate to ash (Overmind bolts)
+     drones     topple in sparks · short-circuit twitching · head blown off · burst into scrap
+     vehicles   fireball wreck · flipped onto its roof · turret blown off · cook-off · melted to slag (energy) ·
+                shattered into chunks · hover crash and skid · walker topples
+     aircraft   straight burst · spiral down trailing smoke · break in two
+     ships      sink level · capsize · break in half
+   Gore follows Settings → Mature: with it off there's no blood, but troops still fall in varied ways.
+   Animations run in the same world layer as the engine's own (draw hook), and paint their wreck or
+   body into the decal layer when they finish, so it stays for the rest of the mission. */
+const DTH = {A:[], last:0};
+DTH.pick = a => a[(Math.random() * a.length) | 0];
+DTH.spr = u => getSprite(u.d, u.team, false, 0);
+DTH.ease = k => 1 - Math.pow(1 - k, 2);
+DTH.tint = (spr, col) => { const c = document.createElement('canvas'); c.width = spr.width; c.height = spr.height; const g = c.getContext('2d'); g.drawImage(spr, 0, 0);   // tint only the sprite's own pixels
+  g.globalCompositeOperation = 'source-atop'; g.fillStyle = col; g.fillRect(0, 0, c.width, c.height); return c; };
+/* a body or wreck into the decal layer: tint, rotation, offset and vertical squash */
+DTH.paint = (a, tint, rot = 0, dx = 0, dy = 0, sy = .8, part) => {
+  if (!decalG || G !== a.g) return;
+  const c = document.createElement('canvas'); c.width = c.height = 16; const g = c.getContext('2d');
+  if (part) g.drawImage(a.spr, part[0], part[1], part[2], part[3], part[0] * 16 / a.spr.width, part[1] * 16 / a.spr.height, part[2] * 16 / a.spr.width, part[3] * 16 / a.spr.height);
+  else g.drawImage(a.spr, 0, 0, 16, 16);
+  g.globalCompositeOperation = 'source-atop'; g.fillStyle = tint; g.fillRect(0, 0, 16, 16);
+  decalG.save(); decalG.translate(a.x * 16 + 8 + dx, a.y * 16 + 10 + dy); decalG.rotate(rot); if (a.face < 0) decalG.scale(-1, 1); decalG.scale(1, sy); decalG.drawImage(c, -8, -8, 16, 16); decalG.restore();
+};
+DTH.add = (u, kind, dur, o = {}) => DTH.A.push(Object.assign({g:G, u, x:u.x, y:u.y, face:u.face || 1, spr:DTH.spr(u), team:u.team, kind, t:0, dur}, o));
+/* which way the hit came from: away from the killer */
+DTH.away = (u, by) => { if (!by) return [u.face < 0 ? 1 : -1, 0]; const dx = Math.sign(u.x - by.x), dy = Math.sign(u.y - by.y); return [dx || (u.face < 0 ? 1 : -1), dy]; };
+/* ---------------- the animations: draw(a, k, X, Y) runs every frame, end(a) paints what's left ---------------- */
+const BODY = (a, tint) => DTH.paint(a, tint || (a.ash ? 'rgba(30,26,24,.85)' : a.scrap ? 'rgba(40,44,52,.55)' : 'rgba(20,10,10,.45)'), a.rot || 0, a.ox || 0, a.oy || 0, a.sy || .8);
+const POOL = a => { if (a.blood && SET.gore) splat(a.x * 16 + 8 + (a.ox || 0), a.y * 16 + 12 + (a.oy || 0), 45, BLOOD, 6); };
+DTH.K = {
+  // ---- troops ----
+  knock: {draw(a, k, X, Y) { const e = DTH.ease(k); a.ox = a.dir[0] * 7 * e; a.oy = a.dir[1] * 4 * e - Math.sin(k * Math.PI) * 5; a.rot = a.dir[0] * e * Math.PI / 2;   // blown backwards
+      ctx.translate(X + 8 + a.ox, Y + 12 + a.oy); ctx.rotate(a.rot); if (a.face < 0) ctx.scale(-1, 1); ctx.drawImage(a.spr, -8, -12, 16, 16); },
+    end(a) { BODY(a); POOL(a); }},
+  crumple: {draw(a, k, X, Y) { const s = k < .5 ? 1 - k * .6 : .7, r = k < .5 ? 0 : (k - .5) * 2 * Math.PI / 2 * a.face;    // knees give, then falls forward
+      ctx.translate(X + 8, Y + 14); ctx.rotate(r); ctx.scale(a.face < 0 ? -1 : 1, s); ctx.drawImage(a.spr, -8, -14, 16, 16); a.rot = a.face * Math.PI / 2; },
+    end(a) { BODY(a); POOL(a); }},
+  spin: {draw(a, k, X, Y) { const r = k * Math.PI * 1.5 * a.face; ctx.translate(X + 8, Y + 12); ctx.rotate(k < .7 ? 0 : (k - .7) / .3 * Math.PI / 2 * a.face);   // spun round by the hit
+      ctx.scale(Math.cos(r) * (a.face < 0 ? -1 : 1) || .05, 1); ctx.drawImage(a.spr, -8, -12, 16, 16); a.rot = a.face * Math.PI / 2; },
+    end(a) { BODY(a); POOL(a); }},
+  stagger: {draw(a, k, X, Y) { const w = Math.sin(k * Math.PI * 5) * (1 - k) * .35, fall = k > .65 ? (k - .65) / .35 : 0;   // staggers, then collapses
+      a.ox = a.dir[0] * 4 * Math.min(1, k * 1.5); ctx.translate(X + 8 + a.ox, Y + 12); ctx.rotate(w + fall * Math.PI / 2 * a.face); if (a.face < 0) ctx.scale(-1, 1); ctx.drawImage(a.spr, -8, -12, 16, 16); a.rot = a.face * Math.PI / 2; },
+    end(a) { BODY(a); POOL(a); }},
+  burn: {draw(a, k, X, Y) { const fl = Math.sin(k * 40) * .25 * (1 - k);                                                  // engulfed, flailing, then down
+      if (Math.random() < .6) fire(X + 8 + (Math.random() * 6 - 3), Y + 6, 1, .5);
+      ctx.translate(X + 8, Y + 12); ctx.rotate(fl + (k > .6 ? (k - .6) / .4 * Math.PI / 2 * a.face : 0)); if (a.face < 0) ctx.scale(-1, 1);
+      ctx.drawImage(DTH.tint(a.spr, `rgba(255,${120 - k * 100 | 0},20,${.25 + k * .5})`), -8, -12, 16, 16); a.rot = a.face * Math.PI / 2; },
+    end(a) { BODY(a, 'rgba(12,8,6,.9)'); smoke(a.x * 16 + 8, a.y * 16 + 8, 6); scorch(a.x * 16 + 8, a.y * 16 + 12, 3); }},
+  dust: {draw(a, k, X, Y) {                                                                                                  // disintegrated: the body glows and blows away as ash
+      ctx.globalAlpha = 1 - k; ctx.translate(X + 8, Y + 12); if (a.face < 0) ctx.scale(-1, 1); ctx.drawImage(DTH.tint(a.spr, `rgba(255,60,180,${.3 + k * .6})`), -8, -12, 16, 16);
+      if (Math.random() < .8) part({x:X + 3 + Math.random() * 10, y:Y + 2 + Math.random() * 10, vx:12 + Math.random() * 20, vy:-10 - Math.random() * 15, gr:-5, life:.8, col:DTH.pick(['#ff3fb4', '#ffd0f0', '#3a3036', '#6a5a60'])}); },
+    end(a) { splat(a.x * 16 + 8, a.y * 16 + 12, 22, ['#2a2422', '#3a3230', '#1a1614'], 3); }},
+  // ---- drones ----
+  twitch: {draw(a, k, X, Y) { const j = k < .7 ? (Math.random() - .5) * 2 : 0, fall = k > .7 ? (k - .7) / .3 : 0;          // short-circuits, then drops
+      if (Math.random() < .5) fxBurst(X + 8, Y + 6, 2, ['#7fd0ff', '#ffffff'], 30, .25);
+      ctx.translate(X + 8 + j, Y + 12); ctx.rotate(fall * Math.PI / 2 * a.face + j * .1); if (a.face < 0) ctx.scale(-1, 1); ctx.drawImage(a.spr, -8, -12, 16, 16); a.rot = a.face * Math.PI / 2; a.scrap = true; },
+    end(a) { BODY(a); smoke(a.x * 16 + 8, a.y * 16 + 10, 3); }},
+  headshot: {draw(a, k, X, Y) { if (!a.popped) { a.popped = 1; for (let i = 0; i < 6; i++) part({x:X + 8, y:Y + 3, vx:rnd(-30, 30), vy:rnd(-60, -30), gr:160, life:2, sz:i ? 1 : 2, col:DTH.pick(['#9aa3b5', '#ff2a28', '#5a6070']), stick:Y + 12 + rnd(0, 6)}); }   // the head flies off
+      const r = DTH.ease(k) * Math.PI / 2 * -a.face; ctx.translate(X + 8, Y + 12); ctx.rotate(r); if (a.face < 0) ctx.scale(-1, 1);
+      ctx.beginPath(); ctx.rect(-8, -8, 16, 12); ctx.clip(); ctx.drawImage(a.spr, -8, -12, 16, 16); a.rot = -a.face * Math.PI / 2; a.scrap = true; },
+    end(a) { DTH.paint(a, 'rgba(40,44,52,.55)', a.rot, 0, 0, .8, [0, a.spr.height * .3, a.spr.width, a.spr.height * .7]); splat(a.x * 16 + 8, a.y * 16 + 12, 25, OIL, 5); }},
+  scrapburst: {draw(a, k, X, Y) { if (!a.popped) { a.popped = 1; boom(X + 8, Y + 8, .6); for (let i = 0; i < 12; i++) part({x:X + 8, y:Y + 6, vx:rnd(-60, 60), vy:rnd(-80, -20), gr:160, life:3, sz:2, col:DTH.pick(['#9aa3b5', '#5a6070', '#22261a', TEAMS[a.team].m]), stick:Y + 10 + rnd(-2, 8)}); } },
+    end(a) { splat(a.x * 16 + 8, a.y * 16 + 12, 40, OIL, 7); scorch(a.x * 16 + 8, a.y * 16 + 12, 4); }},
+  // ---- ground vehicles ----
+  flip: {draw(a, k, X, Y) { const h = Math.sin(k * Math.PI) * 14, r = DTH.ease(k) * Math.PI * a.face;                      // thrown up, lands on its roof
+      if (Math.random() < .5) smoke(X + 8, Y + 8 - h, 1); ctx.translate(X + 8 + a.dir[0] * 4 * k, Y + 10 - h); ctx.rotate(r); if (a.face < 0) ctx.scale(-1, 1); ctx.drawImage(a.spr, -8, -8, 16, 16); },
+    end(a) { DTH.paint(a, 'rgba(10,8,8,.75)', Math.PI, a.dir[0] * 4, 0, .8); boom(a.x * 16 + 8 + a.dir[0] * 4, a.y * 16 + 8, .7); shake(3); a.g.fires.push({x:a.x * 16 + 8, y:a.y * 16 + 6, until:a.g.day + 2}); }},
+  turret: {draw(a, k, X, Y) { const h = Math.sin(k * Math.PI) * 22, sx = a.dir[0] * 12 * k;                                   // the turret sails off and lands beside the hull
+      ctx.save(); ctx.beginPath(); ctx.rect(X, Y + 7, 16, 9); ctx.clip(); if (a.face < 0) { ctx.translate(X + 16, Y); ctx.scale(-1, 1); ctx.drawImage(a.spr, 0, 0, 16, 16); } else ctx.drawImage(a.spr, X, Y, 16, 16); ctx.restore();
+      ctx.translate(X + 8 + sx, Y + 4 - h); ctx.rotate(k * Math.PI * 3 * a.face); if (a.face < 0) ctx.scale(-1, 1); ctx.beginPath(); ctx.rect(-8, -4, 16, 7); ctx.clip(); ctx.drawImage(a.spr, -8, -4, 16, 16);
+      if (Math.random() < .6) smoke(X + 8 + sx, Y + 4 - h, 1); },
+    end(a) { DTH.paint(a, 'rgba(10,8,8,.72)', 0, 0, 0, .8, [0, a.spr.height * .45, a.spr.width, a.spr.height * .55]);
+      DTH.paint(a, 'rgba(10,8,8,.72)', a.face * .6, a.dir[0] * 12, -2, .8, [0, 0, a.spr.width, a.spr.height * .45]); a.g.fires.push({x:a.x * 16 + 8, y:a.y * 16 + 6, until:a.g.day + 2}); }},
+  cookoff: {draw(a, k, X, Y) { if (Math.random() < .12) { boom(X + 4 + Math.random() * 8, Y + 4 + Math.random() * 8, .35); const A = DTH.au(a); if (A) { crack(A.t, .5, A.P, 1600); thump(A.t, 170 + Math.random() * 80, 50, .15, .5, A.P); } } if (Math.random() < .5) fire(X + 8, Y + 6, 2, .5);   // burning, popping, for a while
+      ctx.translate(X + 8, Y + 10); if (a.face < 0) ctx.scale(-1, 1); ctx.drawImage(DTH.tint(a.spr, `rgba(10,8,8,${k * .7})`), -8, -10, 16, 16); },
+    end(a) { DTH.paint(a, 'rgba(10,8,8,.75)'); boom(a.x * 16 + 8, a.y * 16 + 6, 1); a.g.fires.push({x:a.x * 16 + 8, y:a.y * 16 + 6, until:a.g.day + 3}); }},
+  melt: {draw(a, k, X, Y) { const s = 1 - k * .55;                                                                            // glows red-hot and slumps into slag
+      ctx.translate(X + 8, Y + 15); ctx.scale(a.face < 0 ? -(1 + k * .25) : 1 + k * .25, s); ctx.drawImage(DTH.tint(a.spr, `rgba(255,${180 - k * 140 | 0},40,${.3 + k * .5})`), -8, -15, 16, 16); if (Math.random() < .4) smoke(X + 8, Y + 6, 1); },
+    end(a) { DTH.paint(a, 'rgba(40,14,6,.85)', 0, 0, 3, .45); splat(a.x * 16 + 8, a.y * 16 + 13, 20, ['#ff6a1a', '#3a1a0a', '#1a0a06'], 5); }},
+  shatter: {draw(a, k, X, Y) { const e = DTH.ease(k);                                                                         // blown into four chunks
+      for (const [qx, qy, vx, vy] of [[0, 0, -1, -1], [8, 0, 1, -1], [0, 8, -1, .4], [8, 8, 1, .4]]) { ctx.save();
+        ctx.translate(X + qx + 4 + vx * 12 * e, Y + qy + 4 + vy * 10 * e - Math.sin(k * Math.PI) * 8); ctx.rotate(vx * k * 2);
+        ctx.drawImage(a.spr, qx * a.spr.width / 16, qy * a.spr.height / 16, a.spr.width / 2, a.spr.height / 2, -4, -4, 8, 8); ctx.restore(); }
+      if (!a.popped) { a.popped = 1; boom(X + 8, Y + 8, 1.2); } },
+    end(a) { scorch(a.x * 16 + 8, a.y * 16 + 12, 8); for (let i = 0; i < 4; i++) splat(a.x * 16 + 8 + rnd(-12, 12), a.y * 16 + 10 + rnd(-8, 8), 8, ['#2a2a30', TEAMS[a.team].d, '#5a5a68'], 2.5); }},
+  skid: {draw(a, k, X, Y) { const e = DTH.ease(k), h = (1 - e) * 6;                                                           // hover field fails: drops and skids, scraping
+      ctx.translate(X + 8 + a.dir[0] * 10 * e, Y + 10 - h + a.dir[1] * 4 * e); ctx.rotate(a.dir[0] * e * .5); if (a.face < 0) ctx.scale(-1, 1); ctx.drawImage(a.spr, -8, -8, 16, 16);
+      if (k > .3 && Math.random() < .7) fxBurst(X + 8 + a.dir[0] * 10 * e, Y + 14, 1, ['#ffd34a', '#ffffff'], 25, .3); },
+    end(a) { for (let i = 0; i < 10; i++) decalPx(a.x * 16 + 8 + a.dir[0] * i, a.y * 16 + 14 + a.dir[1] * i * .4, '#1a1612'); DTH.paint(a, 'rgba(10,8,8,.72)', a.dir[0] * .5, a.dir[0] * 10, a.dir[1] * 4, .8);
+      boom(a.x * 16 + 8 + a.dir[0] * 10, a.y * 16 + 8, .8); a.g.fires.push({x:a.x * 16 + 8 + a.dir[0] * 10, y:a.y * 16 + 6, until:a.g.day + 2}); }},
+  topple: {draw(a, k, X, Y) { const r = k < .3 ? Math.sin(k * 60) * .05 : (k - .3) / .7 * Math.PI / 2 * a.face;               // a walker's legs give way
+      ctx.translate(X + 8, Y + 14); ctx.rotate(r); if (a.face < 0) ctx.scale(-1, 1); ctx.drawImage(a.spr, -8, -14, 16, 16); },
+    end(a) { a.rot = a.face * Math.PI / 2; DTH.paint(a, 'rgba(10,8,8,.72)', a.rot, a.face * 3, 2, .8); boom(a.x * 16 + 8 + a.face * 6, a.y * 16 + 10, .9); shake(3); }},
+  // ---- aircraft ----
+  spiral: {draw(a, k, X, Y) { const h = (1 - k) * 12, r = k * Math.PI * 4;                                                     // spins down trailing smoke
+      if (Math.random() < .8) smoke(X + 8 + Math.cos(r) * 3, Y + 4 - h, 1); if (Math.random() < .4) fire(X + 8, Y + 4 - h, 1, .4);
+      ctx.translate(X + 8 + Math.cos(r) * 3, Y + 6 - h + k * 6); ctx.rotate(r * .5); if (a.face < 0) ctx.scale(-1, 1); ctx.drawImage(a.spr, -8, -8, 16, 16); },
+    end(a) { boom(a.x * 16 + 8, a.y * 16 + 10, 1.1); shake(4); if (!WATER.includes(a.g.map[a.y][a.x])) { scorch(a.x * 16 + 8, a.y * 16 + 12, 6); a.g.fires.push({x:a.x * 16 + 8, y:a.y * 16 + 8, until:a.g.day + 1}); } }},
+  breakup: {draw(a, k, X, Y) { const e = DTH.ease(k);                                                                         // snaps in two; both halves fall
+      for (const [side, sx] of [[0, -1], [8, 1]]) { ctx.save(); ctx.translate(X + side + 4 + sx * 6 * e, Y + 2 + k * 14); ctx.rotate(sx * k * 1.5);
+        ctx.drawImage(a.spr, side * a.spr.width / 16, 0, a.spr.width / 2, a.spr.height, -4, -8, 8, 16); ctx.restore(); }
+      if (Math.random() < .7) smoke(X + 8, Y + 2 + k * 14, 1); },
+    end(a) { boom(a.x * 16 + 2, a.y * 16 + 10, .8); boom(a.x * 16 + 14, a.y * 16 + 10, .8); scorch(a.x * 16 + 8, a.y * 16 + 12, 6); }},
+  // ---- ships ----
+  capsize: {draw(a, k, X, Y) { ctx.beginPath(); ctx.rect(X - 4, Y - 8, 24, 21); ctx.clip(); ctx.globalAlpha = 1 - k * .8;     // rolls over and goes under
+      ctx.translate(X + 8, Y + 10 + k * 8); ctx.rotate(k * Math.PI * .8 * a.face); if (a.face < 0) ctx.scale(-1, 1); ctx.drawImage(a.spr, -8, -10, 16, 16);
+      if (Math.random() < .5) fxBurst(X + 8, Y + 12, 2, ['#9fd0ff', '#ffffff'], 20, .4); }},
+  snap: {draw(a, k, X, Y) { ctx.beginPath(); ctx.rect(X - 4, Y - 8, 24, 21); ctx.clip(); ctx.globalAlpha = 1 - k * .7;          // breaks its back; bow and stern rise and sink
+      for (const [side, sx] of [[0, -1], [8, 1]]) { ctx.save(); ctx.translate(X + side + 4 + sx * 2 * k, Y + 8 + k * 9); ctx.rotate(-sx * k * .9);
+        ctx.drawImage(a.spr, side * a.spr.width / 16, 0, a.spr.width / 2, a.spr.height, -4, -8, 8, 16); ctx.restore(); }
+      if (Math.random() < .6) fxBurst(X + 8, Y + 12, 2, ['#9fd0ff', '#ffffff'], 25, .4); }}
+};
+/* ---------------- sounds in step with the frames: START when the death begins, LAND on its last frame ---------------- */
+DTH.au = a => { if (!AU.ctx || SET.mute || a.g !== G) return null; const p = arsPan(a.x * 16 + 8 + (a.ox || 0)); return {t:AU.ctx.currentTime + .005, P:arsBus(punchBus(), p), D:arsBus(AU.sfxBus, p)}; };
+DTH.thud = (A, heavy) => { thump(A.t, heavy ? 90 : 120, 45, .15, heavy ? 1 : .6, A.P); noise(A.t, .1, .15, 'lowpass', 600, A.D); };
+DTH.clatter = A => { for (let i = 0; i < 3; i++) metalRing(A.t + .05 + i * .07, 1500 + Math.random() * 900, .1, .02, A.D); };      // a dropped rifle
+DTH.crash = (A, k = 1) => { if (typeof blast === 'function') blast(A.t, k, A.P, A.D); else { crack(A.t, .8, A.P, 800); thump(A.t, 80, 20, 1, 1.4, A.P); } };
+DTH.START = {
+  burn: A => SND.DIE.burn(A.t, A.D, 14),
+  dust: A => { zap(A.t, A.P, A.D); noise(A.t, .8, .1, 'highpass', 4000, A.D, 9000); },
+  twitch: A => { for (let i = 0; i < 6; i++) noise(A.t + i * .1 + Math.random() * .05, .03, .12, 'highpass', 4500, A.D); },
+  headshot: A => { crack(A.t, .5, A.P, 3000); metalRing(A.t, 1200, .3, .05, A.D); },
+  scrapburst: A => DTH.crash(A, .55),
+  turret: A => { crack(A.t, .9, A.P, 700); thump(A.t, 70, 18, 1, 1.6, A.P); tone('sine', 300, A.t + .1, .7, .03, A.D, 120, .05); },   // the turret pops: you hear it go up
+  melt: A => { noise(A.t, 1.2, .14, 'highpass', 3500, A.D, 6000); tone('sine', 220, A.t, 1.2, .05, A.D, 60, .1); },                         // sizzling as it slumps
+  skid: A => { noise(A.t, .8, .25, 'bandpass', 1800, A.D, 500, 2); for (let i = 0; i < 6; i++) metalRing(A.t + i * .12, 300 + Math.random() * 500, .2, .03, A.D); },
+  topple: A => tone('sawtooth', 500, A.t, .8, .05, A.D, 60, .02),                                                                          // servos failing
+  spiral: A => { tone('sine', 1800, A.t, .9, .07, A.D, 300, .02); noise(A.t, .9, .15, 'bandpass', 1500, A.D, 300, 2); },                  // the dive, as long as the fall
+  breakup: A => { crack(A.t, .7, A.P, 1500); metalRing(A.t, 260, .8, .06, A.D); },
+  capsize: A => SND.DIE.ship(A.t - .3, A.P, A.D), snap: A => { crack(A.t, .8, A.P, 900); SND.DIE.ship(A.t - .3, A.P, A.D); }
+};
+DTH.LAND = {
+  knock: A => { DTH.thud(A); DTH.clatter(A); }, crumple: A => { DTH.thud(A); DTH.clatter(A); }, spin: A => { DTH.thud(A); DTH.clatter(A); }, stagger: A => { DTH.thud(A); DTH.clatter(A); },
+  burn: A => DTH.thud(A), twitch: A => { DTH.thud(A); metalRing(A.t, 300, .5, .05, A.D); }, headshot: A => { DTH.thud(A); metalRing(A.t, 300, .4, .04, A.D); },
+  flip: A => { DTH.crash(A, .8); metalRing(A.t + .05, 130, 1.2, .08, A.D); DTH.thud(A, true); },                                            // lands on its roof
+  turret: A => { metalRing(A.t, 130, 1.3, .1, A.D); DTH.thud(A, true); SND.DIE.burn(A.t, A.D, 10); },                                        // the turret comes down with a clang
+  cookoff: A => DTH.crash(A, 1.1), melt: A => DTH.thud(A, true), shatter: A => debris(A.t, 10, A.D),
+  skid: A => DTH.crash(A, .9), topple: A => { DTH.thud(A, true); metalRing(A.t, 200, .6, .06, A.D); DTH.crash(A, .9); },
+  spiral: A => DTH.crash(A, 1.1), breakup: A => { DTH.crash(A, .8); DTH.crash({t:A.t + .12, P:A.P, D:A.D}, .6); }
+};
+DTH.DUR = {knock:.45, crumple:.7, spin:.6, stagger:.9, burn:1.1, dust:.9, twitch:.9, headshot:.5, scrapburst:.1, flip:.75, turret:.85, cookoff:1.6, melt:1.2, shatter:.7, skid:.8, topple:.9, spiral:.9, breakup:.8, capsize:1.5, snap:1.6};
+/* the killer's weapon: energy weapons burn, melt or disintegrate */
+DTH.weapon = by => { try { return by && !by.isStruct ? projKind(by, 'p') : by && by.isStruct ? 'shell' : null; } catch (e) { return null; } };
+DTH.choose = (u, by) => {
+  const w = DTH.weapon(by), energy = w === 'laser' || w === 'beam' || w === 'bolt', ovFire = by && by.d && by.d.f === 'O' && w === 'bolt';
+  if (isAirU(u)) return DTH.pick(['plain', 'spiral', 'spiral', 'breakup']);
+  if (isNavalU(u)) return DTH.pick(['plain', 'capsize', 'snap']);
+  if (isFootU(u) && hasTag(u, 'bio')) {
+    if (ovFire && Math.random() < .15) return 'dust';                   // Overmind guns are all energy: keep ash and fire the exception
+    if (energy && Math.random() < (ovFire ? .12 : .35)) return 'burn';
+    return DTH.pick(['plain', 'knock', 'crumple', 'spin', 'stagger', 'knock']);
+  }
+  if (isFootU(u)) return DTH.pick(['plain', 'twitch', 'headshot', 'scrapburst']);
+  const pool = ['plain', 'flip', 'turret', 'cookoff', 'shatter'];
+  if (energy) pool.push('melt');
+  if (u.d.mt === 'hover') pool.push('skid', 'skid');
+  if (u.d.mt === 'walker') { pool.length = 0; pool.push('plain', 'topple', 'topple', 'shatter'); }
+  if (u.d.mt === 'tracks') pool.push('turret');
+  return DTH.pick(pool);
+};
+/* ---------------- hooks ---------------- */
+{
+  const _death = deathFX; deathFX = function (u, by) {
+    let v = 'plain';
+    try { v = G && !G.editor ? DTH.choose(u, by) : 'plain'; } catch (e) { v = 'plain'; }
+    if (v === 'plain' || !DTH.K[v]) return _death(u, by);
+    const veh = !isAirU(u) && !isNavalU(u) && !isFootU(u), air = isAirU(u);
+    const keep = {corpse, boom}, dir = DTH.away(u, by);
+    // vehicles and aircraft: hold back the engine's instant wreck and crash so ours can land them
+    if (veh) corpse = () => {};
+    if (air) boom = (px, py, s) => FX.push({type:'flash', x:px, y:py, r:5 * (s || 1), t:0, dur:.15});
+    const n0 = DEATHS.length;
+    DTH.owned = true;                                                   // p64 leaves the death sounds to us: they follow the frames
+    let r; try { r = _death(u, by); } finally { corpse = keep.corpse; boom = keep.boom; DTH.owned = false; }
+    try {
+      const mine = DEATHS.slice(n0).filter(d => d.u === u);                  // the engine's own topple/sink for this unit: replaced by ours
+      const blood = mine.some(d => d.blood), scrap = mine.some(d => d.scrap);
+      const troopKinds = ['knock', 'crumple', 'spin', 'stagger', 'burn', 'dust', 'twitch', 'headshot', 'scrapburst'];
+      if (troopKinds.includes(v) && !mine.length) return r;                  // the engine already blew them apart (gibs) or ran them down: keep that
+      for (const d of mine) DEATHS.splice(DEATHS.indexOf(d), 1);
+      if (veh && G.fires.length) { const f = G.fires[G.fires.length - 1]; if (Math.abs(f.x - (u.x * 16 + 8)) < 2) G.fires.pop(); }   // ours lights its own fire
+      DTH.add(u, v, DTH.DUR[v] * (SET.animFast ? .65 : 1), {blood:blood && v !== 'burn' && v !== 'dust', scrap, dir});
+      const A = DTH.au(DTH.A[DTH.A.length - 1]); if (A && DTH.START[v]) DTH.START[v](A);
+    } catch (e) { /* visuals only */ }
+    return r;
+  };
+  hook('draw', () => {
+    const now = performance.now() / 1000, dt = Math.min(.05, now - (DTH.last || now)); DTH.last = now;
+    for (let i = DTH.A.length - 1; i >= 0; i--) {
+      const a = DTH.A[i]; if (a.g !== G) { DTH.A.splice(i, 1); continue; }
+      a.t += dt; const k = Math.min(1, a.t / a.dur), K = DTH.K[a.kind];
+      ctx.save(); try { K.draw(a, k, a.x * 16, a.y * 16); } catch (e) { a.t = a.dur; } ctx.restore();
+      if (a.t >= a.dur) { DTH.A.splice(i, 1); try { if (K.end) K.end(a); } catch (e) { /* visuals only */ } try { const A = DTH.au(a); if (A && DTH.LAND[a.kind]) DTH.LAND[a.kind](A); } catch (e) { /* sound only */ } }
+    }
+  });
+  hook('start', () => { DTH.A.length = 0; });
+}
+/* end:p65_deaths.js */
+/* ===== RECORDED SOUNDS (v0.6) =====
+   25 real recordings from Freesound (CC0 or CC BY 4.0; shared by Iron Front '44, see sfx/sources.json and
+   Settings → Sound → Sound credits) blended under the synthesised sounds:
+     explosions   every blast gets a recorded body under the synth's sub and crack; distant war uses distant ones
+     ricochets    bullet ricochets and a metal impact under the synth pings
+     voices       recorded death cries replace the synthesised screams; pain grunts when Mature is off
+     footsteps    boots on gravel and running boots for human troops (synth stays for water and snow, and for drones)
+     ambience     looping battlefield beds faded in under the map, quieter by day one, louder at bosses
+   The weapons stay synthesised. Loading is lazy (after the first click starts audio); until a file has
+   decoded, or if it fails, the synth plays exactly as before. Iron Front's tricks: split each file into
+   takes on 120 ms of silence, normalise each take to its own peak, nudge pitch ±6%, never repeat a take twice running. */
+const REC = {buf:{}, takes:{}, last:{}, loading:false, beds:{}, bus:null,
+  FILES:['explosion-1', 'explosion-2', 'explosion-debris', 'explosion-distant', 'explosion-muffled', 'ricochet-1', 'ricochet-2', 'ricochet-3', 'ricochet-metal', 'bullet-impact',
+    'death-1', 'death-2', 'death-3', 'death-4', 'death-5', 'screams', 'pain-grunt', 'pain-mix', 'boots-gravel', 'boots-run',
+    'amb-battlefield', 'amb-distant-explosions', 'amb-gunfire', 'amb-war-loop', 'amb-bombing']};
+REC.split = (buf, gapMs = 120, floorDb = -32) => {
+  const d = buf.getChannelData(0), win = Math.round(buf.sampleRate * .01), env = [];
+  let peak = 0; for (let i = 0; i < d.length; i += 4) peak = Math.max(peak, Math.abs(d[i]));
+  for (let i = 0; i < d.length; i += win) { let s = 0; for (let j = i; j < Math.min(d.length, i + win); j += 2) s += d[j] * d[j]; env.push(Math.sqrt(s / win * 2)); }
+  const thr = peak * Math.pow(10, floorDb / 20), gap = gapMs / 10, raw = []; let st = -1, quiet = 0;
+  env.forEach((v, i) => { if (v > thr) { if (st < 0) st = i; quiet = 0; } else if (st >= 0 && ++quiet > gap) { raw.push([st, i - quiet]); st = -1; } });
+  if (st >= 0) raw.push([st, env.length - 1]);
+  const out = raw.filter(([a, b]) => b - a >= 3).map(([a, b], i, arr) => { const next = arr[i + 1] ? arr[i + 1][0] : env.length, end = Math.min(next - 1, b + 40);
+    let pk = 0; for (let j = a * win; j < Math.min(d.length, (b + 1) * win); j += 2) pk = Math.max(pk, Math.abs(d[j])); return {t:Math.max(0, a / 100 - .01), len:(end - a + 1) / 100, pk:pk || 1}; });
+  return out.length ? out : [{t:0, len:buf.duration, pk:peak || 1}];
+};
+REC.load = () => {
+  if (REC.loading || !AU.ctx) return; REC.loading = true;
+  for (const n of REC.FILES) fetch('sfx/' + n + '.mp3').then(r => r.ok ? r.arrayBuffer() : null).then(b => b && AU.ctx.decodeAudioData(b))
+    .then(buf => { if (buf) { REC.buf[n] = buf; REC.takes[n] = n.startsWith('amb-') ? [{t:0, len:buf.duration, pk:REC.peak(buf)}] : REC.split(buf); } }).catch(() => {});
+};
+REC.peak = buf => { const d = buf.getChannelData(0); let p = 0; for (let i = 0; i < d.length; i += 16) p = Math.max(p, Math.abs(d[i])); return p || 1; };
+REC.has = n => !!REC.buf[n] && AU.ctx && REC.buf[n].sampleRate && !SET.mute;
+REC.any = list => { const ok = list.filter(n => REC.buf[n]); return ok.length ? ok[(Math.random() * ok.length) | 0] : null; };
+/* one take: o = {gain, rate, len (cap), lp (Hz: distance), dest, take, off/'rand' (slice of a long file)} */
+REC.play = (name, t, o = {}) => {
+  const buf = REC.buf[name]; if (!buf || !AU.ctx) return 0;
+  const c = AU.ctx, tk = REC.takes[name] || [{t:0, len:buf.duration, pk:1}];
+  let i = o.take != null ? Math.min(tk.length - 1, o.take) : (Math.random() * tk.length) | 0; if (o.take == null && tk.length > 2 && i === REC.last[name]) i = (i + 1) % tk.length; REC.last[name] = i;
+  const k = tk[i]; let start = k.t, len = k.len;
+  if (o.off != null) { len = o.len || 2; start = o.off === 'rand' ? Math.random() * Math.max(0, buf.duration - len) : o.off; } else if (o.len) len = Math.min(len, o.len);
+  const rate = o.rate ?? (.94 + Math.random() * .12), dur = len / rate, s = c.createBufferSource(), g = c.createGain(); s.buffer = buf; s.playbackRate.value = rate;
+  const lvl = (o.gain ?? 1) * Math.min(4, .7 / k.pk), fo = Math.min(o.fade ?? .12, dur * .4);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(lvl, t + .004); g.gain.setValueAtTime(lvl, t + Math.max(.005, dur - fo)); g.gain.linearRampToValueAtTime(0, t + dur);
+  let node = s; if (o.lp) { const f = c.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = o.lp; s.connect(f); node = f; }
+  node.connect(g); g.connect(o.dest || AU.sfxBus); s.start(t, start, len + .05); s.stop(t + dur + .1);
+  return dur;
+};
+/* ---------------- explosions ---------------- */
+{
+  const _blast = blast; blast = function (t, size, P, D, opts = {}) {
+    _blast(t, size, P, D, opts);
+    try { if (!AU.ctx || SET.mute) return;
+      const wet = opts.water, lp = wet ? 900 : null;
+      if (size >= 1.6) { REC.play('explosion-1', t, {gain:.95, len:4, lp, dest:D}); REC.play('explosion-debris', t + .05, {gain:.55, len:3, dest:D}); }
+      else if (size >= 1) REC.play(REC.any(['explosion-1', 'explosion-2', 'explosion-debris']), t, {gain:.8, len:2.6, lp, dest:D});
+      else REC.play(REC.any(['explosion-2', 'explosion-muffled']), t, {gain:.5, len:1.4, rate:1.05 + Math.random() * .15, lp, dest:D});
+    } catch (e) { /* sound only */ }
+  };
+  const _hit = SND.BOOM.shellhit; SND.BOOM.shellhit = (t, P, D) => { _hit(t, P, D); REC.play(REC.any(['explosion-debris', 'explosion-1']), t, {gain:.85, len:3, dest:D}); };
+  const _fb = SND.FAR.boom; SND.FAR.boom = (t, d) => { if (!REC.play(REC.any(['explosion-distant', 'explosion-muffled']), t, {gain:.5, len:4, lp:1200, dest:d})) _fb(t, d); };
+}
+/* ---------------- ricochets and impacts ---------------- */
+{
+  const _r = SND.rico; SND.rico = (t, D, n) => { _r(t, D, Math.max(1, n - 1)); for (let i = 0; i < Math.min(2, n); i++) REC.play(REC.any(['ricochet-1', 'ricochet-2', 'ricochet-3']), t + i * .09 + Math.random() * .05, {gain:.45, len:1, rate:.95 + Math.random() * .3, dest:D}); };
+  const _c = SND.clang; SND.clang = (t, P, D) => { _c(t, P, D); REC.play('ricochet-metal', t, {gain:.6, len:1.2, dest:D}); REC.play('bullet-impact', t, {gain:.4, len:.5, dest:D}); };
+  const _m = MAT.metal; MAT.metal = (t, k, P, D) => { _m(t, k, P, D); if (Math.random() < .6) REC.play('bullet-impact', t, {gain:.3 * k + .1, len:.5, dest:D}); };
+}
+/* ---------------- voices: recorded death cries ---------------- */
+{
+  const _scream = scream; scream = function (t, short) {
+    const n = short ? REC.any(['pain-grunt', 'pain-mix']) : REC.any(['death-1', 'death-2', 'death-3', 'death-4', 'death-5', 'death-1', 'death-2', 'screams']);
+    if (n && !SET.mute) { const p = ARS && ARS.px != null ? arsPan(ARS.px) : 0, d = arsBus(AU.sfxBus, p);
+      REC.play(n, t, {gain:short ? .5 : .7, len:n === 'screams' ? 1.6 : 2.2, rate:.9 + Math.random() * .2, dest:d}); return; }
+    return _scream(t, short);
+  };
+}
+/* ---------------- footsteps: boots for human troops ---------------- */
+{
+  const _sq = SND.FEET.squad; SND.FEET.squad = function (...a) { REC.boots = true; try { return _sq.apply(this, a); } finally { REC.boots = false; } };
+  const _ff = SND.footfall; SND.footfall = (s, g, v, D, heavy) => {
+    if (REC.boots && g !== 'wet' && REC.any(['boots-gravel', 'boots-run'])) {
+      REC.play(REC.any(['boots-gravel', 'boots-gravel', 'boots-run']), s, {gain:Math.min(.6, v * 6) * (heavy ? 1.2 : 1), len:.32, rate:(heavy ? .85 : 1) * (.92 + Math.random() * .16), fade:.08, dest:D});
+      if (g === 'snow') _ff(s, g, v * .6, D, heavy);
+      return;
+    }
+    return _ff(s, g, v, D, heavy);
+  };
+}
+/* ---------------- ambience: recorded beds under the map ---------------- */
+REC.BEDS = ['amb-battlefield', 'amb-war-loop', 'amb-gunfire', 'amb-distant-explosions', 'amb-bombing'];
+REC.bed = (name, level) => {
+  const c = AU.ctx, now = c.currentTime;
+  if (!REC.bus) { const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1600; const g = c.createGain(); g.gain.value = 1; lp.connect(g); g.connect(AU.sfxBus); REC.bus = lp; }
+  let B = REC.beds[name];
+  if (!B) { if (!level || !REC.buf[name]) return; const s = c.createBufferSource(), g = c.createGain(); s.buffer = REC.buf[name]; s.loop = true; g.gain.value = 0; s.connect(g); g.connect(REC.bus);
+    s.start(now, Math.random() * s.buffer.duration); B = REC.beds[name] = {s, g, pk:REC.takes[name][0].pk}; }
+  B.g.gain.setTargetAtTime(level * Math.min(3, .5 / B.pk), now, 2.5);
+};
+REC.mix = {pick:null, until:0};
+REC.ambTick = () => {
+  if (!AU.ctx) return; REC.load();
+  const on = G && !G.editor && !G.over && !SET.mute && SET.warAmb !== false && !(typeof MODAL !== 'undefined' && MODAL);
+  const now = AU.ctx.currentTime;
+  if (on && now > REC.mix.until) { REC.mix.pick = DTH.pick(['amb-war-loop', 'amb-gunfire', 'amb-distant-explosions', 'amb-bombing', 'amb-gunfire']); REC.mix.until = now + 35 + Math.random() * 30; }   // a second bed rotates every half minute or so
+  const heat = !on ? 0 : (G.L && G.L.boss ? 1.4 : 1) * (G.day <= 1 ? .7 : 1) * (G.tod === 'night' ? .85 : 1);
+  for (const n of REC.BEDS) REC.bed(n, !on ? 0 : n === 'amb-battlefield' ? .07 * heat : n === REC.mix.pick ? .06 * heat : 0);
+};
+setInterval(() => { try { REC.ambTick(); } catch (e) { /* ambience only */ } }, 1000);
+/* ---------------- credits: Settings → Sound → Sound credits ---------------- */
+REC.credits = async () => {
+  let rows = []; try { rows = await fetch('sfx/sources.json').then(r => r.json()); } catch (e) {}
+  const by = rows.filter(r => /BY/.test(r.lic)), zero = rows.filter(r => !/BY/.test(r.lic));
+  const li = r => `<li><b>${esc(r.title)}</b> by ${esc(r.user)} · <a href="https://freesound.org/s/${esc(r.id)}/" target="_blank" rel="noopener">freesound.org/s/${esc(r.id)}</a> · ${esc(r.lic)}</li>`;
+  showModal(`<h2>SOUND CREDITS</h2><p>Weapons, engines, voices of the cast and most effects are synthesised by the game itself. These ${rows.length} recordings from <a href="https://freesound.org" target="_blank" rel="noopener">Freesound</a> add explosions, ricochets, death cries, footsteps and distant battle.</p>
+    <p><b>Used under CC BY 4.0</b> (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">licence</a>; trimmed, pitched and filtered in the game):</p><ul style="font-size:12px">${by.map(li).join('')}</ul>
+    <p><b>Public domain (CC0)</b>, with thanks:</p><ul style="font-size:12px">${zero.map(li).join('')}</ul><div class="mbtns"><button class="np" data-act="ok">OK</button></div>`, {on:() => { hideModal(); showSettings(); }});
+};
+{
+  const _ss = showSettings; showSettings = function (...a) { const r = _ss.apply(this, a);
+    try { if (!document.querySelector('#mbox [data-reccred]')) {
+      const grp = [...document.querySelectorAll('#mbox details.setgrp')].find(d => /Sound/.test(d.querySelector('summary').textContent));
+      const html = `<div class="opt">Recorded sounds <button class="np" data-reccred="1" style="padding:2px 10px">Sound credits</button></div>`;
+      if (grp) grp.insertAdjacentHTML('beforeend', html); else { const rows = document.querySelectorAll('#mbox .opt'); if (rows.length) rows[rows.length - 1].insertAdjacentHTML('afterend', html); }
+      const b = document.querySelector('#mbox [data-reccred]'); if (b) b.onclick = e => { e.preventDefault(); e.stopPropagation(); REC.credits(); };
+    } } catch (e) {}
+    return r; };
+}
+/* end:p66_recorded.js */
+/* ===== UNIT CHATTER (v0.6) =====
+   Little speech bubbles over units, the way Iron Front '44's soldiers shout in their own languages.
+     Resistance   Shin-Pacifica street talk: English code-switching with Japanese, Korean, Mandarin,
+                  Tagalog, Hindi, Vietnamese and Indonesian, in their own scripts
+     ORACLE       its frames talk in probabilities
+     Overmind     binary. Some of it spells real words in 8-bit ASCII (OK, GO, DEL, ERR...) for anyone who decodes it
+   Triggers: selected, moving off, firing, scoring a kill, getting hit. Visible units only, one bubble per unit,
+   at most four on screen, never during instant enemy turns. Drawn in screen space after the map, so they stay
+   readable at any zoom. Settings → Display → Unit chatter turns them off. */
+const CHAT = {B:[], max:4};
+CHAT.R = {
+  sel:['Hai! はい!', 'Ready, 준비 완료!', '在!', 'Copy, boss!', 'Sige!', 'जी, sir!', 'OK lah!', 'Yosh!', 'Roger, 알았어!', '收到!', 'Dạ!', 'Siap!'],
+  veh:['エンジン全開!', 'Rolling, 출발!', '发动机就绪!', 'Treads warm, lah!', 'Crew ready, 準備OK!', 'Sige, drive!', 'Gas na!'],
+  move:['行くぞ!', 'Move, 빨리!', '走!', 'Tara na!', 'चलो, चलो!', 'Đi thôi!', 'Ayo!', 'On the way, 가자!', 'Shortcut, this way!'],
+  atk:['撃て!', '쏴라!', '开火!', 'Fire, lah!', 'Barilin!', 'Bắn!', 'For Sector 9!', 'Tembak!', 'Light \'em up! 火力全開!', 'Eat this, 이거나 먹어!'],
+  vatk:['主砲、撃て!', '포격!', 'Main gun, 开炮!', 'Firing, lah!', 'On the way! 発射!'],
+  kill:['やった!', '잡았다!', '搞定!', 'Down, lah!', 'Patay na!', 'One less tin can!', 'Scrap metal! ガラクタだ!', 'Nice, 대박!', 'Ganda!'],
+  vkill:['撃破!', '격파!', '击毁!', 'Target down!', 'Scrap it, lah!'],
+  hurt:['Medic! 衛生兵!', '위생병!', '救命!', 'Aray!', 'I\'m hit, 아파!', 'Cover! 隠れろ!', 'Tulong!', '痛っ!', 'Bachao!'],
+  vhurt:['被弾!', '피격!', 'Hull breach!', 'We\'re burning, lah!', 'Armour holding… 버텨!']
+};
+CHAT.ORACLE = {sel:['P(win)=0.71', '計算完了', 'Acknowledged.', 'ありがとう, Commander'], move:['Recalculating route.', 'Δ position: OK'], atk:['Probability of hit: 0.88', 'Correcting your odds.'],
+  kill:['Outcome as predicted.', 'Estimate revised: +1'], hurt:['Integrity 64%.', 'That was not in the model.']};
+CHAT.bin = s => [...s].map(c => c.charCodeAt(0).toString(2).padStart(8, '0')).join(' ');
+CHAT.bits = n => Array.from({length:n}, () => Math.random() < .5 ? '0' : '1').join('');
+CHAT.O = {                                                                          // the machines: binary, sometimes a real word
+  sel:() => DTH.pick([CHAT.bin('OK'), '01 ✓', CHAT.bits(8), 'ACK 0110']),
+  move:() => DTH.pick([CHAT.bin('GO'), '0110 →', CHAT.bits(6) + ' ▸▸', '10' + CHAT.bits(6)]),
+  atk:() => DTH.pick(['01000110 ▶', CHAT.bin('ZAP'), '1111' + CHAT.bits(4) + ' !', 'PURGE 0x' + (Math.random() * 255 | 0).toString(16).toUpperCase().padStart(2, '0')]),
+  kill:() => DTH.pick(['00000000', CHAT.bin('DEL'), 'NULL', '∅ ' + CHAT.bits(4), 'RECYCLED 0001']),
+  hurt:() => DTH.pick([CHAT.bin('ERR'), '0101?!', 'ERR 0x0F', CHAT.bits(4) + '▯▯▮', '1111 1111!'])
+};
+CHAT.line = (u, kind) => {
+  const d = u.d, veh = !isFootU(u);
+  if (d.f === 'O') return CHAT.O[kind] ? CHAT.O[kind]() : null;
+  if (d.id === 'a_frame') return CHAT.ORACLE[kind] ? DTH.pick(CHAT.ORACLE[kind]) : null;
+  if (d.f === 'C') return null;
+  const k = veh && kind === 'sel' ? 'veh' : veh && CHAT.R['v' + kind] ? 'v' + kind : kind;
+  return CHAT.R[k] ? DTH.pick(CHAT.R[k]) : null;
+};
+CHAT.CHANCE = {sel:1, move:.45, atk:.6, kill:.85, hurt:.4};
+CHAT.say = (u, kind) => {
+  try {
+    if (!G || G.editor || SET.chatter === false || !u || !u.d || u.isStruct) return;
+    if (isAI(G.turn) && SET.aiFast === 'skip') return;                              // instant enemy turns: nothing to read
+    if (typeof visibleTo === 'function' && !visibleTo(u, ME)) return;
+    if (Math.random() > (CHAT.CHANCE[kind] || .5)) return;
+    const text = CHAT.line(u, kind); if (!text) return;
+    CHAT.B = CHAT.B.filter(b => b.u !== u);
+    if (CHAT.B.length >= CHAT.max) CHAT.B.shift();
+    CHAT.B.push({u, x:u.x, y:u.y, text, t:0, life:kind === 'sel' ? 1.4 : 1.7, ov:u.d.f === 'O', oracle:u.d.id === 'a_frame', team:u.team, g:G});
+  } catch (e) { /* flavour only */ }
+};
+/* ---------------- drawing ---------------- */
+CHAT.last = 0;
+CHAT.draw = () => {
+  if (!CHAT.B.length) return;
+  const now = performance.now() / 1000, dt = Math.min(.05, now - (CHAT.last || now)); CHAT.last = now;
+  ctx.save(); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.textBaseline = 'middle';
+  for (let i = CHAT.B.length - 1; i >= 0; i--) {
+    const b = CHAT.B[i]; b.t += dt; if (b.t >= b.life || b.g !== G) { CHAT.B.splice(i, 1); continue; }
+    const live = G.units.includes(b.u); if (live) { b.x = b.u.x; b.y = b.u.y; }
+    const k = b.t / b.life, a = k < .1 ? k / .1 : k > .8 ? (1 - k) / .2 : 1, rise = 6 * k;
+    const sx = (b.x * 16 + 8 - cam.x) * cam.z, sy = (b.y * 16 - cam.y) * cam.z - 6 - rise;
+    ctx.font = b.ov ? 'bold 11px ui-monospace, Consolas, monospace' : 'bold 12px system-ui, "Segoe UI", "Yu Gothic UI", "Malgun Gothic", "Microsoft YaHei", sans-serif';
+    const glitch = b.ov && Math.random() < .08, text = glitch ? b.text.replace(/[01]/g, c => Math.random() < .3 ? (c === '0' ? '1' : '0') : c) : b.text;
+    const w = Math.ceil(ctx.measureText(text).width) + 12, h = 18, x = Math.round(Math.max(4, Math.min(innerWidth - w - 4, sx - w / 2))), y = Math.round(sy - h);
+    const tc = TEAMS[b.team] || {}, edge = b.ov ? '#ff2a40' : b.oracle ? '#7dff4a' : (tc.g || '#7ff8ff');
+    ctx.globalAlpha = a;
+    ctx.fillStyle = b.ov ? 'rgba(14,4,8,.92)' : 'rgba(246,248,252,.95)'; ctx.strokeStyle = edge; ctx.lineWidth = 1.5;
+    ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x, y, w, h, b.ov ? 2 : 7); else ctx.rect(x, y, w, h);
+    ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(sx - 4, y + h - .5); ctx.lineTo(sx + 4, y + h - .5); ctx.lineTo(sx, y + h + 5); ctx.closePath(); ctx.fill(); ctx.stroke();   // the tail points at the speaker
+    ctx.fillStyle = b.ov ? '#ff4a5a' : b.oracle ? '#1a5a10' : '#10131c'; ctx.fillText(text, x + 6, y + h / 2 + .5);
+    if (b.ov) { ctx.globalAlpha = a * .15; ctx.fillStyle = '#ff2a40'; for (let s = y + 2; s < y + h; s += 3) ctx.fillRect(x + 1, s, w - 2, 1); }   // scanlines
+  }
+  ctx.restore();
+};
+/* ---------------- hooks ---------------- */
+{
+  const _draw = draw; draw = function (...a) { const r = _draw.apply(this, a); try { if (G) CHAT.draw(); } catch (e) { /* flavour only */ } return r; };
+  const _sel = select; select = function (u) { const r = _sel(u); if (u && u.team === ME && !isAI(u.team) && UI.sel === u) CHAT.say(u, 'sel'); return r; };
+  const _move = moveUnit; moveUnit = function (u, path) { if (u && path && path.length > 1) CHAT.say(u, 'move'); return _move(u, path); };
+  const _combat = combat; combat = function (a, tg) { if (a && !a.isStruct) CHAT.say(a, 'atk'); return _combat(a, tg); };
+  const _hurt = hurt; hurt = function (u, dmg, by) {
+    const r = _hurt(u, dmg, by);
+    try { if (u && !u.isStruct && G) { const dead = u.hp <= 0 || !G.units.includes(u);
+      if (dead) { if (by && !by.isStruct && G.units.includes(by)) setTimeout(() => CHAT.say(by, 'kill'), 250); }
+      else if (dmg > 0) CHAT.say(u, 'hurt'); } } catch (e) {}
+    return r;
+  };
+  hook('start', () => { CHAT.B.length = 0; });
+  // Settings → Display: Unit chatter on/off
+  const _ss = showSettings; showSettings = function (...a) { const r = _ss.apply(this, a);
+    try { if (!document.querySelector('#mbox [data-k="chatter"]')) {
+      const html = `<div class="opt">Unit chatter (speech bubbles) <select data-k="chatter"><option value="1" ${SET.chatter !== false ? 'selected' : ''}>On</option><option value="0" ${SET.chatter === false ? 'selected' : ''}>Off</option></select></div>`;
+      const grp = [...document.querySelectorAll('#mbox details.setgrp')].find(d => /Display/.test(d.querySelector('summary').textContent));
+      if (grp) grp.insertAdjacentHTML('beforeend', html); else { const rows = document.querySelectorAll('#mbox .opt'); if (rows.length) rows[rows.length - 1].insertAdjacentHTML('afterend', html); }
+    } } catch (e) {}
+    return r; };
+  const _ap = applySetting; applySetting = function (el) { if (el && el.dataset && el.dataset.k === 'chatter') { SET.chatter = el.value === '1'; saveSet(); return; } return _ap(el); };
+}
+/* end:p67_chatter.js */
 resize();
 applySettings();
 miniInput();
@@ -17432,5 +19154,5 @@ requestAnimationFrame(frame);
    turns) advancing at a low rate so nothing stalls mid-animation.          */
 setInterval(() => { const now = performance.now(); if (G && now - lastT > 250) { update(Math.min(.25, (now - lastT) / 1000)); lastT = now; } }, 120);
 </script>
-</body>
+<script>if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});</script></body>
 </html>

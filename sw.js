@@ -1,4 +1,4 @@
-const SHELL = 'np-shell-v5', MUSIC = 'np-music-v1';
+const SHELL = 'np-shell-v6', MUSIC = 'np-music-v1';
 self.addEventListener('install', e => { e.waitUntil(caches.open(SHELL).then(c => c.addAll(['./', 'index.html', 'manifest.webmanifest', 'icon.svg', 'music/index.json']))); self.skipWaiting(); });
 self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
 self.addEventListener('fetch', e => {

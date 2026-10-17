@@ -6,7 +6,7 @@ Written by Tristan Hotham with AI assistance (Claude). MIT licence: see [LICENSE
 
 ## Music
 
-All 48 tracks are original. Each one started from Tristan Hotham's own recordings: their chord progressions and melodies were rebuilt in new styles, from synthwave and industrial to dub, cumbia, city pop and taiko. No third-party samples or recordings are used.
+Soundtrack composed by Tristan Hotham: 48 original tracks, from synthwave and industrial to dub, cumbia, city pop and taiko.
 
 The music is © 2026 Tristan Hotham, all rights reserved. It is **not** covered by the MIT licence. You may play it as part of this game, but please don't reuse it elsewhere without permission.
 
@@ -65,7 +65,37 @@ The files are Ogg Opus at 64 kbps.
 
 ## Sound effects and voices
 
-Every sound effect, ambience, character voice and power theme is synthesised live in the browser with the Web Audio API by the game's own code. There are no recorded sound files. They are part of the code and covered by the MIT licence.
+Weapons, engines, the cast's voices, power themes and most effects are synthesised live in the browser with the Web Audio API by the game's own code. Those are part of the code and covered by the MIT licence.
+
+From v0.6, 25 recordings from [Freesound](https://freesound.org) add explosions, ricochets, death cries, footsteps and distant battle. They are public domain (CC0) or used under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), which requires the credit below; they are trimmed, pitched and filtered in the game. They are not covered by the MIT licence. In the game they're listed under Settings → Sound → Sound credits.
+
+| File | Title | Author | Source | Licence |
+|---|---|---|---|---|
+| `sfx/amb-bombing.mp3` | Distant Bombing | Filo_Rossi | [freesound.org/s/342136](https://freesound.org/s/342136/) | CC BY 4.0 |
+| `sfx/bullet-impact.mp3` | Guns & Explosions Album - Bullet Impact 14.wav | OGsoundFX | [freesound.org/s/423107](https://freesound.org/s/423107/) | CC BY 4.0 |
+| `sfx/explosion-debris.mp3` | Nearby explosion with debris.wav | juskiddink | [freesound.org/s/108641](https://freesound.org/s/108641/) | CC BY 4.0 |
+| `sfx/ricochet-metal.mp3` | Metal Bullet Ricochets | mikiko850 | [freesound.org/s/854335](https://freesound.org/s/854335/) | CC BY 4.0 |
+| `sfx/amb-battlefield.mp3` | BattleField Ambience (Loop) | banan_ | [freesound.org/s/385895](https://freesound.org/s/385895/) | CC0 |
+| `sfx/amb-distant-explosions.mp3` | distant explosions | Kostrava | [freesound.org/s/320788](https://freesound.org/s/320788/) | CC0 |
+| `sfx/amb-gunfire.mp3` | Gunfire | qubodup | [freesound.org/s/205588](https://freesound.org/s/205588/) | CC0 |
+| `sfx/amb-war-loop.mp3` | War Ambience Loop | qubodup | [freesound.org/s/239139](https://freesound.org/s/239139/) | CC0 |
+| `sfx/boots-gravel.mp3` | Footsteps_Boots_Gritty_Ground_(Gravel).wav | Nox_Sound | [freesound.org/s/530589](https://freesound.org/s/530589/) | CC0 |
+| `sfx/boots-run.mp3` | Running_Boots_medium_speed.wav | jcdecha | [freesound.org/s/235470](https://freesound.org/s/235470/) | CC0 |
+| `sfx/death-1.mp3` | Death sound (male) | Replix | [freesound.org/s/173126](https://freesound.org/s/173126/) | CC0 |
+| `sfx/death-2.mp3` | Man Dying | Under7dude | [freesound.org/s/163442](https://freesound.org/s/163442/) | CC0 |
+| `sfx/death-3.mp3` | Grunt2 - Death Pain.wav | tonsil5 | [freesound.org/s/416838](https://freesound.org/s/416838/) | CC0 |
+| `sfx/death-4.mp3` | Grunt1 - Death Pain.wav | tonsil5 | [freesound.org/s/416839](https://freesound.org/s/416839/) | CC0 |
+| `sfx/death-5.mp3` | Male_Death_04 | Artmasterrich | [freesound.org/s/345456](https://freesound.org/s/345456/) | CC0 |
+| `sfx/explosion-1.mp3` | Explosion_01.wav | tommccann | [freesound.org/s/235968](https://freesound.org/s/235968/) | CC0 |
+| `sfx/explosion-2.mp3` | Explosion | qubodup | [freesound.org/s/182429](https://freesound.org/s/182429/) | CC0 |
+| `sfx/explosion-distant.mp3` | Explosion Distant | Johnnyfarmer | [freesound.org/s/209769](https://freesound.org/s/209769/) | CC0 |
+| `sfx/explosion-muffled.mp3` | Muffled Distant Explosion | NenadSimic | [freesound.org/s/149966](https://freesound.org/s/149966/) | CC0 |
+| `sfx/pain-grunt.mp3` | Voice_AdultMale_PainGrunts_09.wav | MrFossy | [freesound.org/s/547209](https://freesound.org/s/547209/) | CC0 |
+| `sfx/pain-mix.mp3` | male pain sound effects.wav | rockittt | [freesound.org/s/442288](https://freesound.org/s/442288/) | CC0 |
+| `sfx/ricochet-1.mp3` | bullet ricochet.wav | aust_paul | [freesound.org/s/30932](https://freesound.org/s/30932/) | CC0 |
+| `sfx/ricochet-2.mp3` | ricochet.mp3 | cedarstudios | [freesound.org/s/148840](https://freesound.org/s/148840/) | CC0 |
+| `sfx/ricochet-3.mp3` | pistol_riccochet.ogg | Diboz | [freesound.org/s/213925](https://freesound.org/s/213925/) | CC0 |
+| `sfx/screams.mp3` | Male Screams [1] | marc3122 | [freesound.org/s/556976](https://freesound.org/s/556976/) | CC0 |
 
 ## Art
 

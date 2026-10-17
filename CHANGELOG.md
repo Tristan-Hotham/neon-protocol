@@ -1,5 +1,96 @@
 # Neon Protocol: Uprising: changelog
 
+## v0.6 (2026-10-17)
+- **Unit chatter:** speech bubbles over units when they're selected, move off, fire, score a kill or get hit, borrowed from Iron Front '44.
+  - The Resistance talk Shin-Pacifica street slang: English code-switching with Japanese, Korean, Mandarin, Tagalog, Hindi, Vietnamese and Indonesian in their own scripts ("Move, 빨리!", "撃て!", "Tara na!", "चलो, चलो!"). Vehicle crews have their own lines.
+  - ORACLE's frames talk in probabilities.
+  - Overmind machines speak binary in dark red terminal bubbles. Some of it is real 8-bit ASCII (OK, GO, ZAP, DEL, ERR) for anyone who decodes it.
+  - Only visible units talk, one bubble each, at most four on screen, and never during instant enemy turns. Settings → Display → Unit chatter turns it off.
+- **Sound and picture in step:** every weapon's first report now lands on the frame the muzzle flashes (measured within 20 ms; the tank gun was 140 ms late and the Phantom 400 ms). Bursts finish inside the projectile's flight, and flak now bursts where its shells arrive. Each death sound plays with its animation: a body hits the ground when it lands, a blown-off turret clangs as it comes down, a crashing gunship's dive lasts as long as its fall, and every visual cook-off pop has its own bang.
+- **Real recordings blended in:** 25 Freesound recordings (CC0 and CC BY 4.0, shared by Iron Front '44) under the synthesis. They add a recorded body under every explosion, ricochets and metal impacts, recorded death cries (pain grunts with Mature off), boots on gravel for human troops, and looping battlefield and gunfire beds under the map. Weapons stay synthesised. Each file is split into takes, normalised, pitch-nudged and never repeated twice running. Credits are in Settings → Sound → Sound credits and CREDITS.md.
+- **Credits:** "Soundtrack composed by Tristan Hotham" on the title screen, the end credits, the now-playing line, the help page and the Settings soundtrack option.
+- **Varied death animations:** each death now fits the unit and the weapon, picked at random from the ones that fit. 19 new animations:
+  - **Troops:** blown backwards, crumpling to the knees, spun round by the hit, staggering before collapsing. Some lasers set them burning, and some Overmind bolts disintegrate them to ash. The old topple, gibbing and being run over stay in the mix.
+  - **Drones:** short-circuit and twitch, have their head blown off, or burst into scrap.
+  - **Vehicles:**
+    - Any vehicle can be thrown onto its roof, cook off popping for a while, or shatter into four chunks.
+    - Tanks can have the turret blown off; it lands a tile away from the hull.
+    - Energy weapons sometimes melt a vehicle into slag.
+    - Hover units can crash and skid, leaving scrape marks; walkers topple over.
+    - The classic fireball wreck still happens too.
+  - **Aircraft:** spiral down trailing smoke, or snap in two. **Ships:** capsize, or break their back with bow and stern rising.
+  - Each animation leaves its body, wreck or slag on the map for the rest of the mission. With Mature off, there's no blood.
+- **The sound of war:** every unit got its own weapon, movement and death sounds, all synthesised live (no samples):
+  - **Weapons, each unit its own:** 30 weapon voices.
+    - Resistance: rifle bursts with brass tinkle, the sniper's anti-materiel crack with bolt cycle, and the rail-tank's capacitor whine, main-gun boom and breech reload (it used to share a thin coil sound). Also the walker's 40 mm autocannon, a ground-shaking howitzer, a quad pom-pom, rocket ripples, and a rising-chord Prism laser.
+    - Overmind: space-opera blasters, from the drones' three-bolt "pew" to rapid repeaters and twin heavy turbo-blasters. The grav tank pulls the bass out of the air before it fires; the Phantom reverse-swells. There's also a buzz-saw spitter, a bass-hum Glare lance, and the Echo lance, whose beam repeats into the distance.
+  - **Artillery** is now three sounds: the launch blast, an incoming whistle (a falling moan from the Overmind) timed to the flight, then a heavy impact crump with concussion ring and soil raining down.
+  - **Movement for every troop type:**
+    - A Resistance fireteam: out-of-step boots, rattling kit and the odd radio squelch.
+    - Exo-suit Breachers: heavy boots and servo whine.
+    - Creeping snipers, engineers with clinking tools, and Scrappers with chains.
+    - Overmind drones marching in lock-step, a limping Revenant, and ORACLE's chiming frames.
+    - Footsteps change with the ground: splashing through water, crunching on snow, sharp on concrete, dull on dirt. Tanks rev off before their engine noise.
+  - **Deaths:**
+    - Infantry fall and their rifle clatters. Drones power down in sparks. Aircraft dive and crash. Ships groan and sink.
+    - Vehicles die eight different ways: hull groan, turret blown off, ammo cook-off, fuel fireball, popping tyres with the horn stuck on, hover crash and scrape, a walker toppling, and an Overmind reactor discharge.
+  - **Armour:** bullets always ricochet off armoured units, and shells sometimes skid off thick plate with a clang.
+  - **War ambience:** distant artillery, machine-gun and rifle fire, aircraft passes, radio chatter, city sirens and Overmind walkers beyond the map edge. It's busier in boss missions, and can be turned off in Settings → Sound.
+- **Smaller soundtrack:** re-encoded from Ogg Vorbis at ~127 kbps to Ogg Opus at 64 kbps stereo. 171 MB becomes 86 MB.
+  - Every track's length and loudness match the original.
+  - The originals are kept in build/music/orig-vorbis.
+  - Tool: build/transcode-opus.js.
+- **Advanced power:** the Fusion Core (Resistance) and Singularity Core (Overmind) cost ¢6,000 and give +25 power. They need a Tech Lab and a Power Core. Late bases no longer need a carpet of Power Cores, and the AI builds them too.
+- **Faction identity:**
+
+  | Faction | Units | Trait |
+  |---|---|---|
+  | Resistance | **Scrapper**: a field welder that repairs adjacent vehicles. **Kite Drone**: a spotter; indirect fire near it does +15%. | **Street Network**: foot units get +1 vision and +1 cover in cities |
+  | Overmind | **Gleaner**: turns scrap into credits. **Swarm Node**: prints a Husk Drone every other turn, at most two alive. | **Nanite Mesh**: machines out of contact self-repair 5 HP a turn |
+
+  The units are cost-matched pairs, and the classic-map mirrored test stays near even.
+- **Every leader has a hand-written power theme:**
+  - Kova's punk "Chrome Knuckles"
+  - Wren's arpeggio "Blueprint Lattice"
+  - Sable's near-silent "Dead Channel"
+  - Juno's soaring "Above the Smog"
+  - ORACLE's glass bells
+  - WARDEN-9's drum-corps march
+  - HYDRA's three-voice canon
+  - MIRROR's palindromes
+  - SCOURGE's toxic dub
+  - TALLY's clockwork
+  - VESPER's night drive
+  - the Overmind's "Recycling Hymn" for organ and choir
+
+  Hover a commander card to preview it.
+- **Six new Custom Battle enemy styles:**
+  - Methodical (masses, then advances)
+  - Opportunist (captures and finishes off)
+  - Sniper (artillery and trades)
+  - Reckless
+  - Fortress (walls up, hits back)
+  - Blitz
+
+  Every style's build preference now actually shapes what the AI buys. In Conquest, enemy leaders get their own temperament.
+- **Story choices (Triangle Strategy style):** four decisions where the cast argues both sides and your pick changes a later mission and the epilogue.
+  - **The Flood Gates** (after 2-7): volunteers in 4-2, or extra funds in 4-1 and a different 5-7.
+  - **The Ledger of Names** (after S-1): publish it for volunteers and retaliation in 3-1, or keep it sealed.
+  - **The Bloom** (before 4-10): burn it for a weaker Leviathan, or let ORACLE contain it, which adds a rig to protect.
+  - **Category: Pending** (Overmind side, after 4-3): changes Overmind 4-5 and 4-8.
+  - Every decision is listed on the campaign map's ⚖ Decisions panel, in the Chronicle, on affected briefings, and on a "What you chose" epilogue card.
+- **4-3 "Evacuation":** this escort mission gave the player a city and an HQ but no factory, while the Overmind had two. Your city is now a Fabricator, the same fix as 3-5.
+- **Late-campaign tuning (from "Rei", a hand-played Veteran playtest that won 1 of 9 late missions):**
+  - **Bosses were 10–15 times as tough as a tank.** HP cut: WARDEN-9's Bastille Engine 300 → 180, Prism Walker 350 → 250, Toxic Leviathan 400 → 260, Overmind Core 500 → 350. On Recruit, bosses start at 60%.
+  - **Bastille Engine** still fires at 1–3 tiles but only returns fire within 2, so mortars at 3 tiles are safe.
+  - **Prism Walker** hits 35% softer, and after it fires it stays visible at night until the next day.
+  - **Toxic Leviathan** reaches 2–4 tiles (was 2–5) and dives every third day (was every other day). You start 4-10 with three subs (was one).
+  - **Weather lifts:** 5-10's storm breaks on day 7, so your bomber and VTOL can fly. 3-1's snow stops on day 9. Both are announced on the briefing.
+  - **No hidden surprises:** 2-5's briefing names the 4-day hold at the vault and you start with a Mule transport. 3-5's avalanche lands mid-route instead of on the goal, with a warning the day before.
+  - **Par turns** set above the travel time: 1-10 20 → 26, 2-5 14 → 20, 3-1 23 → 30, 3-5 22 → 26, 5-5 24 → 27.
+  - **Overmind SINGULARITY** takes 10% off every enemy unit (was 20%).
+  - **Squad slots:** a squad member no longer swaps a mortar or a transport for their own cheaper unit (Yuna's bike replaced a ¢6,000 mortar). They now fight in the slot's unit, named.
+
 ## v0.5 (2026-10-17)
 
 A research and testing pass. It draws on reviews of Advance Wars 1+2: Re-Boot Camp and Wargroove, Into the Breach's design talk, and colour-blind accessibility guides (see docs/research-v05.md). It also adds a persona-bot difficulty sweep across all five acts, and four new AI playtesters: story, phone, stability and accessibility.
