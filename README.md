@@ -17,7 +17,7 @@ A turn-based tactics game: Advance Wars battles with Command & Conquer base buil
 - Synthesised weapons, engines and voices for every unit, with Freesound recordings for explosions, ricochets, death cries, footsteps and ambience
 - Varied death animations and unit chatter: Resistance street slang mixing English with Asian languages, and Overmind binary
 
-This is version 0.6.2, an early build. The balance is still moving.
+This is version 0.6.9, an early build. The balance is still moving.
 
 ## How to play
 

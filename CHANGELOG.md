@@ -1,5 +1,274 @@
 # Neon Protocol: Uprising: changelog
 
+## v0.6.9 (in progress, not shipped)
+From the 49-tester playtest of v0.6.8 (docs/playtest-v068/SUMMARY.md): tiers 0 and 1, plus the forecast and fog leaks.
+- **Mission end:**
+  - Every attack, on either side's turn, now ends with a win/lose check.
+  - An enemy turn that fails part-way hands the turn back instead of hanging.
+  - Once a second, a safety net checks for a wiped-out side, and restarts an enemy turn that nobody is running.
+  - #25's exact softlock didn't reproduce here (a counter-kill on the AI's turn ended the mission correctly in testing), so these nets cover it rather than a single root-cause fix.
+- **Saves:**
+  - "Back to Map Maker" no longer deletes the real Resume save, and a test play's finish never clears it.
+  - Starting Horde, Custom Battle or a skirmish sets the campaign save aside instead of overwriting it. The title screen shows "▶ Resume campaign …", and the set-aside save comes back when the side game ends.
+  - The campaign map asks (Resume / Restart / Back) before starting over a mission in progress.
+  - Units you buy are autosaved at once.
+- **Resume:** couch co-op keeps Player 2 human, and capture and Secure progress is kept for both sides.
+- **Overwatch:**
+  - The warning is about the tile you stop on, because that's where overwatch fires (it used to warn about the whole route).
+  - It asks every time. A map tap or Esc cancels it.
+  - It no longer reopens after the move.
+  - "Move anyway" can't lock the turn: `commit` is guarded, and no action runs mid-move.
+- **Par and hours:**
+  - Par N reads "hour (N−1)×3", the hour the HUD shows on turn N, everywhere ("par 6" = "win by hour 15").
+  - The after-action graph axis is in hours (a later override still said "day").
+  - Dialogue, barks, What's New, the Chronicle and story panels are no longer rewritten.
+  - The "a day → a turn" rule is gone, and mechanics text was fixed at the source: civilian income "a turn", Horde "every second turn", crates "every other turn", the boss rules "every third turn", the How to Play day–night line, and cloak fuel. Dai's "ten words a shift" is written that way at the source.
+- **Squad:** only introductions go out over the radio. Bond scenes play as a briefing scene again.
+- **Forecast:** the counter range is capped at your HP, so it never prints backwards. Damage shows at most 100%. When your shot may kill, the counter row says "(only if it survives your shot)".
+- **Fog:**
+  - Tapping a hidden enemy's tile says "You can't stop there".
+  - "No shot" reasons stay silent for hidden targets.
+  - Floating text inside the fog is not shown.
+  - Under fog, the objective strip hides unit counts and the pause menu hides enemy funds.
+  - The tile panel and the fog shading use the viewing player's vision (they used the Resistance's even on the Overmind side).
+- **Gamepad:** a pad press during a battle scene no longer leaves battle scenes switched off for the session.
+- **Phone layout, redesigned:**
+  - **Portrait:** one row of badges (hour, funds, units, power), then the objective line with 👁 and ☰ at its end. 62px in all, against 170px in v0.6.8. The unit card is a one-line strip (name, type, HP); tap it for the full card. The bar keeps Back, Next and End Turn, plus Build or Power when they apply. Rewind, threat ranges, highlight units, minimap, sound and the enemy general sit behind a "⋯" button, and toggles show "· ON". With a unit selected, the map gets about 79% of an 812px-tall screen.
+  - **Landscape:** the HUD is a 66px rail on the left and the buttons an 80px rail on the right, with End Turn at the bottom under the right thumb. The objective floats as a slim line at the top, and the unit strip sits bottom-left. The map gets the full height of the screen, where it used to get about 240 of 375px. The action menu, preview, tips and minimap all sit clear of the rails.
+  - PC and tablet layouts are unchanged.
+- **Panning:** the map pans past each edge by the HUD covering it plus a quarter of the screen, so the top and bottom rows can be dragged into the middle.
+- **Hide the HUD:** a 👁 button (and H on a keyboard) hides everything but the map. Tap "👁 Show UI", press H or Esc, or select a unit to bring it back. It works on PC too.
+- **Phones, factory tap:** tapping a factory opened the build list on finger-up, and the browser's follow-up click then landed on the row under the finger, buying it (usually the tank). A touch click whose press began on the map is now ignored. Mouse, keyboard and deliberate taps are unaffected.
+- **Characters:**
+  - Dai is now Davi "Dai" Ferreira, a white Portuguese-Pacifican docker: lighter skin, brown hair, blue eyes. His lines are unchanged apart from the name.
+  - The Architect is now Wren Okada, an East Asian engineer: lighter skin, straight black hair (she keeps her braids), dark eyes. She was Wren Okafor; the name changed everywhere, including the Overmind campaign and the trailer script.
+- **Unit chatter:** English mixed with Japanese, Chinese and Korean only. The Tagalog, Hindi, Vietnamese, Indonesian and Singlish ("lah") lines are replaced.
+- **Not yet:** the counter-attacker's REND/FLANK/AEGIS and Echo Shard reflection in the forecast, sound in the fog, the Map Maker and superweapon "day" labels. These and tiers 2–5 are queued for v0.7.0 and later.
+
+## v0.6.8 (in progress, not shipped)
+From a phone playthrough of 1-2 (375×812, thumbs only, Recruit).
+- **Overwatch:** moving through enemy overwatch now opens a card with 48px "✕ Cancel" and "Move anyway ▶" buttons. The old warning was a floating line that was easy to miss, so the second tap walked units into fire. Any other tap dismisses the card.
+- **Hours on the result screen:** the row reads "Hours 45 (par 36)", and the after-action graph axis is in hours.
+- **Turn start:**
+  - The turn banner always clears after 1.5 s.
+  - Tips wait while "While you waited" is open, and that report closes after 8 s.
+  - The report is a compact card (at most 250px wide on phones).
+  - The objective strip, barks and the overwatch card hide during dialogue.
+- **1-2:**
+  - From turn 6, an Act 1 enemy with half your army or less stops buying, so the last Shredders don't refill every turn.
+  - The S-rank budget rises from ¢16,000 to ¢24,000.
+- **Secure:** a message gives the progress (e.g. "10/20") and what the building gives you.
+- **Factories:** new units leave by the side with the most open ground, not into the doorway.
+- **Squad screen:** a member who fights in the slot's unit shows "This mission: fights as a Streetline Trooper".
+- **Result card:** a wounded MVP under Casual reads "wounded: sits out the next mission", not "fell in battle".
+- **Not changed:**
+  - The briefing's map preview looked like an empty strip in the tester's hidden pane. That's very likely its reveal animation not running there, so it needs checking on a real phone.
+  - The empty space under the map on phones didn't reproduce. At 375×812 the map is already taller than the space between the bars.
+  - The tester read tanks as unable to fire at range 2 after moving. The rules don't do that; what they saw is the machine gun's 1-tile reach against infantry, which the unit card shows as "(MG 1)".
+
+## v0.6.7 (in progress, not shipped)
+- **Hours, not days:**
+  - A turn is 3 hours. The 8-step day/night cycle is one day on a clock: day at 09:00, 12:00 and 15:00, dusk at 18:00, night at 21:00, 00:00 and 03:00, dawn at 06:00.
+  - Missions where the light changes show the clock. Missions locked to one time of day count hours ("HOUR 12"), so a dark map never shows 09:00.
+  - On screen, "day N" becomes hour (N−1)×3, "by day N" becomes hour N×3 (so it matches par), and "N days" becomes N×3 hours. The result table reads "Hours".
+  - Internally a turn is still `G.day`, so missions, events and saves are unchanged.
+- **1-2 pile-up:** in Act 1 the enemy stops buying once its combat units reach about 1.1× your army plus one (at least 5), and keeps the money.
+- **One layer at a time:** tips, barks, the action menu, the forecast and toasts hide while a panel or dialogue is open.
+- **Shorter intros:** the squad's introductions play as radio barks during your first turn, not as a second dialogue before it.
+- **Enemy turns:** the counter adds "IN THE FOG" for unseen units, and "While you waited" counts the moves made in fog.
+- **Art:**
+  - Ridges are pixel-art mountain ranges with two broad peaks per tile (sometimes a foothill), lit from the left, merged inside a range, snow-capped in winter.
+  - Water glints and drifts, slower in the subway. Off with Reduced motion.
+  - Day battle scenes dim the window lights, so a rainy day no longer reads as night.
+- **Trailer:** `trailer/neon-protocol-story-trailer-web.mp4`, 720p H.264 at 18 MB (the original is 107 MB).
+- **Checked:**
+  - Saves from v0.6.2 (1-2 and 2-4, mid-mission) load in v0.6.7, keep their state and play a full enemy round with no errors.
+
+## v0.6.6 (in progress, not shipped)
+From the v0.6.5 recheck by four testers.
+- **Battle scenes:**
+  - Snowy maps fight in the snow. The snow check now runs before the industrial one, so 3-3 and 3-5 no longer show a foundry.
+  - Every Flooded Subway tile, canals included, gets the tunnel backdrop.
+  - The Overmind panel glitch is a brief 2px flicker in the sky, not a tinted band drifting across units.
+- **Boss:**
+  - The unit card shows real HP (e.g. 76/180), not "10/10".
+  - It no longer says "Fogged" while the boss is visible.
+  - The boss bar text is 16px and bright.
+- **No silent failures:**
+  - Booby-trapped and cash crates show a message.
+  - Sidebar clicks that can't go through say why: open panel, enemy turn, battle over.
+  - A queued unit says when low power is the reason.
+  - Campaign missions warn at 80% of the budget and when over it.
+- **Enemy turns:**
+  - Units you can't see skip camera pans into the fog and the pauses between units.
+  - Armies over 24 units move faster.
+  - The "processing" line counts the units moved.
+- **Phone:**
+  - The unit card hides 3.5 s after a tap when nothing is selected.
+  - The action menu is slimmer.
+  - The enemy-turn report docks top-left.
+- **Art:**
+  - Spent units stay in their colours, darker, instead of grey.
+  - Lakes count as water, so they get foam shorelines.
+  - All water has lighter shallows along the shore (so open water reads deeper), rounded corners and thicker foam.
+  - Snow ground is desaturated and cool white, with fewer specks.
+  - Ridges get rock bands, and snow caps in snow.
+  - The Wisp's underside is steel with white jets.
+- **Flooded Subway:**
+  - Always clear and at least 0.55 dark.
+  - Named once ("Flooded Subway", not "Flooded Subway · Neon City").
+- **Weather:** snowy missions roll snow instead of rain.
+- **Words:**
+  - Touch players no longer see "Space / Enter" or "(or O)".
+  - Kova's Street Recruit, Informants and Conscription note when a map has no civilians.
+  - A first-time Forward Base Rig tip.
+
+## v0.6.5 (in progress, not shipped)
+From the second test wave of seven testers, plus two calls from the designer.
+- **Balance:**
+  - The Overmind's tanks, artillery, rockets, anti-air and SAM are back on tracks like their Resistance twins. Hovering let them cross every river and canal that stopped the identical Resistance units. Only the troop carrier still hovers.
+- **Civilians:**
+  - Civilians appear only in the story missions that write them in.
+  - Custom Battle can still add them, but the setting now defaults to None.
+  - Generated campaign maps, Horde and Conquest have none.
+  - Civilian buildings stay.
+- **Regressions fixed:**
+  - Orbital Elevator: tanks always have a road to the enemy base.
+  - The first harvester really starts half full, whichever way the Refinery is placed.
+  - Snow, ice and terrain backdrops now appear on campaign maps, including 3-1, 3-3 and 3-5, plus industrial backdrops for the foundry and toxic flats.
+  - No rain inside the subway.
+  - Fallen units stay sharp and rest on the ground.
+  - Machine sprites show steel instead of pink, and the Spider-Mech's legs no longer tangle.
+  - Beams are thinner.
+  - The boss bar shows for either side, in bigger text, and fades when you work under it.
+- **Bosses in real HP:** the battle-scene panel, the forecast and the objective line all show boss HP as numbers. The 1-10 and 2-10 tips no longer promise "three bars".
+- **Tips:**
+  - Tips dock wherever they cover least: away from the selected unit, its move tiles, the forecast, the menu and your army.
+  - "While you waited" steps aside while a forecast is open.
+  - Leftover radio captions and sidebar messages clear between missions.
+- **AI pacing:**
+  - The AI pokes from day one.
+  - Near its cap it buys at most one or two units a turn.
+  - Swarm Node drones count towards its cap.
+  - Big armies take shorter pauses.
+- **Playing the Overmind:**
+  - Boss tips speak to the defender.
+  - The civilian line is said once.
+  - Tally only promises a replacement it can build.
+  - The camera finds your army.
+  - Results log a CORRECTION.
+  - Civilians who change sides get a line.
+- **Fixes:**
+  - Overwatch now warns on plain moves too.
+  - "No shot" always gives a reason.
+  - Counter forecasts have 2 HP of headroom.
+  - S rank needs par and budget.
+  - Squad last lines fit any vehicle.
+  - Tap-to-attack avoids parking on civilian buildings.
+  - No two civilians share a tile.
+  - Team rings are drawn as pixels, and spent units keep their colour.
+- **Accessibility and phones:**
+  - Settings → Display → Clear view, offered when you pick Largest text.
+  - Largest text now reaches the title screen and story cards.
+  - Touch wording on short screens.
+  - The power meter shows its stars as numbers.
+  - Lighter dusk and rain maps.
+
+## v0.6.4 (in progress, not shipped)
+From the second AI playtest: eleven testers, judging looks and feel as well as rules.
+- **Readability:**
+  - Every unit stands on a ring in its army's colour, with a dark ground shadow. The rings sit above the night and fog passes, and can be turned off under Settings → Display.
+  - Unit sprites get a dark edge, so they separate from neon props.
+  - Bosses are drawn half as big again and get one big HP bar at the top of the screen. The forecast gives boss HP as numbers.
+  - The neon and team light pools are softer, and much softer on snow, where they piled up into a magenta haze. The power flash is gentler.
+  - A "POWER READY" banner appears, and your portrait pulses, when your power fills.
+- **The machines look the part:**
+  - The Overmind's sprites have darker plating, serrated dorsal spikes and blooming red eyes.
+  - The Spider-Mech stands on long jointed legs, so it no longer reads as a Crawler.
+  - The Golem rides on visible hover jets, which explains how it crosses canals.
+  - Husk Drones get mandibles and a red spine.
+- **Places look like themselves:**
+  - Ground is tinted per theme.
+  - Snow maps have snow on the ground and ice on the water.
+  - Every shoreline has a foam edge.
+  - The Flooded Subway has drowned rails and platform edges with yellow safety lines.
+  - The Orbital Elevator's tether is one structure, a docking ring with a lit cable. Its info card says it's solid and aircraft only.
+- **Battle scenes:**
+  - Backdrops per terrain: beach, palms and sea; mountains (snow-capped in snow); dunes; a flooded tunnel; and the tether in the elevator sky. The neon city no longer appears behind everything.
+  - One sun or moon per scene, drawn in pixels.
+  - Rain falls on the pixel grid.
+  - Soldiers drop flat instead of tumbling with sheared pixels.
+  - Destroyed vehicles stay as burning wrecks instead of fading out.
+- **AI pacing:**
+  - The AI ramps up aggression with the day, its strength and its savings, so it no longer sits on ¢40,000 waiting.
+  - It stops buying once it outnumbers you by a margin, so no more Shredder floods.
+  - It builds from factories with its own unit parked on them.
+  - Moves made entirely in fog don't animate.
+  - Horde waves land about 14 tiles from your line.
+  - A Refinery's free harvester arrives half full.
+- **Interaction fixes:**
+  - Paths go round civilians instead of stopping short and wasting the turn. Tapping a tile you can't stop on says why.
+  - Tap-to-attack picks the safest tile: no overwatch on the way, keeps its distance, fewest enemies next to it. It asks for a second tap if the route crosses overwatch.
+  - The forecast includes the enemy's luck on Cyber-Nightmare and warns in red when the counter-attack will destroy your unit.
+  - The sidebar's $ Sell tool needs a second tap.
+  - Factory panels close after a purchase and say how much you're short for units you can't afford.
+  - The Rewind label resets after its 2-second window.
+- **Modes:**
+  - Co-op Player 2 gets their own commander.
+  - Leaving a Conquest battle asks first.
+  - Conquest's Port cruiser starts on water.
+  - Horde saves your best wave when you quit.
+  - Map Maker test games award no medals.
+  - Disabled buttons look disabled.
+- **Text and story:**
+  - Intel matchups no longer list a unit as both strong and weak against the same enemy. Gleaner and Halcyon are listed, and Gleaners pay the raid bounty.
+  - Briefings name the enemy units, warn when more are coming, show "Your setting" separately from "Mission difficulty", and hide Par on survival and Horde maps.
+  - Tips:
+    - Rule tips jump the queue.
+    - Tips are opaque and move away from the unit you're using.
+    - Stale tips close at your next turn.
+    - Phones get touch wording.
+  - How to Play has a contents bar. The result screen folds medals below Continue. What's New is filled in for 0.6.3 and 0.6.4.
+  - Out-of-date tips fixed: the 2-4 HQ range, income totals, the allied-army tip in solo play, and "night comes next".
+  - Named squad members say a last line when they fall.
+  - Rin, Yuna and Hemi talk with contractions, and Rin builds the street's New Year kites.
+  - Mara no longer recites rules mid-scene, and Yuna no longer yells "Drive-by!" on foot.
+  - Japanese: 新パシフィカ, 抵抗軍, 八岐大蛇, portrait kanji now match the name cards, and there's a space before kanji name tags.
+  - Difficulty labels show what they mean on your setting. 2-3 and 5-4 are re-rated Fair.
+
+## v0.6.3 (in progress, not shipped)
+- **The new rules teach themselves:**
+  - A one-time tip the first time each rule matters: the build zone, automatic harvesters, claims, raids, gates, low power, and the ◎ highlight button.
+  - The in-game help now describes the build zone, the harvester war and gates. It no longer says buildings go "within 3 tiles of your buildings" or that harvesters move "when you end the turn", both of which were out of date.
+- **The build zone is always visible** on base maps, as a dashed ring around each Construction Yard or HQ.
+- **The AI plays the harvester war:**
+  - It builds Refineries where the most unclaimed Lumenite lies within reach, and puts defences between its Refinery and the enemy.
+  - Enemies standing in its claims are worth more to it.
+  - Every harvester, yours included, heads for its own side's claims first.
+- **Battle scene quality** setting (Auto, High or Standard): Standard draws at 3× for older phones, and Auto picks it on small or low-memory devices.
+- **Speech bubbles grow** with Settings → Text size.
+- **Sounds** for gates opening and closing, a field changing hands, and a harvester raid.
+- **Fixes from four AI playtesters** (a first-timer, a C&C veteran, an Advance Wars veteran, and a phone player on Largest text):
+  - **Phones:** text size is now also capped on short screens. On a 390-pixel-tall landscape phone, Largest text pushed the action menu, info cards and damage forecast off the screen, so you couldn't Wait or Fire. Anything zoom pushes off an edge is now pulled back.
+  - **Phones:** on short screens the minimap stands down on base maps, so it no longer covers End Turn and the build cameos.
+  - Every panel opens scrolled to the top, instead of where the last panel was left.
+  - Selling a building takes a second tap.
+  - First-time tips about the new rules (build zone, low power, claims) jump the queue, so they arrive when the thing first happens, not days later.
+  - **Low power is no longer a death spiral:** a Power Core always builds at full speed, and Refineries keep running.
+  - The Orbital Elevator's tether is really solid now: no ground unit can walk on it, only aircraft fly past. Its other Megatowers are unchanged.
+  - You can end a move in your own open gate. Before, the gate was offered as a destination but Wait did nothing.
+  - A harvester heading for its own side's claim no longer hides the rest of the Lumenite from the game while it drives. Saves and drawing during the AI's turn could see fields missing.
+  - In base skirmishes the Overmind starts with a fourth trooper instead of a Resistance engineer.
+  - Out-of-date text: the build zone is 6 tiles (the help, Wren's 2-4 briefing and a sidebar error still said 3 or 4), and Boot Camp's Fabricator tip now describes the Factory choice.
+  - Settings section counts match what's in each section, and links in panels are readable on the dark background.
+  - Picking a building to place brings the camera to your build zone if it's off screen.
+  - **REWRITE no longer backfires.** Stolen units used to go home with a full action from inside your lines. They now return dazed and sit out their army's next turn, without the ranks they earned for you. The picker lists every visible enemy, not just 12, with grid positions.
+  - **No Fire button? The menu says why.** For example, "only its machine gun hurts Husk Drone, and that reaches 1 tile", or "it can't fire after moving".
+  - **2-5 Data Vault:** the briefing now warns that you'll hold the vault for four days, and HYDRA's landing no longer drops a tank next to Doc Hale. The day-5 landing text now matches where the craft come ashore.
+  - **A lost mission scores 0 for Speed.** A loss could score nearly as well as a win.
+  - SINGULARITY's description says it hits enemy units: it read as though it hurt the Overmind's own army.
+  - **Measured difficulty** re-measured with a second sweep. Base-building missions now rate one tier harder: AI-vs-AI play hides how the AI's base snowballs against a person, which the testers felt (1-9, 2-4 and 3-4 are now Hard, and 4-4 Very hard).
+
 ## v0.6.2 (2026-10-17)
 - **Fix: moves no longer "start, then jump".**
   - A safety timer meant for background tabs also ran in a visible tab. Whenever one frame took longer than 0.25 s, it advanced the game by a quarter-second in one step: 2.5 tiles of movement at once.
