@@ -1,6 +1,9 @@
 # Neon Protocol: Uprising: changelog
 
-## v0.6.9 (in progress, not shipped)
+## v0.6.10 (published 2026-10-19)
+- **Firing ranges:** selecting your own unit now shades where it can fire this turn: amber squares, drawn over the blue move tiles. An indirect unit (mortar, rockets) shows the ring it can hit from where it stands; a direct unit shows everything it could hit after moving. A new 🎯 button (R, or the ⋯ menu on phones) shades all your units' ranges at once in green, next to ⚠ for the enemy's.
+
+## v0.6.9 (published 2026-10-19)
 From the 49-tester playtest of v0.6.8 (docs/playtest-v068/SUMMARY.md): tiers 0 and 1, plus the forecast and fog leaks.
 - **Mission end:**
   - Every attack, on either side's turn, now ends with a win/lose check.

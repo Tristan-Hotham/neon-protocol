@@ -10172,7 +10172,7 @@ document.head.insertAdjacentHTML('beforeend', `<style>
                  or hurt, properties taken, buildings destroyed, powers fired, new enemy
                  units in sight. Each line jumps the camera there.
      what's new  a changelog screen, shown once per version and from the title menu */
-const GAME_VERSION = '0.6.9';
+const GAME_VERSION = '0.6.10';
 const WHATS_NEW = {
   '0.3': ['Mission 1-6 "Dead Air" rebalanced: the Overmind no longer starts beside two of the three Uplink Towers, and you get a second anti-air team.',
     'The attack-range tiles now show line of sight: grey tiles are in range but a building blocks the shot.',
@@ -21488,6 +21488,59 @@ V69.layout = () => {
   }
   V69.layout();
 }
+/* ---------------- 8c. your own firing ranges ----------------
+   Selecting your unit showed only where it could move: a mortar's ring of fire was invisible until an enemy stood in
+   it. Now the selected unit's fire range is shaded amber (indirect units: the ring they can hit from where they stand;
+   direct units: everything they can hit after moving), and 🎯 (R) shades every one of your units' ranges at once. */
+V69.fireTiles = (u, moved) => {
+  const tiles = new Set(); if (!u || !u.d || u.d.cls === 'NONE') return tiles;
+  const [mn, mx] = u.d.rng, origins = [];
+  if (hasTag(u, 'ind') || moved || u.done) origins.push(key(u.x, u.y));
+  else for (const [k] of reachable(u)) { const x = k % G.W, y = (k / G.W) | 0; if ((x === u.x && y === u.y) || canStop(u, x, y)) origins.push(k); }
+  for (const k of origins) { const ox = k % G.W, oy = (k / G.W) | 0;
+    for (let dy = -mx; dy <= mx; dy++) for (let dx = -mx; dx <= mx; dx++) { const d = Math.abs(dx) + Math.abs(dy);
+      if (d >= mn && d <= mx && inB(ox + dx, oy + dy)) tiles.add(key(ox + dx, oy + dy)); } }
+  return tiles;
+};
+V69.selFire = null; V69.allFire = null; V69.allOn = false;
+V69.allCalc = () => { const t = new Set(); for (const u of G.units) if (u.team === ME) for (const k of V69.fireTiles(u)) t.add(k); V69.allFire = {ver:G.visVer, tiles:t}; };
+V69.toggleRanges = on => {
+  if (!G || G.editor) return; V69.allOn = on === undefined ? !V69.allOn : !!on; if (V69.allOn) V69.allCalc();
+  const b = $('#bMine'); if (b) { b.classList.toggle('on', V69.allOn); b.setAttribute('aria-pressed', String(V69.allOn)); }
+  try { sfx('menu'); } catch (e) {}
+};
+{
+  const _sel = select; select = function (u, ...a) { const r = _sel.call(this, u, ...a); try { V69.selFire = {u, tiles:V69.fireTiles(u)}; } catch (e) { V69.selFire = null; } return r; };
+  const mark = (k, fill, edge) => { const x = k % G.W, y = (k / G.W) | 0; tileFill(x, y, fill); ctx.strokeStyle = edge; ctx.lineWidth = 1; ctx.strokeRect(x * 16 + 1.5, y * 16 + 1.5, 13, 13); };
+  const _ov = drawOverlays; drawOverlays = function (...a) {
+    try {
+      if (G && !G.editor && V69.allOn) {
+        if (!V69.allFire || V69.allFire.ver !== G.visVer) V69.allCalc();
+        for (const k of V69.allFire.tiles) tileFill(k % G.W, (k / G.W) | 0, SET.cb ? 'rgba(80,170,255,.28)' : 'rgba(46,242,160,.26)');
+      }
+    } catch (e) { /* drawing only */ }
+    const r = _ov.apply(this, a);
+    try {                                                            // on top of the blue move tiles, so the ring of fire reads clearly
+      const S = V69.selFire;
+      if (G && S && UI.sel === S.u && UI.mode === 'move' && UI.reach) {
+        const ind = hasTag(S.u, 'ind');
+        for (const k of S.tiles) if (ind || !UI.reach.has(k)) mark(k, 'rgba(255,176,46,.30)', 'rgba(255,200,90,.85)');
+      }
+    } catch (e) { /* drawing only */ }
+    return r;
+  };
+  const th = $('#bThreat');
+  if (th && !$('#bMine')) th.insertAdjacentHTML('afterend', '<button id="bMine" class="np" title="Show your units\' firing ranges (R)" aria-label="Show your units\' firing ranges" aria-pressed="false">🎯</button>');
+  $('#bMine').addEventListener('click', e => { e.stopPropagation(); V69.toggleRanges(); });
+  addEventListener('keydown', e => {
+    if (e.ctrlKey || e.metaKey || e.altKey || e.repeat || !G || G.editor || MODAL || DLG) return;
+    const t = e.target; if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT')) return;
+    if (e.key === 'r' || e.key === 'R') { e.preventDefault(); V69.toggleRanges(); }
+  });
+  const _lg = leaveGame; leaveGame = function (...a) { V69.allOn = false; V69.allFire = null; V69.selFire = null; const b = $('#bMine'); if (b) b.classList.remove('on'); return _lg.apply(this, a); };
+  V69.MORE.splice(2, 0, ['bMine', '🎯 Your firing ranges']);
+  document.head.insertAdjacentHTML('beforeend', '<style>body.v69p #bMine, body.v69l #bMine{display:none !important}</style>');
+}
 /* ---------------- 8b. the map pans clear of the HUD ----------------
    The camera stopped 60px past the top edge and 90px past the bottom, so on a phone the top rows stayed under the
    92px HUD (and the bottom ones under the bar and unit card). Now it pans past each edge by the HUD actually covering
@@ -21529,6 +21582,9 @@ WHATS_NEW['0.6.9'] = [
   'You can drag the map further past its edges, so the top and bottom rows are never stuck under the HUD.',
   'Phones: tapping a factory opens its build list instead of buying whatever unit appeared under your finger.',
   'The squad: Dai, the tank driver, is now Davi "Dai" Ferreira, a white Portuguese-Pacifican docker. Unit chatter mixes English with Japanese, Chinese and Korean only.'
+];
+WHATS_NEW['0.6.10'] = [
+  'Firing ranges: selecting your unit shades where it can fire this turn in amber (a mortar or rocket battery shows its ring of fire from where it stands), and the new 🎯 button (R, or ⋯ on phones) shows all your units\' ranges at once.'
 ];
 /* end:p86_v069.js */
 resize();
