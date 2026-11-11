@@ -1,5 +1,26 @@
 # Neon Protocol: Uprising: changelog
 
+## v0.6.11 (not yet published)
+From a scripted playtest of v0.6.10 from a fresh save, desktop and phone (docs/playtest-v0610/SUMMARY.md). No crashes, hangs or save faults turned up; these are the rough edges, a speed-up for big battles and a small content pack.
+- **Camera:** mission start, resume, Next and the enemy-turn camera stop at the map's edge (plus the HUD), or centre a map that fits. They used v0.6.9's drag limit, so a mission often opened with a quarter of the screen off the map. Dragging still pans past the edges.
+- **HP numbers:** drawn again after the row below, so a unit on the next row no longer covers the number of the unit above it.
+- **Phones:**
+  - 👁 and ☰ are 44px (they were 34px); the objective line is narrower so ☰ keeps its row.
+  - The title menu is 44px on touch screens (it was 40px on screens under 860px tall).
+  - Landscape: the radio bark starts beside the left rail and ignores taps, so it no longer covers 👁 and ☰.
+  - Narrow title: UPRISING no longer sits in NEON PROTOCOL's glow.
+- **Big battles:** team rings are drawn once per colour and stamped (they were a third of each frame with ~190 units), and units, unit glows and rings off screen are skipped. On a 64×48 map with ~190 units a frame at normal zoom went from about 33 ms to 16 ms in the test browser.
+- **Hours:** the Map Maker's balance check reads "Income a turn" and its AI test report gives hours and turns; the resume bark gives the hour ("Welcome back. Hour 90").
+- **Turn banners:** a dark band edged in the army's colour, with YOUR TURN, ENEMY TURN or ALLY TURN under the hour (YOUR MOVE in couch co-op). Reduced motion keeps its plain fade.
+- **Sound Room:** the Battle Shop's track list opens on a player: title, time and a progress bar, back / play-pause / next, and "Play the album" to shuffle all 48 tracks. The playing row lights up and its button pauses it. The level meter holds still with Reduced motion.
+- **New: Horde modifiers.** A Modifier choice on the Horde screen, each with its own best-wave record:
+  - **Blackout:** night and fog of war for the whole run.
+  - **Elite waves:** every attacker arrives a Veteran (+10% attack and defence).
+  - **Lean times:** no supply drops and no crates.
+- **Smoke checks:** `tests/smoke.py` (Playwright for Python) boots the game, plays a tiny battle with real clicks to the result screen, resumes a v0.6.10 save (`tests/fixtures/save-v0610.json`), runs a campaign turn for each side and the Horde modifiers, and checks the phone layout and tap targets.
+- **Checked:** the v0.6.10 save of 1-2 at hour 90 loads, keeps its units, funds and hour, and plays a full round.
+- **Not yet:** the 1-2 enemy rebuild for a player who falls behind, the blurred unit edge's cost, the ridge read-back while maps build, and a quicker way into the Sound Room. See the summary for the full list.
+
 ## v0.6.10 (published 2026-10-19)
 - **Firing ranges:** selecting your own unit now shades where it can fire this turn: amber squares, drawn over the blue move tiles. An indirect unit (mortar, rockets) shows the ring it can hit from where it stands; a direct unit shows everything it could hit after moving. A new 🎯 button (R, or the ⋯ menu on phones) shades all your units' ranges at once in green, next to ⚠ for the enemy's.
 

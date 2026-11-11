@@ -17,7 +17,7 @@ A turn-based tactics game: Advance Wars battles with Command & Conquer base buil
 - Synthesised weapons, engines and voices for every unit, with Freesound recordings for explosions, ricochets, death cries, footsteps and ambience
 - Varied death animations and unit chatter: Resistance street slang mixing English with Asian languages, and Overmind binary
 
-This is version 0.6.10, an early build. The balance is still moving.
+This is version 0.6.11, an early build. The balance is still moving.
 
 ## How to play
 
@@ -41,6 +41,14 @@ npx serve .
 ```
 
 Then open the address it prints. Opening `index.html` straight from disk also works, but the music may not play.
+
+## Smoke checks
+
+`tests/smoke.py` boots the game in headless Chromium, plays a tiny battle with real clicks, resumes a saved v0.6.10 mission, runs a campaign turn and the Horde modifiers, and checks the phone layout. It needs Python with Playwright (`pip install playwright` and `python3 -m playwright install chromium`):
+
+```
+python3 tests/smoke.py
+```
 
 ## More games
 
