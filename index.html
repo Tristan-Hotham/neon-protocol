@@ -10172,7 +10172,7 @@ document.head.insertAdjacentHTML('beforeend', `<style>
                  or hurt, properties taken, buildings destroyed, powers fired, new enemy
                  units in sight. Each line jumps the camera there.
      what's new  a changelog screen, shown once per version and from the title menu */
-const GAME_VERSION = '0.6.10';
+const GAME_VERSION = '0.6.11';
 const WHATS_NEW = {
   '0.3': ['Mission 1-6 "Dead Air" rebalanced: the Overmind no longer starts beside two of the three Uplink Towers, and you get a second anti-air team.',
     'The attack-range tiles now show line of sight: grey tiles are in range but a building blocks the shot.',
@@ -21587,6 +21587,292 @@ WHATS_NEW['0.6.10'] = [
   'Firing ranges: selecting your unit shades where it can fire this turn in amber (a mortar or rocket battery shows its ring of fire from where it stands), and the new 🎯 button (R, or ⋯ on phones) shows all your units\' ranges at once.'
 ];
 /* end:p86_v069.js */
+/* ===== v0.6.11: THE PLAYTEST-POLISH PASS =====
+   docs/playtest-v0610/SUMMARY.md: a fresh-save run through Boot Camp, Act I, Horde, Custom Battle, couch co-op,
+   the Map Maker, the Overmind side and a phone at 390x844 and 844x390. No crashes, hangs or save faults; these are
+   the rough edges it found, plus the new content:
+     1. the camera frames the map when the game moves it (dragging still pans past the edges, as in v0.6.9)
+     2. HP numbers stay on top of the unit on the tile below
+     3. phone tap targets: 👁, ☰ and the title menu are 44px; the landscape bark keeps clear of the rail
+     4. big battles draw faster: cached team rings, nothing drawn off screen
+     5. hours wherever the clock is meant (Map Maker reports, the resume bark)
+     6. turn banners on a band in the army's colour, saying whose turn it is
+     7. the Battle Shop's Sound Room becomes a player
+     8. Horde modifiers: Blackout, Elite waves, Lean times
+ */
+const V611 = {tight:0};
+/* ---------------- 1. the camera frames the map, not the void beside it ----------------
+   v0.6.9 let a drag pan a quarter of the screen past each edge, so edge rows can reach the middle. The game's own
+   moves (mission start, Next unit, following the enemy) used the same loose limit, so a mission often opened with a
+   quarter of the screen showing empty sky beside the map. Those moves now stop at the edge plus the HUD. */
+{
+  const _cxy = clampXY; clampXY = function (x, y, z = cam.z) {
+    const r = _cxy(x, y, z); if (!V611.tight || !G || G.editor) return r;
+    try {
+      const V = (typeof MOB !== 'undefined' && MOB.vars) || {}, B = document.body.classList, bare = B.contains('v69bare'), land = B.contains('v69l');
+      const vw = innerWidth / z, vh = innerHeight / z, mw = G.W * 16, mh = G.H * 16, sw = sideW() / z;
+      const l = (land && !bare ? 72 : 8) / z, rt = (land && !bare ? 86 : 8) / z + sw;
+      const t = (bare || land ? 8 : (V.toph || 60) + 4) / z, b = (bare || land ? 8 : Math.max(V.barh || 60, V.infoh || 0) + 4) / z;
+      let [cx, cy] = r;
+      cx = mw + l + rt > vw ? clamp(cx, -l, mw - vw + rt) : -(l + (vw - l - rt - mw) / 2);   // too wide: stop at the edges; fits: centre it
+      cy = mh + t + b > vh ? clamp(cy, -t, mh - vh + b) : -(t + (vh - t - b - mh) / 2);
+      return [cx, cy];
+    } catch (e) { return r; }
+  };
+  const tight = f => function (...a) { V611.tight++; try { return f.apply(this, a); } finally { V611.tight--; } };
+  centerOn = tight(centerOn); fitCamera = tight(fitCamera); focus = tight(focus);
+}
+/* ---------------- 2. HP numbers stay on top ----------------
+   Units are drawn top row first, and a sprite on the row below reaches up over the HP number of the unit above
+   it (two drones stacked in a column read as "5" and a blank). The number is drawn again once the row below is done. */
+V611.badge = u => {
+  const hp = NP.displayHP(u.hp, u.d.hp); if (hp >= 10 || u.anim || u.dived) return;
+  const [px, py] = unitPos(u), X = px * 16, Y = py * 16;
+  ctx.font = 'bold 7px monospace'; ctx.textAlign = 'left';
+  ctx.fillStyle = 'rgba(11,13,20,.7)'; ctx.fillRect(X + 10.5, Y + 9.5, 5, 6); ctx.fillStyle = '#fff'; ctx.fillText(hp, X + 11, Y + 15.4);
+};
+{
+  const _du = drawUnit; drawUnit = function (u, t, ...a) {
+    const r = _du.call(this, u, t, ...a);
+    try { if (u && u.team && !u.anim && !G.editor) for (const v of G.units)
+      if (v !== u && v.team && v.x === u.x && v.y === u.y - 1 && !v.anim && visibleTo(v, ME) && !isAirU(v)) V611.badge(v); } catch (e) {}   // (aircraft are drawn last, so theirs is never covered)
+    return r;
+  };
+}
+/* ---------------- 3. phone tap targets ----------------
+   👁 and ☰ were 34px on phones and the title menu 40px on screens under 860px tall; both are 44px now. In landscape
+   the radio bark sat over the left rail's 👁 and ☰ and took their taps; it now starts beside the rail. On a narrow
+   screen the title's UPRISING line no longer overlaps NEON PROTOCOL's glow. */
+document.head.insertAdjacentHTML('beforeend', `<style id="v611Css">
+  body.v69p #top > button.np, body.v69l #top > button.np{min-height:44px;min-width:44px}
+  body.v69p #objBox{flex:1 1 calc(100% - 104px)}
+  body.v69l #bark{left:calc(74px + env(safe-area-inset-left));bottom:8px;max-width:calc(100vw - 170px);pointer-events:none}   /* clear of the left rail's 👁 and ☰ */
+  @media (max-width:480px){#title .l2{margin-top:6px}#title .tag{line-height:1.45}}
+  body.mobTouch #title .tmenu button{min-height:44px}
+</style>`);
+/* ---------------- 4. big battles draw faster ----------------
+   Profiling a 64x48 map with ~190 units: 35% of each frame went on the team rings (forty 1px squares and a dozen
+   strips per unit, every frame), and every unit, glow and ring was drawn even when it was off screen. Rings are
+   now drawn once per colour and stamped (same pixels), and units and light pools outside the view are skipped.
+   On that map, in the (software-rendered) test browser, a frame at normal zoom went from about 33 ms to 16 ms, and
+   zoomed right out from about 60 ms to 50 ms (light pools are most of what is left). */
+V611.view = null;
+V611.off = (x, y, r) => { const v = V611.view; return !!v && (x + r < v[0] || x - r > v[2] || y + r < v[1] || y - r > v[3]); };
+V611.rings = new Map();
+V611.ring = (col, boss, spent) => {
+  const k = col + (boss ? 'B' : '') + (spent ? 'S' : ''); let c = V611.rings.get(k); if (c) return c;
+  const rx = boss ? 10 : 7, ry = boss ? 4 : 3, X = rx + 2, Y = ry + 2;
+  c = document.createElement('canvas'); c.width = rx * 2 + 4; c.height = ry * 2 + 5; const g = c.getContext('2d');
+  g.globalAlpha = .5; g.fillStyle = '#000'; for (let dy = -ry; dy <= ry; dy++) { const w = Math.round(rx * Math.sqrt(1 - (dy * dy) / (ry * ry + .01))); g.fillRect(X - w, Y + dy + 1, w * 2, 1); }
+  g.globalAlpha = spent ? .6 : .95; g.fillStyle = col;
+  for (let a = 0; a < 40; a++) { const q = a / 40 * 6.283, ex = Math.round(X + Math.cos(q) * rx - .5), ey = Math.round(Y + Math.sin(q) * ry - .5); g.fillRect(ex, ey, 1, 1); }
+  V611.rings.set(k, c); return c;
+};
+{
+  const i = HOOKS.draw.findIndex(f => /a smooth ellipse sat oddly/.test(String(f)));   // v0.6.4's team rings, same look, one stamp each
+  if (i >= 0) HOOKS.draw[i] = () => {
+    if (!G || SET.rings === false || G.editor) return;
+    ctx.save(); ctx.globalAlpha = 1;
+    for (const u of G.units) {
+      if (!u.team || u.dived || !visibleTo(u, ME)) continue;
+      const [px, py] = unitPos(u), X = Math.round(px * 16 + 8), Y = Math.round(py * 16 + 14), boss = hasTag(u, 'boss'), rx = boss ? 10 : 7, ry = boss ? 4 : 3;
+      if (V611.off(X, Y, rx + 2)) continue;
+      ctx.drawImage(V611.ring((TEAMS[u.team] && TEAMS[u.team].ui) || '#ffffff', boss, u.done && u.team === ME), X - rx - 2, Y - ry - 2);
+    }
+    ctx.restore();
+  };
+  const _gl = glow; glow = function (x, y, r, ...a) { if (V611.off(x, y, r)) return; return _gl.call(this, x, y, r, ...a); };
+  const _du = drawUnit; drawUnit = function (u, ...a) {
+    if (u && V611.view && !G.editor) { const [px, py] = unitPos(u); if (V611.off(px * 16 + 8, py * 16 + 8, 40)) return; }
+    return _du.call(this, u, ...a);
+  };
+  const _draw = draw; draw = function (...a) {
+    try { if (G) { const m = 48 + (shakeMag || 0), w = innerWidth / cam.z, h = innerHeight / cam.z; V611.view = [cam.x - m, cam.y - m, cam.x + w + m, cam.y + h + m]; } } catch (e) { V611.view = null; }
+    try { return _draw.apply(this, a); } finally { V611.view = null; }
+  };
+}
+/* ---------------- 5. hours everywhere the clock is meant ----------------
+   Left over from v0.6.7: the Map Maker's balance check said "Income / day" and its AI-vs-AI report "(day 12)" and
+   "9 days", and the resume bark said "Welcome back. Day 31" under a HUD reading HOUR 90. */
+{
+  const _bal = mk3BalanceHTML; mk3BalanceHTML = function (...a) { return String(_bal.apply(this, a)).replace('Income / day', 'Income a turn'); };
+  const _ui = mk3BalanceUI; mk3BalanceUI = function (html, ...a) {
+    if (typeof html === 'string') html = html.replace(/\(day (\d+)\)/g, (m, d) => `(hour ${V67.h(+d)})`).replace(/<td>(\d+) days<\/td>/g, (m, d) => `<td>${d} turns</td>`);
+    return _ui.call(this, html, ...a);
+  };
+  const _bark = sayBark; sayBark = function (who, text, ...a) {
+    if (typeof text === 'string' && G) text = text.replace(/^Welcome back\. Day (\d+),/, (m, d) => `Welcome back. Hour ${V67.h(+d)},`);
+    return _bark.call(this, who, text, ...a);
+  };
+}
+/* ---------------- 6. turn banners you can read ----------------
+   The turn banner was a word floating over the units ("HOUR 6") with the army's name in small grey type that got
+   lost on a busy map. It now sits on a dark band edged in the army's colour, and says whose turn it is. */
+{
+  const _ban = banner; banner = function (text, sub, col, ...a) {
+    try {
+      const b = $('#banner'); if (b) b.style.setProperty('--bc', col || '#2ef2ff');
+      if (G && typeof sub === 'string' && TEAMS[G.turn] && sub === TEAMS[G.turn].name) {
+        const who = !isAI(G.turn) ? (humanTeams().length > 1 ? 'YOUR MOVE' : 'YOUR TURN') : allied(G.turn, ME) ? 'ALLY TURN' : 'ENEMY TURN';
+        sub = `${sub} <b class="v611who">${who}</b>`;
+      }
+    } catch (e) {}
+    return _ban.call(this, text, sub, col, ...a);
+  };
+}
+document.head.insertAdjacentHTML('beforeend', `<style>
+  #banner{--bc:#2ef2ff;padding:12px 0 14px;background:linear-gradient(90deg,transparent,rgba(5,6,10,.86) 16%,rgba(5,6,10,.86) 84%,transparent)}
+  #banner::before,#banner::after{content:'';position:absolute;left:8%;right:8%;height:2px;background:linear-gradient(90deg,transparent,var(--bc),transparent);box-shadow:0 0 10px var(--bc)}
+  #banner::before{top:0} #banner::after{bottom:0}
+  #banner small{font-size:13px;font-weight:bold;letter-spacing:5px;margin-top:6px;color:#d8e2f0}
+  #banner .v611who{display:inline-block;margin-left:10px;padding:1px 8px;border:1px solid var(--bc);border-radius:3px;color:var(--bc);letter-spacing:3px;text-shadow:0 0 8px var(--bc)}
+  @media (max-width:480px){#banner small{font-size:11px;letter-spacing:3px}#banner .v611who{display:table;margin:6px auto 0}}
+</style>`);
+/* ---------------- 7. the Sound Room is a player ----------------
+   The Battle Shop's Sound Room was 48 rows of ▶ buttons: no sign of what was playing, no pause, no way to hear
+   more than one track. It now opens on a deck: the track's name, a progress bar with the time, back / play-pause /
+   next, and "Play the album" to shuffle all 48. The playing row lights up; tapping its button pauses it. */
+V611.snd = {list:null, paused:false};
+V611.sndOK = () => typeof ostUsable === 'function' && ostUsable() && SET.music > 0 && !SET.mute;
+V611.sndCur = () => OST.cur && !OST.cur.dead ? OST.cur : null;
+V611.fmt = s => !isFinite(s) || s < 0 ? '0:00' : Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+V611.sndPlay = ids => { V611.snd.paused = false; V611.snd.list = ids.length > 1 ? 'all' : null; ostPlay('listen:' + (ids.length > 1 ? 'all' : ids[0]), ids); };
+V611.sndStep = dir => {
+  const c = V611.sndCur(), ids = OST.album.map(t => t.id);
+  if (V611.snd.list === 'all' && OST.order && OST.order.length > 1) {          // step through the shuffled album (ostNext would reshuffle at the lap)
+    OST.next = (OST.next + dir + OST.order.length) % OST.order.length; V611.snd.paused = false; ostStart(OST.order[OST.next], false); return; }
+  const i = c ? ids.indexOf(c.id) : -1; V611.sndPlay([ids[((i < 0 ? 0 : i + dir) + ids.length) % ids.length]]);
+};
+V611.sndToggle = () => { const c = V611.sndCur(); if (!c) { V611.sndPlay(OST.album.map(t => t.id)); return; }
+  if (c.el.paused) { c.el.play().catch(() => {}); V611.snd.paused = false; } else { c.el.pause(); V611.snd.paused = true; } };
+V611.sndPaint = () => {
+  const deck = $('#v611deck'); if (!deck) return false;
+  const c = V611.sndCur(), id = c && c.id, el = c && c.el, len = el ? (isFinite(el.duration) ? el.duration : (OST.album.find(t => t.id === id) || {}).dur || 0) : 0;
+  const ok = V611.sndOK(), playing = !!(el && !el.paused);
+  deck.querySelector('.t').textContent = !ok ? 'Turn Music volume up in Settings to listen' : id ? ostTitle(id) : 'Nothing playing';
+  deck.querySelector('.s').textContent = id ? `${OST.artist} · ${V611.fmt(el.currentTime)} / ${V611.fmt(len)}${V611.snd.list === 'all' ? ' · album, shuffled' : ''}` : `${OST.album.length} tracks · ${OST.artist}`;
+  deck.querySelector('.bar i').style.width = (len ? Math.min(100, el.currentTime / len * 100) : 0) + '%';
+  deck.querySelector('[data-snd="pp"]').textContent = playing ? '❚❚' : '▶';
+  deck.querySelector('[data-snd="pp"]').setAttribute('aria-label', playing ? 'Pause' : 'Play');
+  deck.classList.toggle('on', playing);
+  for (const b of document.querySelectorAll('#mbox [data-act^="listen:"]')) {
+    const me = b.dataset.act.slice(7) === id, row = b.closest('.brow');
+    b.textContent = me && playing ? '❚❚' : '▶'; b.setAttribute('aria-label', (me && playing ? 'Pause ' : 'Play ') + ostTitle(b.dataset.act.slice(7)));
+    if (row) row.classList.toggle('v611now', !!me);
+  }
+  return true;
+};
+{
+  const _shop = showShop; showShop = function (...a) {
+    const r = _shop.apply(this, a);
+    try {
+      const h = [...document.querySelectorAll('#mbox h3')].find(e => /Sound Room/.test(e.textContent)); if (!h) return r;
+      h.insertAdjacentHTML('afterend', `<div id="v611deck" role="group" aria-label="Soundtrack player">
+        <div class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+        <div class="txt"><div class="t"></div><div class="s"></div><div class="bar"><i></i></div></div>
+        <div class="ctl"><button class="np" data-snd="prev" aria-label="Previous track">⏮</button><button class="np end" data-snd="pp">▶</button><button class="np" data-snd="next" aria-label="Next track">⏭</button>
+        <button class="np" data-snd="all">⤮ Play the album</button></div></div>`);
+      const deck = $('#v611deck');
+      deck.addEventListener('click', e => { const b = e.target.closest('[data-snd]'); if (!b) return; e.stopPropagation(); sfx('confirm');
+        if (!V611.sndOK()) { V611.sndPaint(); return; }
+        const k = b.dataset.snd; if (k === 'pp') V611.sndToggle(); else if (k === 'all') V611.sndPlay(OST.album.map(t => t.id)); else V611.sndStep(k === 'next' ? 1 : -1);
+        setTimeout(V611.sndPaint, 60); });
+      clearInterval(V611.sndT); V611.sndPaint(); V611.sndT = setInterval(() => { if (!V611.sndPaint()) clearInterval(V611.sndT); }, 500);
+    } catch (e) { console.warn('sound room', e); }
+    return r;
+  };
+  $('#mbox').addEventListener('click', e => {                       // the playing row's own button pauses it instead of restarting nothing
+    const b = e.target.closest('[data-act^="listen:"]'); if (!b || !$('#v611deck')) return;
+    const c = V611.sndCur(), id = b.dataset.act.slice(7);
+    if (c && c.id === id && V611.sndOK()) { e.stopImmediatePropagation(); V611.sndToggle(); setTimeout(V611.sndPaint, 60); }
+    else { V611.snd.list = null; V611.snd.paused = false; setTimeout(V611.sndPaint, 120); }
+  }, true);
+}
+document.head.insertAdjacentHTML('beforeend', `<style>
+  #v611deck{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;align-items:center;margin:6px 0 10px;padding:10px 12px;border:1px solid var(--line);border-radius:6px;
+    background:linear-gradient(135deg,#120a1e,#0b0d14 60%);box-shadow:inset 0 0 0 1px #ff3fb411}
+  #v611deck.on{border-color:#ff3fb4;box-shadow:0 0 14px #ff3fb433,inset 0 0 0 1px #ff3fb422}
+  #v611deck .t{color:#ff6ac8;font-weight:bold;font-size:15px;letter-spacing:1px;text-shadow:0 0 8px #ff3fb466;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #v611deck .s{color:var(--dim);font-size:12px;margin-top:2px}
+  #v611deck .txt{min-width:0}
+  #v611deck .bar{height:4px;background:#222838;border-radius:2px;margin-top:6px;overflow:hidden}
+  #v611deck .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#2ef2ff,#ff3fb4);box-shadow:0 0 6px #ff3fb4;transition:width .5s linear}
+  #v611deck .ctl{grid-column:1/3;display:flex;gap:6px;flex-wrap:wrap}
+  #v611deck .ctl .np{min-width:48px}
+  #v611deck .eq{display:flex;align-items:flex-end;gap:2px;width:22px;height:22px}
+  #v611deck .eq i{flex:1;background:#2a3248;height:20%;border-radius:1px}
+  #v611deck.on .eq i{background:#ff3fb4;box-shadow:0 0 4px #ff3fb4;animation:v611eq .9s ease-in-out infinite alternate}
+  #v611deck.on .eq i:nth-child(2){animation-delay:-.3s} #v611deck.on .eq i:nth-child(3){animation-delay:-.6s} #v611deck.on .eq i:nth-child(4){animation-delay:-.15s}
+  @keyframes v611eq{from{height:20%}to{height:100%}}
+  body.rm #v611deck.on .eq i{animation:none;height:70%}
+  @media (prefers-reduced-motion: reduce){#v611deck.on .eq i{animation:none;height:70%}}
+  #mbox .brow.v611now{border-color:#ff3fb4;box-shadow:0 0 10px #ff3fb433}
+  #mbox .brow.v611now b{color:#ff6ac8}
+</style>`);
+/* ---------------- 8. Horde modifiers ----------------
+   Three ways to change a Horde run, each with its own best-wave record:
+     Blackout     night and fog of war for the whole run: you only see what your units and buildings light up
+     Elite waves  every attacker arrives a Veteran (+10% attack and defence)
+     Lean times   no supply drops and no crates: you live on the city blocks you hold */
+V611.HMODS = {
+  none:{n:'No modifier', d:''},
+  blackout:{n:'Blackout', d:'Night and fog of war for the whole run.'},
+  elite:{n:'Elite waves', d:'Every attacker arrives a Veteran (+10% attack and defence).'},
+  lean:{n:'Lean times', d:'No supply drops and no crates: you live on the city blocks you hold.'}
+};
+HORDE_OPTS.mod = HORDE_OPTS.mod || 'none';
+V611.hmod = () => (G && G.L && G.L.hordeMod) || 'none';
+V611.hkeyName = k => { const [base, mod] = String(k).split('~'), [th, sz, df] = base.split('-');
+  return `${GEN_THEMES[th] ? GEN_THEMES[th].n : base} ${sz === 'l' ? 'large' : 'medium'}${{e:' (easy)', h:' (hard)'}[df] || ''}${mod && V611.HMODS[mod] ? ' · ' + V611.HMODS[mod].n : ''}`; };
+{
+  const _show = showHorde; showHorde = function (...a) {
+    const r = _show.apply(this, a);
+    try {
+      const o = HORDE_OPTS, row = [...document.querySelectorAll('#mbox .opt')].find(e => /^Leader/.test(e.textContent.trim()));
+      if (row) row.insertAdjacentHTML('afterend', `<div class="opt">Modifier <select data-k="v611mod">${Object.entries(V611.HMODS).map(([k, m]) =>
+        `<option value="${k}" ${o.mod === k ? 'selected' : ''}>${esc(m.n)}</option>`).join('')}</select></div><p class="dim" id="v611modd" style="margin:-4px 0 6px;font-size:12px">${esc(V611.HMODS[o.mod].d)}</p>`);
+      const s = $('#mbox select[data-k="v611mod"]');
+      if (s) s.addEventListener('change', () => { o.mod = s.value in V611.HMODS ? s.value : 'none'; const d = $('#v611modd'); if (d) d.textContent = V611.HMODS[o.mod].d; });
+      const h = [...document.querySelectorAll('#mbox h3')].find(e => /Best runs/.test(e.textContent)), list = h && h.nextElementSibling;   // name each record, modifier included
+      if (list) list.innerHTML = Object.entries(PROFILE.horde).sort((x, y) => y[1] - x[1]).slice(0, 6).map(([k, w]) => `${esc(V611.hkeyName(k))}: wave ${w}`).join(' · ');
+    } catch (e) { console.warn('horde modifier', e); }
+    return r;
+  };
+  const _start = hordeStart; hordeStart = function (o, ...a) { V611.pendMod = o && o.mod && o.mod !== 'none' && V611.HMODS[o.mod] ? o.mod : null;
+    try { return _start.call(this, o, ...a); } finally { V611.pendMod = null; } };
+  const _reg = registerLevel; registerLevel = function (L, ...a) {
+    const m = V611.pendMod;
+    if (m && L && L.kind === 'horde' && !L.hordeMod) {
+      Object.assign(L, {hordeMod:m, hordeKey:L.hordeKey + '~' + m, id:L.id + '~' + m, name:L.name + ' · ' + V611.HMODS[m].n});
+      if (m === 'blackout') Object.assign(L, {tod:'night', fog:true});
+      if (m === 'lean') L.crates = false;
+    }
+    return _reg.call(this, L, ...a);
+  };
+  const _wave = hordeWave; hordeWave = function (...a) {
+    const m = V611.hmod(); if (m === 'none') return _wave.apply(this, a);
+    const uid0 = G.uid, funds = Object.fromEntries(G.order.map(t => [t, G.teams[t].funds])), _ft = floatText;
+    if (m === 'lean') floatText = function (x, y, s, ...b) { if (/^SUPPLY DROP/.test(s)) return; return _ft.call(this, x, y, s, ...b); };
+    try { return _wave.apply(this, a); }
+    finally {
+      floatText = _ft;
+      if (m === 'lean') for (const t of G.order) if (allied(t, ME)) G.teams[t].funds = funds[t];
+      if (m === 'elite') for (const u of G.units) if (u.uid >= uid0 && u.team && !allied(u.team, ME)) u.vet = Math.max(u.vet || 0, 1);
+    }
+  };
+  hook('status', () => { const m = V611.hmod(); return G.L.kind === 'horde' && m !== 'none' ? '⚑ ' + V611.HMODS[m].n.toUpperCase() : ''; });
+}
+WHATS_NEW['0.6.11'] = [
+  'Horde modifiers: Blackout (night and fog for the whole run), Elite waves (every attacker arrives a Veteran) and Lean times (no supply drops, no crates). Each keeps its own best wave.',
+  'The Sound Room in the Battle Shop is now a player: what is playing and how far through it is, pause, back and next, or shuffle the whole 48-track album.',
+  'Turn banners sit on a band in the army\'s colour and say whose turn it is.',
+  'The camera frames the map when a mission starts or follows a unit, instead of showing empty sky beside it. Dragging still pans past the edges.',
+  'Big battles draw much faster: units and lights off screen are skipped, and team rings are drawn once and reused.',
+  'Phones: 👁, ☰ and the title menu are full-size tap targets, and in landscape the radio messages no longer cover 👁 and ☰.',
+  'HP numbers are no longer hidden behind the unit on the tile below.',
+  'The Map Maker\'s balance check and AI test report count turns and hours, and the resume message gives the hour.'
+];
+/* end:v0611 */
 resize();
 applySettings();
 miniInput();
